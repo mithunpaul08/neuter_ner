@@ -125,7 +125,7 @@ def write_json_to_disk(claim, evidence,label,outfile):
     json.dump(total, outfile)
     outfile.write('\n')
 
-def annotate_and_save_doc_with_label_as_id(headline, body, API):
+def annotate(headline, body, API):
     claim_ann = API.fastnlp.annotate(headline)
     ev_ann = API.fastnlp.annotate(body)
     return claim_ann, ev_ann
@@ -214,6 +214,9 @@ def create_parser():
     parser = argparse.ArgumentParser(description='Pg')
     parser.add_argument('--inputFile', type=str, default='fever_train_split_fourlabels.jsonl',
                         help='name of the input file to convert to smart ner format')
+    parser.add_argument('--pyproc_port', type=int, default=8888,
+                        help='port at which pyprocessors server should run. If you are running'
+                             'multiple servers on the same machine, will need different port for each')
     print(parser.parse_args())
     return parser
 
@@ -253,11 +256,11 @@ if __name__ == '__main__':
 
 
     for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
-            claim_ann, ev_ann = annotate_and_save_doc_with_label_as_id(c, e, API)
+            claim_ann, ev_ann = annotate(c, e, API)
             claim_neutered,ev_neutered= neuter(claim_ann, ev_ann)
             with open('output.jsonl', 'a+') as outfile:
                 write_json_to_disk(claim_neutered, ev_neutered,l,outfile)
-                print(index)
+            print(index)
 
 
 

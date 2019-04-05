@@ -1,5 +1,5 @@
 from tqdm import tqdm
-import json,mmap,os
+import json,mmap,os,argparse
 import processors
 from processors import *
 
@@ -207,7 +207,15 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
 
         return combined_sent,found_intersection
 
+def parse_commandline_args():
+    return create_parser().parse_args()
 
+def create_parser():
+    parser = argparse.ArgumentParser(description='Pg')
+    parser.add_argument('--inputFile', type=str, default='fever_train_split_fourlabels.jsonl',
+                        help='name of the input file to convert to smart ner format')
+    print(parser.parse_args())
+    return parser
 
 def neuter(claim_ann,evidence_ann):
         ev_claim="c"
@@ -235,23 +243,21 @@ def neuter(claim_ann,evidence_ann):
 
 if __name__ == '__main__':
     API = ProcessorsAPI(port=8886)
-    #API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
-    claims_words_list=["frank sinatra","is","a", "good","person","working","with","USA"]
-    claims_ner_list = ["PERSON", "O", "ORGANIZATION","O","ORGANIZATION","LOCATION","ORGANIZATION","O"]
-
-    filename="data/"+"fever_train_split_fourlabels.jsonl"
+    args = parse_commandline_args()
+    filename="data/"+args.inputFile
     all_claims, all_evidences, all_labels=read_rte_data(filename)
     all_claims_neutered=[]
     all_evidences_neutered = []
     with open('output.jsonl', 'w') as outfile:
         outfile.write('')
 
-    with open('output.jsonl', 'a+') as outfile:
-        for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+
+    for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
             claim_ann, ev_ann = annotate_and_save_doc_with_label_as_id(c, e, API)
             claim_neutered,ev_neutered= neuter(claim_ann, ev_ann)
-            write_json_to_disk(claim_neutered, ev_neutered,l,outfile)
-            print(index)
+            with open('output.jsonl', 'a+') as outfile:
+                write_json_to_disk(claim_neutered, ev_neutered,l,outfile)
+                print(index)
 
 
 

@@ -234,7 +234,8 @@ def neuter(claim_ann,evidence_ann):
         return claimn,evidencen
 
 if __name__ == '__main__':
-    API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
+    API = ProcessorsAPI(port=8886)
+    #API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
     claims_words_list=["frank sinatra","is","a", "good","person","working","with","USA"]
     claims_ner_list = ["PERSON", "O", "ORGANIZATION","O","ORGANIZATION","LOCATION","ORGANIZATION","O"]
 

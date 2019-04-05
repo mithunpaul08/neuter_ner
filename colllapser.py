@@ -239,7 +239,7 @@ if __name__ == '__main__':
     claims_words_list=["frank sinatra","is","a", "good","person","working","with","USA"]
     claims_ner_list = ["PERSON", "O", "ORGANIZATION","O","ORGANIZATION","LOCATION","ORGANIZATION","O"]
 
-    filename="data/"+"fn_dev_split_fourlabels.jsonl"
+    filename="data/"+"fever_train_split_fourlabels.jsonl"
     all_claims, all_evidences, all_labels=read_rte_data(filename)
     all_claims_neutered=[]
     all_evidences_neutered = []

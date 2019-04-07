@@ -5,7 +5,7 @@ from processors import *
 
 def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                  unique_new_tokens, dict_newner_token):
-    separator = "-"
+    separator = ""
     prev_ner_tag = prev[0]
     new_nertag_i = ""
     full_name_c = " ".join(full_name)
@@ -210,6 +210,15 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
 def parse_commandline_args():
     return create_parser().parse_args()
 
+
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 def create_parser():
     parser = argparse.ArgumentParser(description='Pg')
     parser.add_argument('--inputFile', type=str, default='fever_train_split_fourlabels.jsonl',
@@ -217,6 +226,8 @@ def create_parser():
     parser.add_argument('--pyproc_port', type=int, default=8888,
                         help='port at which pyprocessors server should run. If you are running'
                              'multiple servers on the same machine, will need different port for each')
+    parser.add_argument('--use_docker', default=False, type=str2bool,
+                        help='use docker for loading pyproc. useful in machines where you have root access.', metavar='BOOL')
     print(parser.parse_args())
     return parser
 
@@ -226,13 +237,9 @@ def neuter(claim_ann,evidence_ann):
                                                                                           claim_ann._entities,
                                                                                                ev_claim)
 
-
-
         ev_claim = "e"
         new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = collapse_both(
             evidence_ann.words, evidence_ann._entities, ev_claim)
-
-
 
         neutered_body, found_intersection = check_exists_in_claim(new_sent_after_collapse,
                                                                        dict_tokenner_newner_evidence, dict_newner_token_ev,
@@ -245,8 +252,13 @@ def neuter(claim_ann,evidence_ann):
         return claimn,evidencen
 
 if __name__ == '__main__':
-    API = ProcessorsAPI(port=8886)
+
     args = parse_commandline_args()
+    if(args.use_docker==True):
+        API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
+    else:
+        API = ProcessorsAPI(port=8886)
+
     filename="data/"+args.inputFile
     all_claims, all_evidences, all_labels=read_rte_data(filename)
     all_claims_neutered=[]

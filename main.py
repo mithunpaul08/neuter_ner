@@ -1,11 +1,11 @@
 from tqdm import tqdm
-import json,mmap,os
+import json,mmap,os,argparse
 import processors
 from processors import *
 
 def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                  unique_new_tokens, dict_newner_token):
-    separator = "-"
+    separator = ""
     prev_ner_tag = prev[0]
     new_nertag_i = ""
     full_name_c = " ".join(full_name)
@@ -125,7 +125,7 @@ def write_json_to_disk(claim, evidence,label,outfile):
     json.dump(total, outfile)
     outfile.write('\n')
 
-def annotate_and_save_doc_with_label_as_id(headline, body, API):
+def annotate(headline, body, API):
     claim_ann = API.fastnlp.annotate(headline)
     ev_ann = API.fastnlp.annotate(body)
     return claim_ann, ev_ann
@@ -207,7 +207,29 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
 
         return combined_sent,found_intersection
 
+def parse_commandline_args():
+    return create_parser().parse_args()
 
+
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+def create_parser():
+    parser = argparse.ArgumentParser(description='Pg')
+    parser.add_argument('--inputFile', type=str, default='fever_train_split_fourlabels.jsonl',
+                        help='name of the input file to convert to smart ner format')
+    parser.add_argument('--pyproc_port', type=int, default=8888,
+                        help='port at which pyprocessors server should run. If you are running'
+                             'multiple servers on the same machine, will need different port for each')
+    parser.add_argument('--use_docker', default=False, type=str2bool,
+                        help='use docker for loading pyproc. useful in machines where you have root access.', metavar='BOOL')
+    print(parser.parse_args())
+    return parser
 
 def neuter(claim_ann,evidence_ann):
         ev_claim="c"
@@ -215,13 +237,9 @@ def neuter(claim_ann,evidence_ann):
                                                                                           claim_ann._entities,
                                                                                                ev_claim)
 
-
-
         ev_claim = "e"
         new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = collapse_both(
             evidence_ann.words, evidence_ann._entities, ev_claim)
-
-
 
         neutered_body, found_intersection = check_exists_in_claim(new_sent_after_collapse,
                                                                        dict_tokenner_newner_evidence, dict_newner_token_ev,
@@ -234,23 +252,26 @@ def neuter(claim_ann,evidence_ann):
         return claimn,evidencen
 
 if __name__ == '__main__':
-    API = ProcessorsAPI(port=8886)
-    #API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
-    claims_words_list=["frank sinatra","is","a", "good","person","working","with","USA"]
-    claims_ner_list = ["PERSON", "O", "ORGANIZATION","O","ORGANIZATION","LOCATION","ORGANIZATION","O"]
 
-    filename="data/"+"fn_dev_split_fourlabels.jsonl"
+    args = parse_commandline_args()
+    if(args.use_docker==True):
+        API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
+    else:
+        API = ProcessorsAPI(port=8886)
+
+    filename="data/"+args.inputFile
     all_claims, all_evidences, all_labels=read_rte_data(filename)
     all_claims_neutered=[]
     all_evidences_neutered = []
     with open('output.jsonl', 'w') as outfile:
         outfile.write('')
 
-    with open('output.jsonl', 'a+') as outfile:
-        for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
-            claim_ann, ev_ann = annotate_and_save_doc_with_label_as_id(c, e, API)
+
+    for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+            claim_ann, ev_ann = annotate(c, e, API)
             claim_neutered,ev_neutered= neuter(claim_ann, ev_ann)
-            write_json_to_disk(claim_neutered, ev_neutered,l,outfile)
+            with open('output.jsonl', 'a+') as outfile:
+                write_json_to_disk(claim_neutered, ev_neutered,l,outfile)
             print(index)
 
 

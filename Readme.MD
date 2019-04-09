@@ -3,11 +3,29 @@
 This code takes a claim and evidence pairs, finds where all NER tags exist and replace them smartly. refer examples below. 
 This is being done to show the NN model that there is overlap between claim and evidence.
 
+```
+conda create --name smartner python=3
+source activate conda
+pip install tqdm
+pip install git+https://github.com/myedibleenso/py-processors.git
+```
+
+**note: we are using `pyprocessors` to do annotation/NER/POS tagging etc. The documentation for the same can be found [here](https://py-processors.readthedocs.io/en/latest/)
+We are using the jar option mentioned in the file to run pyprocessors server. However if you are adventurous enough to go the docker route, below are the commands you must use.
+**
+
 commands to run
 ```
 source activate meanteacher
-python colllapser.py --inputFile fn_train_split_fourlabels.jsonl --pyproc_port 8889
+python main.py
 ```
+#### optional command line arguments"
+
+`--pyproc_port 8886` By default pyprocessors , the java version runs off port 8888. If you intend to change it/want to run it over another port, you can pass it as
+a command line argument like this.
+
+`--use_docker true` if you are using docker for pyprocessors
+
 
 #### Some sample conversions
 

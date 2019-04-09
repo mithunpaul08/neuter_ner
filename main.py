@@ -231,7 +231,7 @@ def create_parser():
     print(parser.parse_args())
     return parser
 
-def neuter(claim_ann,evidence_ann):
+def collapseAndReplaceWithNerSmartly(claim_ann, evidence_ann):
         ev_claim="c"
         neutered_headline, dict_tokenner_newner_claims, dict_newner_token = collapse_both(claim_ann.words,
                                                                                           claim_ann._entities,
@@ -251,6 +251,27 @@ def neuter(claim_ann,evidence_ann):
 
         return claimn,evidencen
 
+
+def replacePrepWithPOSTags(claim_ann, evidence_ann):
+
+    claimn=claim_ann.words
+    evidencen = evidence_ann.words
+
+    for index,pos in enumerate(claim_ann.tags):
+        if (pos=="IN"):
+            claimn[index]="PREPIN"
+
+
+    for index,pos in enumerate(evidence_ann.tags):
+        if (pos=="IN"):
+            evidencen[index]="PREPIN"
+
+
+
+    return claimn, evidencen
+
+
+
 if __name__ == '__main__':
 
     args = parse_commandline_args()
@@ -268,8 +289,12 @@ if __name__ == '__main__':
 
 
     for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+
             claim_ann, ev_ann = annotate(c, e, API)
-            claim_neutered,ev_neutered= neuter(claim_ann, ev_ann)
+            assert (claim_ann is not None)
+            assert (ev_ann is not None)
+            claim_prep_replaced,ev_pre_replaced=replacePrepWithPOSTags(claim_ann, ev_ann)
+            claim_neutered,ev_neutered= collapseAndReplaceWithNerSmartly(claim_ann, ev_ann)
             with open('output.jsonl', 'a+') as outfile:
                 write_json_to_disk(claim_neutered, ev_neutered,l,outfile)
             print(index)

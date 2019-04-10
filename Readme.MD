@@ -17,7 +17,7 @@ We are using the jar option mentioned in the file to run pyprocessors server. Ho
 commands to run
 ```
 source activate meanteacher
-python main.py
+python main.py --pyproc_port 8887 --use_docker false --inputFile fn_dev_split_fourlabels.jsonl 
 ```
 #### optional command line arguments"
 

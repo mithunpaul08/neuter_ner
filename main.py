@@ -282,7 +282,7 @@ if __name__ == '__main__':
     if(args.use_docker==True):
         API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
     else:
-        API = ProcessorsAPI(port=8886)
+        API = ProcessorsAPI(port=args.pyproc_port)
 
     filename="data/"+args.inputFile
     all_claims, all_evidences, all_labels=read_rte_data(filename)

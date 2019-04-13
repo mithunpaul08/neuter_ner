@@ -44,3 +44,5 @@ premise_ann: BREAKING : ORGANIZATION-e1 , in video , beheads MISC-e1 journalist 
 
 
 ### to run super sense tagging use my [fork](https://github.com/mithunpaul08/pysupersensetagger)
+`python superSenseTag.py --pyproc_port 8887 --use_docker false --inputFile data/fever_train_split_fourlabels.jsonl  
+`

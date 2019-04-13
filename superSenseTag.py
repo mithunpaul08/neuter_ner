@@ -108,7 +108,7 @@ if __name__ == '__main__':
     else:
         API = ProcessorsAPI(port=args.pyproc_port)
 
-    filename="data/"+args.inputFile
+    filename=args.inputFile
     all_claims, all_evidences, all_labels=read_rte_data(filename)
     all_claims_neutered=[]
 

@@ -8,7 +8,7 @@ def parse_commandline_args():
 
 def create_parser():
     parser = argparse.ArgumentParser(description='Pg')
-    parser.add_argument('--inputFile', type=str, default='fever_train_split_fourlabels.jsonl',
+    parser.add_argument('--inputFile', type=str, default='data/fever_train_split_fourlabels.jsonl',
                         help='name of the input file to convert to smart ner format')
     parser.add_argument('--pyproc_port', type=int, default=8888,
                         help='port at which pyprocessors server should run. If you are running'

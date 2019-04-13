@@ -15,6 +15,9 @@ def create_parser():
                              'multiple servers on the same machine, will need different port for each')
     parser.add_argument('--use_docker', default=False, type=str2bool,
                         help='use docker for loading pyproc. useful in machines where you have root access.', metavar='BOOL')
+    parser.add_argument('--output_folder', type=str, default='outputs/',
+                        help='folder where outputs will be created')
+
     print(parser.parse_args())
     return parser
 
@@ -88,9 +91,13 @@ def write_json_to_disk(claim, evidence,label,outfile):
     json.dump(total, outfile)
     outfile.write('\n')
 
-def write_token_POS_disk_as_csv(annotated_sent,outfile):
-    for word,postag in zip(annotated_sent.words, annotated_sent.tags):
-        outfile.write(word+"\t"+postag+"\n")
+def write_token_POS_disk_as_csv(annotated_sent,full_path_output_file):
+    # write one file per claim. empty the file out if it already exists.
+    with open(full_path_output_file, 'w') as outfile:
+        outfile.write('')
+        with open(full_path_output_file, 'a+') as outfile:
+            for word,postag in zip(annotated_sent.words, annotated_sent.tags):
+                outfile.write(word+"\t"+postag+"\n")
 
 
 if __name__ == '__main__':
@@ -104,9 +111,9 @@ if __name__ == '__main__':
     filename="data/"+args.inputFile
     all_claims, all_evidences, all_labels=read_rte_data(filename)
     all_claims_neutered=[]
-    all_evidences_neutered = []
-    with open('output', 'w') as outfile:
-        outfile.write('')
+
+    output_folder=args.output_folder
+
 
 
     for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
@@ -114,12 +121,14 @@ if __name__ == '__main__':
             claim_ann, ev_ann = annotate(c, e, API)
             assert (claim_ann is not None)
             assert (ev_ann is not None)
-            # write each token and its pos tag to disk, with one line each
 
-            # claim_neutered,ev_neutered= collapseAndReplaceWithNerSmartly(claim_ann, ev_ann)
-            with open('output', 'a+') as outfile:
-                write_token_POS_disk_as_csv(claim_ann, outfile)
-                write_token_POS_disk_as_csv(ev_ann, outfile)
+            # write each token and its pos tag to disk, with one line each
+            out_file_name="claim_words_pos_datapointid_"+str(index)
+            full_path_output_file=output_folder+out_file_name
+            write_token_POS_disk_as_csv(claim_ann, full_path_output_file)
+            out_file_name = "evidence_words_pos_datapointid_" + str(index)
+            full_path_output_file = output_folder + out_file_name
+            write_token_POS_disk_as_csv(ev_ann, full_path_output_file)
 
 
 

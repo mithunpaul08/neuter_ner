@@ -253,7 +253,7 @@ def collapseAndReplaceWithNerSmartly(claim_words,claim_ner_tags, evidence_words,
 #whenever you see a preposition in this sentence, replace the NER tags of this sentence with PREP. This is
 #being done so that when we do neutering, the PREP also gets added in along with the NER tags. Just another
 # experiment to check if prepositions have an effect on linguistic domain transfer
-def replacePrepWithPOSTags(claim_ann, evidence_ann):
+def replacePrepositionsWithPOSTags(claim_ann, evidence_ann):
 
     # claimn=claim_ann.words
     # evidencen = evidence_ann.words
@@ -297,7 +297,7 @@ if __name__ == '__main__':
             claim_ann, ev_ann = annotate(c, e, API)
             assert (claim_ann is not None)
             assert (ev_ann is not None)
-            claim_ner_tags_prep_replaced,ev_ner_tags_prep_replaced=replacePrepWithPOSTags(claim_ann, ev_ann)
+            claim_ner_tags_prep_replaced,ev_ner_tags_prep_replaced=replacePrepositionsWithPOSTags(claim_ann, ev_ann)
 
             claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags_prep_replaced, ev_ann.words, ev_ner_tags_prep_replaced)
             # claim_neutered,ev_neutered= collapseAndReplaceWithNerSmartly(claim_ann, ev_ann)

@@ -4,7 +4,7 @@ This code takes a claim and evidence pairs, finds where all NER tags exist and r
 This is being done to show the NN model that there is overlap between claim and evidence.
 
 ```
-conda create --name smartner python=3
+conda create --name meanteacher python=3
 source activate conda
 pip install tqdm
 pip install git+https://github.com/myedibleenso/py-processors.git
@@ -14,17 +14,27 @@ pip install git+https://github.com/myedibleenso/py-processors.git
 We are using the jar option mentioned in the file to run pyprocessors server. However if you are adventurous enough to go the docker route, below are the commands you must use.
 **
 
-commands to run
-```
-source activate meanteacher
-python main.py --pyproc_port 8887 --use_docker false --inputFile fn_dev_split_fourlabels.jsonl 
-```
+commands to run:
+
+`source activate meanteacher`
+
+`docker pull myedibleenso/processors-server:latest`
+` docker run myedibleenso/processors-server`
+
+`docker run -d -e _JAVA_OPTIONS="-Xmx3G" -p 127.0.0.1:8886:8888 --name procserv myedibleenso/processors-server`
+or
+
+
+```docker start procserv``` (if you are using docker)
+
+`python main.py --pyproc_port 8887 --use_docker false --inputFile fn_dev_split_fourlabels.jsonl `
 #### optional command line arguments"
 
 `--pyproc_port 8886` By default pyprocessors , the java version runs off port 8888. If you intend to change it/want to run it over another port, you can pass it as
 a command line argument like this.
 
-`--use_docker true` if you are using docker for pyprocessors
+`--use_docker true` if you are using docker for pyprocessors (usually in laptops its easier to use a docker, where as in machines where you don't have
+root/sudo access use java processors server)
 
 
 #### Some sample conversions

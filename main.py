@@ -310,7 +310,7 @@ if __name__ == '__main__':
 
 
             with open('output.jsonl', 'a+') as outfile:
-                write_json_to_disk(claim_neutered, ev_neutered,l,outfile)
+                write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
             print(index)
 
 

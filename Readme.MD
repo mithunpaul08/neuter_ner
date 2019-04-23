@@ -1,4 +1,6 @@
-# smart ner convertor
+# This code base has two pre-processing codes. Mostly to do with POS tagging, NER, Super sense tagging etc
+
+## smart ner convertor
 
 This code takes a claim and evidence pairs, finds where all NER tags exist and replace them smartly. refer examples below. 
 This is being done to show the NN model that there is overlap between claim and evidence.
@@ -54,7 +56,41 @@ premise_ann: BREAKING : ORGANIZATION-e1 , in video , beheads MISC-e1 journalist 
 ****['The', 'ORGANIZATION-c1', 'play', 'their', 'home', 'games', 'at', 'the', 'LOCATION-c1', ',', 'which', 'they', 'share', 'with', 'the', 'ORGANIZATION-e2', '-LRB-', 'ORGANIZATION-e3', '-RRB-', "'s", sed , '.']
 ```
 
+#Super Sense Tagger
 
-### to run super sense tagging use my [fork](https://github.com/mithunpaul08/pysupersensetagger)
+Super sense tagging is when you can take a sentence and assign the abstract super sense to it. like NER but more abstract.
+Eg:
+
+Before tagging:
+
+`I do n't think he 's afraid to take a strong stand on gun control , what with his upbringing in El Paso .`
+
+After Tagging:
+`I do|`a n't think|cognition he 's|stative afraid to take_a_ strong _stand|cognition on gun_control|ARTIFACT , what_with his upbringing|ATTRIBUTE in El_Paso|LOCATION .`
+
+For more details on SS taggging refer Noah Schnieder's github [page](https://github.com/nschneid/pysupersensetagger)
+
+I have a [fork](https://github.com/mithunpaul08/pysupersensetagger) of the same tagger which i useto run super sense tagging use in step 2.
+
+#### Step 1:
+ 
+The SStagger needs as input the POS tag and the tokens of a given sentence, in a particular one line format.
+
+Eg:
+```Sounds	VBZ
+haunting	VBG
+,	,
+and	CC
+a	DT
+```
+Refer to Noah's code base above for more details.
+
+This code base of mine, which you are looking at, I am using to generate these tokens/tags in the required format. To do that run the command below.:
+
 `python superSenseTag.py --pyproc_port 8887 --use_docker false --inputFile data/fever_train_split_fourlabels.jsonl  
 `
+
+The same conda environment mentioned above should work.
+
+Note that this command will create a huge number of files, one per each claim-evidence pair.
+

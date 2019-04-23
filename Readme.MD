@@ -90,7 +90,6 @@ This code base of mine, which you are looking at, I am using to generate these t
 `python superSenseTag.py --pyproc_port 8887 --use_docker false --inputFile data/fever_train_split_fourlabels.jsonl  
 `
 
-The same conda environment mentioned above should work.
 
 Note 
 - that this command will create a huge number of files, one per each claim-evidence pair.
@@ -99,18 +98,25 @@ Note
     - `docker start procserv`
     - open `localhost:8886` and confirm that the `pyprocessor` server is running
 
+steps to create a conda environment and run the sst tagger for my input file
+
+```
+ conda create -name py2* python=2.7
+ source activate py2_decompattn_nonallennlp
+ pip install cython
+ pip install nltk
+ python
+ nltk.download('wordnet')
+ exit
+ ./sst.sh ../../outputs/evidence_words_pos_datapointid_10120
+``` 
+
+Notes:
+ - output files (the .tags) file will be created at the same location as the input file
 
 # notes to self/delete later
  - pos conversion output for fever-training- now has around 10k files
  - outputs are kept at mithunpaul@clara:~/neuter_ner_fever_training/
  - next:its actually better to run the entire full cycle, POS tag+supersense, before trying out all 4 huge data sets (feve x train x dev x fnc)
  - on clara use 
- ```
- conda create -name py2* python=2.7
- source activate py2_decompattn_nonallennlp
-  pip install nltk
- python
- nltk.download('wordnet')
- exit
- ./sst.sh ../../outputs/evidence_words_pos_datapointid_10120
-``` 
+ 

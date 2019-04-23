@@ -1033,6 +1033,8 @@ def main():
     Parse the given command line arguments, then act accordingly.
     '''
     args = opts()
+    
+
     evalData = setup(args)
     predict(args, _tagger_model, featurized_dataset=evalData)
 

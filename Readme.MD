@@ -70,7 +70,7 @@ After Tagging:
 
 For more details on SS taggging refer Noah Schnieder's github [page](https://github.com/nschneid/pysupersensetagger)
 
-I have a [fork](https://github.com/mithunpaul08/pysupersensetagger) of the same tagger which i useto run super sense tagging use in step 2.
+I have a folder `amalgram/` in this repo where the code and trained models are replicated
 
 #### Step 1:
  
@@ -103,4 +103,14 @@ Note
 # notes to self/delete later
  - pos conversion output for fever-training- now has around 10k files
  - outputs are kept at mithunpaul@clara:~/neuter_ner_fever_training/
- - its actually better to run the entire full cycle, POS tag+supersense, before trying out all 4 huge data sets (feve x train x dev x fnc) 
+ - next:its actually better to run the entire full cycle, POS tag+supersense, before trying out all 4 huge data sets (feve x train x dev x fnc)
+ - on clara use 
+ ```
+ conda create -name py2* python=2.7
+ source activate py2_decompattn_nonallennlp
+  pip install nltk
+ python
+ nltk.download('wordnet')
+ exit
+ ./sst.sh ../../outputs/evidence_words_pos_datapointid_10120
+``` 

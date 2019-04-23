@@ -98,3 +98,9 @@ Note
     - `turn on docker`
     - `docker start procserv`
     - open `localhost:8886` and confirm that the `pyprocessor` server is running
+
+
+# notes to self/delete later
+ - pos conversion output for fever-training- now has around 10k files
+ - outputs are kept at mithunpaul@clara:~/neuter_ner_fever_training/
+ - its actually better to run the entire full cycle, POS tag+supersense, before trying out all 4 huge data sets (feve x train x dev x fnc) 

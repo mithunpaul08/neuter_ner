@@ -56,7 +56,7 @@ premise_ann: BREAKING : ORGANIZATION-e1 , in video , beheads MISC-e1 journalist 
 ****['The', 'ORGANIZATION-c1', 'play', 'their', 'home', 'games', 'at', 'the', 'LOCATION-c1', ',', 'which', 'they', 'share', 'with', 'the', 'ORGANIZATION-e2', '-LRB-', 'ORGANIZATION-e3', '-RRB-', "'s", sed , '.']
 ```
 
-#Super Sense Tagger
+# Super Sense Tagger
 
 Super sense tagging is when you can take a sentence and assign the abstract super sense to it. like NER but more abstract.
 Eg:
@@ -92,5 +92,9 @@ This code base of mine, which you are looking at, I am using to generate these t
 
 The same conda environment mentioned above should work.
 
-Note that this command will create a huge number of files, one per each claim-evidence pair.
-
+Note 
+- that this command will create a huge number of files, one per each claim-evidence pair.
+- if you can get the docker to run for pyprocessors and then use `--use_docker true` that will be fastest way to run this code.``
+    - `turn on docker`
+    - `docker start procserv`
+    - open `localhost:8886` and confirm that the `pyprocessor` server is running

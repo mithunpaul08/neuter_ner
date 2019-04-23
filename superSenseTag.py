@@ -115,8 +115,10 @@ if __name__ == '__main__':
     output_folder=args.output_folder
 
 
+    length=len(all_evidences)
+    index=0
 
-    for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+    for (c, e ,l) in tqdm(zip(all_claims, all_evidences,all_labels),total=length):
 
             claim_ann, ev_ann = annotate(c, e, API)
             assert (claim_ann is not None)
@@ -129,6 +131,7 @@ if __name__ == '__main__':
             out_file_name = "evidence_words_pos_datapointid_" + str(index)
             full_path_output_file = output_folder + out_file_name
             write_token_POS_disk_as_csv(ev_ann, full_path_output_file)
+            index=index+1
 
 
 

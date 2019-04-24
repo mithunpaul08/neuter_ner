@@ -1,6 +1,4 @@
-!# /bin/bash
-
-for f in $(ls /Users/mordor/research/neuter/outputs); do
-
-$(./sst.sh $f)
+#! /bin/bash
+for f in $(ls ./inputs/); do
+    $(./sst.sh ./inputs/$f)
 done

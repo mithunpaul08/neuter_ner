@@ -228,6 +228,12 @@ def create_parser():
                              'multiple servers on the same machine, will need different port for each')
     parser.add_argument('--use_docker', default=False, type=str2bool,
                         help='use docker for loading pyproc. useful in machines where you have root access.', metavar='BOOL')
+    parser.add_argument('--convert_prepositions', default=False, type=str2bool,
+                        help='.',
+                        metavar='BOOL')
+    parser.add_argument('--convert_NERs', default=False, type=str2bool,
+                        help='mutually ',
+                        metavar='BOOL')
     print(parser.parse_args())
     return parser
 
@@ -253,20 +259,11 @@ def collapseAndReplaceWithNerSmartly(claim_words,claim_ner_tags, evidence_words,
 #whenever you see a preposition in this sentence, replace the NER tags of this sentence with PREP. This is
 #being done so that when we do neutering, the PREP also gets added in along with the NER tags. Just another
 # experiment to check if prepositions have an effect on linguistic domain transfer
-def replacePrepositionsWithPOSTags(claim_ann, evidence_ann):
-
-    # claimn=claim_ann.words
-    # evidencen = evidence_ann.words
-
-    claim_ner_tags=claim_ann._entities
-    ev_ner_tags = evidence_ann._entities
-
-    for index,pos in enumerate(claim_ann.tags):
+def replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags,claim_ner_tags,ev_ner_tags):
+    for index,pos in enumerate(claim_pos_tags):
         if (pos=="IN"):
             claim_ner_tags[index]="PREP"
-
-
-    for index,pos in enumerate(evidence_ann.tags):
+    for index,pos in enumerate(ev_pos_tags):
         if (pos=="IN"):
             ev_ner_tags[index]="PREP"
 
@@ -291,18 +288,34 @@ if __name__ == '__main__':
     with open('output.jsonl', 'w') as outfile:
         outfile.write('')
 
+    c="Daniel Craig is the second longest serving James Bond   ."
+    e="Daniel Craig is the second longest serving James Bond   ."
+    claim_ann, ev_ann = annotate(c, e, API)
+    assert (claim_ann is not None)
+    assert (ev_ann is not None)
 
     for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
 
             claim_ann, ev_ann = annotate(c, e, API)
             assert (claim_ann is not None)
             assert (ev_ann is not None)
-            claim_ner_tags_prep_replaced,ev_ner_tags_prep_replaced=replacePrepositionsWithPOSTags(claim_ann, ev_ann)
 
-            claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags_prep_replaced, ev_ann.words, ev_ner_tags_prep_replaced)
+            claim_pos_tags = claim_ann.tags
+            ev_pos_tags = ev_ann.tags
+            claim_ner_tags = claim_ann._entities
+            ev_ner_tags = ev_ann._entities
+
+            if(args.convert_prepositions==True):
+                claim_ner_tags,ev_ner_tags=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags,claim_ner_tags,ev_ner_tags)
+            if (args.convert_NERs == True):
+                #def collapseAndReplaceWithNerSmartly(claim_words, claim_pos_tags, evidence_words, evidence_ner_tags):
+                claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags, ev_ann.words, ev_ner_tags)
+
             # claim_neutered,ev_neutered= collapseAndReplaceWithNerSmartly(claim_ann, ev_ann)
+
+
             with open('output.jsonl', 'a+') as outfile:
-                write_json_to_disk(claim_neutered, ev_neutered,l,outfile)
+                write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
             print(index)
 
 

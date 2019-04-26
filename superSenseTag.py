@@ -92,12 +92,13 @@ def write_json_to_disk(claim, evidence,label,outfile):
     outfile.write('\n')
 
 def write_token_POS_disk_as_csv(annotated_sent,full_path_output_file):
-    # write one file per claim. empty the file out if it already exists.
-    with open(full_path_output_file, 'w') as outfile:
-        outfile.write('')
-        with open(full_path_output_file, 'a+') as outfile:
-            for word,postag in zip(annotated_sent.words, annotated_sent.tags):
-                outfile.write(word+"\t"+postag+"\n")
+    # if the file already exists, leave it. It might have been written in a run before
+    if not (os.path.isfile(full_path_output_file)):
+        with open(full_path_output_file, 'w') as outfile:
+            outfile.write('')
+            with open(full_path_output_file, 'a+') as outfile:
+                for word,postag in zip(annotated_sent.words, annotated_sent.tags):
+                    outfile.write(word+"\t"+postag+"\n")
 
 
 if __name__ == '__main__':
@@ -115,8 +116,10 @@ if __name__ == '__main__':
     output_folder=args.output_folder
 
 
+    length=len(all_evidences)
+    index=0
 
-    for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+    for (c, e ,l) in tqdm(zip(all_claims, all_evidences,all_labels),total=length):
 
             claim_ann, ev_ann = annotate(c, e, API)
             assert (claim_ann is not None)
@@ -129,6 +132,7 @@ if __name__ == '__main__':
             out_file_name = "evidence_words_pos_datapointid_" + str(index)
             full_path_output_file = output_folder + out_file_name
             write_token_POS_disk_as_csv(ev_ann, full_path_output_file)
+            index=index+1
 
 
 

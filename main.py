@@ -288,11 +288,11 @@ if __name__ == '__main__':
     with open('output.jsonl', 'w') as outfile:
         outfile.write('')
 
-    # c="Daniel Craig is the second longest serving James Bond   ."
-    # e="Daniel Craig is the second longest serving James Bond   ."
-    # claim_ann, ev_ann = annotate(c, e, API)
-    # assert (claim_ann is not None)
-    # assert (ev_ann is not None)
+    c="Daniel Craig is the second longest serving James Bond   ."
+    e="Daniel Craig is the second longest serving James Bond   ."
+    claim_ann, ev_ann = annotate(c, e, API)
+    assert (claim_ann is not None)
+    assert (ev_ann is not None)
 
     for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
 

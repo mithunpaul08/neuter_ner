@@ -66,7 +66,9 @@ Before tagging:
 `I do n't think he 's afraid to take a strong stand on gun control , what with his upbringing in El Paso .`
 
 After Tagging:
-`I do|`a n't think|cognition he 's|stative afraid to take_a_ strong _stand|cognition on gun_control|ARTIFACT , what_with his upbringing|ATTRIBUTE in El_Paso|LOCATION .`
+```
+I do|`a n't think|cognition he 's|stative afraid to take_a_ strong _stand|cognition on gun_control|ARTIFACT , what_with his upbringing|ATTRIBUTE in El_Paso|LOCATION .
+```
 
 For more details on SS taggging refer Noah Schnieder's github [page](https://github.com/nschneid/pysupersensetagger)
 
@@ -85,14 +87,15 @@ a	DT
 ```
 Refer to Noah's code base above for more details.
 
-This code base of mine, which you are looking at, I am using to generate these tokens/tags in the required format. To do that run the command below.:
+This code base of mine, which you are looking at, I am using to generate these tokens/tags in the required format for the claim evidence pairs from [FEVER1.0](http://fever.ai/2018/task.html) data set. To do that run the command below.:
 
 `python superSenseTag.py --pyproc_port 8887 --use_docker false --inputFile data/fever_train_split_fourlabels.jsonl  
 `
 
 
-Note 
-- that this command will create a huge number of files, one per each claim-evidence pair.
+Notes
+- classic fever data has only 3 classes/labels,. viz.,SUPPORTS, REFUTES, NOT ENOUGH INFO. Here we have already converted into 4 classes after that of [fnc](http://www.fakenewschallenge.org/), viz., AGREE, DISAGREE, DISCUSS, UNRELATED 
+- this command will create a huge number of files, one per each claim-evidence pair.
 - if you can get the docker to run for pyprocessors and then use `--use_docker true` that will be fastest way to run this code.``
     - `turn on docker`
     - `docker start procserv`
@@ -101,7 +104,7 @@ Note
 steps to create a conda environment and run the sst tagger for my input file
 
 ```
- conda create -name py2* python=2.7
+ conda create -name py2_decompattn_nonallennlp python=2.7
  source activate py2_decompattn_nonallennlp
  pip install cython
  pip install nltk

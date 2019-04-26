@@ -92,12 +92,13 @@ def write_json_to_disk(claim, evidence,label,outfile):
     outfile.write('\n')
 
 def write_token_POS_disk_as_csv(annotated_sent,full_path_output_file):
-    # write one file per claim. empty the file out if it already exists.
-    with open(full_path_output_file, 'w') as outfile:
-        outfile.write('')
-        with open(full_path_output_file, 'a+') as outfile:
-            for word,postag in zip(annotated_sent.words, annotated_sent.tags):
-                outfile.write(word+"\t"+postag+"\n")
+    # if the file already exists, leave it. It might have been written in a run before
+    if not (os.path.isfile(full_path_output_file)):
+        with open(full_path_output_file, 'w') as outfile:
+            outfile.write('')
+            with open(full_path_output_file, 'a+') as outfile:
+                for word,postag in zip(annotated_sent.words, annotated_sent.tags):
+                    outfile.write(word+"\t"+postag+"\n")
 
 
 if __name__ == '__main__':

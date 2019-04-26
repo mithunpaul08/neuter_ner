@@ -1034,9 +1034,13 @@ def main():
     '''
     args = opts()
 
-
-    evalData = setup(args)
-    predict(args, _tagger_model, featurized_dataset=evalData)
+    for file in args.input_folder:
+        print(f"value of file is {file}")
+        import sys
+        sys.exit(1)
+        args.predict=files
+        evalData = setup(args)
+        predict(args, _tagger_model, featurized_dataset=evalData)
 
 if __name__=='__main__':
     #import cProfile

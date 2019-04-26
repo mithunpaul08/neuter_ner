@@ -1037,18 +1037,17 @@ def main():
     '''
     args = opts()
 
-    print("inside main")
+    #print("inside main")
+    #for file in args.input_folder:
+     #   print("inside for loop")
+      #  print("value of file is:")
+       # print(file)
+        #import sys
+        #sys.exit(1)
+        #args.predict=file
 
-    for file in args.input_folder:
-        print("inside for loop")
-        print("value of file is:")
-        print(file)
-
-        import sys
-        sys.exit(1)
-        args.predict=file
-        evalData = setup(args)
-        predict(args, _tagger_model, featurized_dataset=evalData)
+    evalData = setup(args)
+    predict(args, _tagger_model, featurized_dataset=evalData)
 
 if __name__=='__main__':
     #import cProfile

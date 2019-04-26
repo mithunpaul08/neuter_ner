@@ -1037,8 +1037,13 @@ def main():
     '''
     args = opts()
 
+    print("inside main")
+
     for file in args.input_folder:
-        print(f"value of file is {file}")
+        print("inside for loop")
+        print("value of file is:")
+        print(file)
+
         import sys
         sys.exit(1)
         args.predict=file

@@ -7,7 +7,6 @@ set -eu
 set -o pipefail
 
 input=$1 # word and POS tag on each line (tab-separated)
-echo "value of input file is $input"
 
 #creates output in the same location as the input files
 ./predict_sst.sh $input > $input.pred.tags

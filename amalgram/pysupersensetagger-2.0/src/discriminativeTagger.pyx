@@ -1038,7 +1038,7 @@ def main():
         print(f"value of file is {file}")
         import sys
         sys.exit(1)
-        args.predict=files
+        args.predict=file
         evalData = setup(args)
         predict(args, _tagger_model, featurized_dataset=evalData)
 

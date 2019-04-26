@@ -118,8 +118,10 @@ Notes:
  - output files (the .tags) file will be created at the same location as the input file
 
 # notes to self/delete later
- - pos conversion output for fever-training- now has around 10k files
- - outputs are kept at mithunpaul@clara:~/neuter_ner_fever_training/
- - next:its actually better to run the entire full cycle, POS tag+supersense, before trying out all 4 huge data sets (feve x train x dev x fnc)
- - on clara use 
+
+ - status as of 8pm 25th april.
+    - pos tagging: still ongoing for fever-train in tmux 0. status 25841/119197. This had crashed after 50k files yday. check on this before sleeping tonight. 
+    - have started sstagger runon 3 tmuxes (tmux 2, 5, 6). refer white board for details
+    - i don't expect any of it to even finish by tomorrow morning . maybe the fn-dev might. since its only 18k files
+    - next: need to write cython code to make it not load lexicon for every file. so its slowing down big time. leaving it overnight, just in case the conversion finishes.
  

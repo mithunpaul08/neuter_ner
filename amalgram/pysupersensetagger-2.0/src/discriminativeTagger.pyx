@@ -868,7 +868,10 @@ def opts(actual_args=None):
     boolflag("clusters", "Word cluster features")
     flag("cluster-file", "Path to file with word clusters", default=supersenseFeatureExtractor._options['clusterFile'])
     boolflag("pos-neighbors", "POS neighbor features")
-    
+
+    #for running over a directory of input files
+    flag("input_folder", "Path to file with pos tags", default="input_to_sstagger_output_from_pos_tagger")
+
     inflag("lex", "Lexicons to load for lookup features", nargs='*')
     inflag("clist", "Collocation lists (ranked) to load for lookup features", nargs='*')
     
@@ -1034,6 +1037,14 @@ def main():
     '''
     args = opts()
 
+    #print("inside main")
+    #for file in args.input_folder:
+     #   print("inside for loop")
+      #  print("value of file is:")
+       # print(file)
+        #import sys
+        #sys.exit(1)
+        #args.predict=file
 
     evalData = setup(args)
     predict(args, _tagger_model, featurized_dataset=evalData)

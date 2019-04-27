@@ -101,6 +101,9 @@ Notes
     - `docker start procserv`
     - open `localhost:8886` and confirm that the `pyprocessor` server is running
 
+
+the above came these are the commands i used to combine multiple claim files to one
+
 steps to create a conda environment and run the sst tagger for my input file
 
 ```
@@ -111,17 +114,31 @@ steps to create a conda environment and run the sst tagger for my input file
  python
  nltk.download('wordnet')
  exit
- ./sst.sh ../../outputs/evidence_words_pos_datapointid_10120
+ find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}
+
 ``` 
 
+
 Notes:
- - output files (the .tags) file will be created at the same location as the input file
+- the xargs command will run the sst.sh on each input file from the folder input_to_sstagger_output_from_pos_tagger
+- output files (the .tags) file will be created at the same location as the input file
 
 # notes to self/delete later
 
- - status as of 8pm 25th april.
-    - pos tagging: still ongoing for fever-train in tmux 0. status 25841/119197. This had crashed after 50k files yday. check on this before sleeping tonight. 
-    - have started sstagger runon 3 tmuxes (tmux 2, 5, 6). refer white board for details
-    - i don't expect any of it to even finish by tomorrow morning . maybe the fn-dev might. since its only 18k files
-    - next: need to write cython code to make it not load lexicon for every file. so its slowing down big time. leaving it overnight, just in case the conversion finishes.
+ - status as of 3pm 27th april.
+    - **fever-train**: finished pos tagging. yet to start merging or ss tagging.
+        - in **tmux 7**
+        - finished sstagging of claims and evidences
+    - **fever-dev**: running out of neuter_ner_fever_dev folder on ***tmux2***
+        - done with sstagging of claims.
+        - update: no change- evidence is still stuck
+    - **fnc-train**
+        - ***tmux 5***
+        - finished sstagging of claims. 553739 out of 553739
+        - evidence is still stuck.
+    - **fnc-dev**
+        - **tmux 8**: 
+        - finished tagging of all claims i.e 122259/122259
+        - evidence tagging is still stuck
+        
  

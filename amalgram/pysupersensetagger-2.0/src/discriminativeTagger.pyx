@@ -1036,14 +1036,14 @@ def main():
     Parse the given command line arguments, then act accordingly.
     '''
     args = opts()
-
-    #print("inside main")
+    #name="mithun"
+    #print("hello mithun")
     #for file in args.input_folder:
-     #   print("inside for loop")
+     #   print("hellow %s" % file)
       #  print("value of file is:")
        # print(file)
-        #import sys
-        #sys.exit(1)
+       # import sys
+       # sys.exit(1)
         #args.predict=file
 
     evalData = setup(args)

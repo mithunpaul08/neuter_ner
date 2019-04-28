@@ -1,0 +1,11 @@
+1	A	a	DT	O	0			
+2	seven	seven	CD	O	0			
+3	time	time	NN	O-TIME	0		TIME	
+4	Formula	formula	NNP	B-FOOD	0		FOOD	
+5	One	one	CD	Ī	4	_		
+6	World	world	NNP	B-GROUP	0		GROUP	
+7	Champion	champion	NNP	Ī	6	_		
+8	is	be	VBZ	O-stative	0		stative	
+9	Michael	michael	NNP	B-PERSON	0		PERSON	
+10	Shumacher	shumacher	NNP	Ī	9	_		
+11	.	.	.	O	0			

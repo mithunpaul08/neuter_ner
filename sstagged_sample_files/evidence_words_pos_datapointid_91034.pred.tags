@@ -1,0 +1,24 @@
+1	He	he	PRP	O	0			
+2	is	be	VBZ	O-stative	0		stative	
+3	a	a	DT	O	0			
+4	seven-time	seven-time	JJ	O	0			
+5	Formula	formula	NNP	B-FOOD	0		FOOD	
+6	One	one	CD	Ī	5	_		
+7	World	world	NNP	B-GROUP	0		GROUP	
+8	Champion	champion	NNP	Ī	7	_		
+9	and	and	CC	O	0			
+10	is	be	VBZ	O-`a	0		`a	
+11	widely	widely	RB	O	0			
+12	regarded	regard	VBN	O-social	0		social	
+13	as	as	IN	O	0			
+14	one	one	CD	O	0			
+15	of	of	IN	O	0			
+16	the	the	DT	O	0			
+17	greatest	greatest	JJS	O	0			
+18	Formula	formula	NNP	O-FOOD	0		FOOD	
+19	One	one	CD	O	0			
+20	drivers	driver	NNS	O-PERSON	0		PERSON	
+21	of	of	IN	B	0			
+22	all	all	DT	Ī	21	_		
+23	time	time	NN	Ī	22	_		
+24	.	.	.	O	0			

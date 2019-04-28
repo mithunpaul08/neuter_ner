@@ -759,12 +759,8 @@ class DiscriminativeTagger(object):
             sent,derivation = decoder.send((sent,o0Feats))
             if print_predictions:
                 # print predictions
-                print("found that print_predictions is true")
-                print(sent)
-                print()
-                print("done writing sentence")
-                print("the type of sent is")
-                print(type(sent))
+                #print(sent)
+                #print()
                 f=open(output_file,"w")
                 f.write(sent.__str__())
                 f.close()
@@ -1031,15 +1027,10 @@ def predict(args, t,output_file,featurized_dataset=None, sentence=None, print_pr
         t.decode_dataset(predData,output_file,print_predictions=print_predictions, useBIO=args.bio, includeLossTerm=False, costAugVal=0.0)
         
         
-        print("found that args.predict is not None or sentence")
-        print("done decoding and the value of t is")
-        print(t)
     
     elif args.test is None and args.weights:
-        print("found that the args.test is None")
         t.printWeights(sys.stdout)
     else:
-        print("inside t.tagStandardInput")
         t.tagStandardInput()
 
 def main():

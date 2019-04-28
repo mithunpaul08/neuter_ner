@@ -1043,7 +1043,7 @@ def main():
     files=os.listdir(args.input_folder)
     evalData = setup(args)
     for index,file in enumerate(files):
-        fullpath=cwd+"/"+args.input_folder+"/"+file
+        fullpath=args.input_folder+"/"+file
         args.predict=fullpath
         outputFileName=cwd+"/"+args.output_folder+"/"+file+".pred.tags"
         output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)

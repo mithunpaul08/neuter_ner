@@ -101,6 +101,7 @@ Notes
     - `docker start procserv`
     - open `localhost:8886` and confirm that the `pyprocessor` server is running
 
+#### Step 2: running sstagger
 
 the above came these are the commands i used to combine multiple claim files to one
 
@@ -115,26 +116,43 @@ steps to create a conda environment and run the sst tagger for my input file
  nltk.download('wordnet')
  exit
  find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}
-
+find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh example
 ``` 
 
+`xargs -P 72 ./sst.sh logs`
 
 Notes:
 - the xargs command will run the sst.sh on each input file from the folder input_to_sstagger_output_from_pos_tagger
 - output files (the .tags) file will be created at the same location as the input file
+-
+
+
+#### Step 3: merging NER tags and ss tags
+
+In this phase, we need to do the smartner tagging plus ss tagging. Eg:
+
+`input: Daniel Craig was the longest serving James Bond`
+
+`output: PERSONc1 was the longest COGNITIONc1 PERSONc2`
 
 # notes to self/delete later
 
- - status as of 3pm 27th april.
+ - status as of 3pm 28th april.
+    - working on running sstagger in tmux 7,10,11
+    - right now they are writing outputs of all input files into example.pred.tags. That is because the
+    output is being written using a `>` command from shell script. next: should try to independently write it in the same location as input file
+    or even in an output folder
+    
     - **fever-train**: finished pos tagging. yet to start merging or ss tagging.
         - in **tmux 7**
-        - finished sstagging of claims and evidences
+        - finished sstagging of claims only 1,235,680/1,235,680 lines
+         - evidences is still stuck. i.e 0/6,092,083 lines
     - **fever-dev**: running out of neuter_ner_fever_dev folder on ***tmux2***
-        - done with sstagging of claims.
-        - update: no change- evidence is still stuck
+        - done with sstagging of claims. i.e 274,610/274,610 lines done.
+        - update: no change- evidence is still stuck i.e 0/1,421,205 lines
     - **fnc-train**
         - ***tmux 5***
-        - finished sstagging of claims. 553739 out of 553739
+        - finished sstagging of claims. 553,739 out of 553,739
         - evidence is still stuck.
     - **fnc-dev**
         - **tmux 8**: 

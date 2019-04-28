@@ -740,7 +740,7 @@ class DiscriminativeTagger(object):
             decoder.close()
 
 
-    def decode_dataset(self, dataset, print_predictions, useBIO, includeLossTerm, costAugVal):
+    def decode_dataset(self, dataset, output_file,print_predictions, useBIO, includeLossTerm, costAugVal):
         '''
         Make a decoding pass through a dataset under the current model.
         Not used for the training data: see learn()
@@ -759,9 +759,15 @@ class DiscriminativeTagger(object):
             sent,derivation = decoder.send((sent,o0Feats))
             if print_predictions:
                 # print predictions
+                print("found that print_predictions is true")
                 print(sent)
                 print()
-                
+                print("done writing sentence")
+                print("the type of sent is")
+                print(type(sent))
+                f=open(output_file,"w")
+                f.write(sent.__str__())
+                f.close()
         decoder.next()  # show summary statistics
         decoder.close() # a formality
 
@@ -993,7 +999,7 @@ def analyze(tokens, poses):
     result["tags_tsv"] = unicode(sentence)
     return result
     
-def predict(args, t, featurized_dataset=None, sentence=None, print_predictions=True):
+def predict(args, t,output_file,featurized_dataset=None, sentence=None, print_predictions=True):
     
     if args.test_predict is not None or args.test is not None:
         # evaluate (test), and possibly print predictions for that data
@@ -1004,7 +1010,7 @@ def predict(args, t, featurized_dataset=None, sentence=None, print_predictions=T
                                                                                 keep_in_memory=True), 
                                                       t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
         
-        t.decode_dataset(featurized_dataset, print_predictions=(args.test_predict is not None and print_predictions), 
+        t.decode_dataset(featurized_dataset,output_file, print_predictions=(args.test_predict is not None and print_predictions), 
                          useBIO=args.bio, includeLossTerm=False, costAugVal=0.0)
         
     if args.predict is not None or sentence:
@@ -1021,14 +1027,18 @@ def predict(args, t, featurized_dataset=None, sentence=None, print_predictions=T
         predData = SupersenseFeaturizer(featureExtractor, dataSet,   # could be stdin, which should never be reset 
                                         t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
 
-        t.decode_dataset(predData, print_predictions=print_predictions, useBIO=args.bio, includeLossTerm=False, costAugVal=0.0)
+        t.decode_dataset(predData,output_file,print_predictions=print_predictions, useBIO=args.bio, includeLossTerm=False, costAugVal=0.0)
         
         
-
+        print("found that args.predict is not None or sentence")
+        print("done decoding and the value of t is")
+        print(t)
     
     elif args.test is None and args.weights:
+        print("found that the args.test is None")
         t.printWeights(sys.stdout)
     else:
+        print("inside t.tagStandardInput")
         t.tagStandardInput()
 
 def main():
@@ -1040,11 +1050,19 @@ def main():
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
     evalData = setup(args)
-    for file in files:
+    for index,file in enumerate(files):
         fullpath=cwd+"/"+args.input_folder+"/"+file
         args.predict=fullpath
-        predict(args, _tagger_model, featurized_dataset=evalData)
-
+        outputFileName=file+".pred.tags"
+        output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+        print(output)
+        print(type(output))
+        print(outputFileName)
+        print("value of index is")
+        print(index)
+        if(index==2):
+            import sys
+            sys.exit(1)  
 if __name__=='__main__':
     #import cProfile
     #cProfile.run('main()')

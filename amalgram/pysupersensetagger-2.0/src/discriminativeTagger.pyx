@@ -877,6 +877,7 @@ def opts(actual_args=None):
 
     #for running over a directory of input files
     flag("input_folder", "Path to file with pos tags", default="input_to_sstagger_output_from_pos_tagger")
+    flag("output_folder", "Path to folder where the tagged files will be kept", default="outputs_sstagged")
 
     inflag("lex", "Lexicons to load for lookup features", nargs='*')
     inflag("clist", "Collocation lists (ranked) to load for lookup features", nargs='*')
@@ -1053,16 +1054,8 @@ def main():
     for index,file in enumerate(files):
         fullpath=cwd+"/"+args.input_folder+"/"+file
         args.predict=fullpath
-        outputFileName=file+".pred.tags"
+        outputFileName=cwd+"/"+args.output_folder+"/"+file+".pred.tags"
         output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
-        print(output)
-        print(type(output))
-        print(outputFileName)
-        print("value of index is")
-        print(index)
-        if(index==2):
-            import sys
-            sys.exit(1)  
 if __name__=='__main__':
     #import cProfile
     #cProfile.run('main()')

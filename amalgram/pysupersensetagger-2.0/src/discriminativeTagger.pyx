@@ -1036,18 +1036,14 @@ def main():
     Parse the given command line arguments, then act accordingly.
     '''
     args = opts()
-    #name="mithun"
-    #print("hello mithun")
-    #for file in args.input_folder:
-     #   print("hellow %s" % file)
-      #  print("value of file is:")
-       # print(file)
-       # import sys
-       # sys.exit(1)
-        #args.predict=file
-
+    import os
+    cwd=os.getcwd()
+    files=os.listdir(args.input_folder)
     evalData = setup(args)
-    predict(args, _tagger_model, featurized_dataset=evalData)
+    for file in files:
+        fullpath=cwd+"/"+args.input_folder+"/"+file
+        args.predict=fullpath
+        predict(args, _tagger_model, featurized_dataset=evalData)
 
 if __name__=='__main__':
     #import cProfile

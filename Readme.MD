@@ -116,10 +116,13 @@ steps to create a conda environment and run the sst tagger for my input file
  nltk.download('wordnet')
  exit
  find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}
-find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh example
+```
+
+To run just the python parallelization: note that, xargs really doesnt help here:
+```
+find -name "logs" -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}
 ``` 
 
-`xargs -P 72 ./sst.sh logs`
 
 Notes:
 - the xargs command will run the sst.sh on each input file from the folder input_to_sstagger_output_from_pos_tagger
@@ -137,26 +140,31 @@ In this phase, we need to do the smartner tagging plus ss tagging. Eg:
 
 # notes to self/delete later
 
- - status as of 3pm 28th april.
-    - working on running sstagger in tmux 7,10,11
-    - right now they are writing outputs of all input files into example.pred.tags. That is because the
-    output is being written using a `>` command from shell script. next: should try to independently write it in the same location as input file
-    or even in an output folder
-    
-    - **fever-train**: finished pos tagging. yet to start merging or ss tagging.
-        - in **tmux 7**
-        - finished sstagging of claims only 1,235,680/1,235,680 lines
-         - evidences is still stuck. i.e 0/6,092,083 lines
-    - **fever-dev**: running out of neuter_ner_fever_dev folder on ***tmux2***
-        - done with sstagging of claims. i.e 274,610/274,610 lines done.
-        - update: no change- evidence is still stuck i.e 0/1,421,205 lines
+ 
+        
+  - status as of 29th april
+  - back to square one. tried writing cython code to load lexicon within, but it also gets stuck after like 184 files. going very slow. 
+  - marco said, run xargs on one side, i.e let xargs load files and write pred tags for everyone
+  - while read up about parallel processing in python
+  - in folder: `neuter_ner_fever_training`, will start xargs based code
+  - in folder: `neuter_ner_fever_dev` will continue experimenting with  
+  - update: stared a run on tmux 13 for fever_training. I think i'll just let it keep going and
+  not even work on python parallelization. Marco said if you want to do parallelization you cant beat xargs. No point trying to hack the system. 
+  it'll get there when you get there.e
+  - i don't want to also run the other way wher i load one single file concatenated with evidences...that way i wont even know which file is where.
+  - only question now though is , should i start other 3 runs also..but that'll mean i'll have to reduce the 72 multi core processes...rehne de..
+  
+      
+    - **fever-train**: finished pos tagging.
+        - running sstagging again in **tmux 11** 
+        
+    - **fever-dev**: 
+        
     - **fnc-train**
-        - ***tmux 5***
-        - finished sstagging of claims. 553,739 out of 553,739
-        - evidence is still stuck.
+        
     - **fnc-dev**
         - **tmux 8**: 
-        - finished tagging of all claims i.e 122259/122259
-        - evidence tagging is still stuck
         
+    - merging code
+        was able to run till combining both files. next have to create a sample output
  

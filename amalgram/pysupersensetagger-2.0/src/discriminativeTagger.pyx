@@ -759,8 +759,8 @@ class DiscriminativeTagger(object):
             sent,derivation = decoder.send((sent,o0Feats))
             if print_predictions:
                 # print predictions
-                print(sent)
-                print()
+                #print(sent)
+                #print()
                 f=open(output_file,"w",0)
                 f.write(sent.__str__())
                 f.close()

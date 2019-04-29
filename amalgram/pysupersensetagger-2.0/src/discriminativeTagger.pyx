@@ -697,7 +697,7 @@ class DiscriminativeTagger(object):
                     if reportAcc:
                         print('word accuracy over {} words in {} instances: {:.2%}'.format(totalWordsProcessed, totalInstancesProcessed, (totalWordsProcessed-totalWordsIncorrect)/totalWordsProcessed), file=sys.stderr)
                     newStartTime = time.time()
-                    print('decoding time:',newStartTime-startTime, file=sys.stderr)
+                    #print('decoding time:',newStartTime-startTime, file=sys.stderr)
                     firstInPass = True
                     startTime = newStartTime
                     
@@ -1042,11 +1042,15 @@ def main():
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
     evalData = setup(args)
-    for index,file in enumerate(files):
-        fullpath=args.input_folder+"/"+file
+    for index,inputFile in enumerate(files):
+        fullpath=args.input_folder+"/"+inputFile
         args.predict=fullpath
-        outputFileName=cwd+"/"+args.output_folder+"/"+file+".pred.tags"
+        outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
+        # if the file already exists, leave it. It might have been written in a run before
+       # if not (os.path.isfile(outputFileName)):
         output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+
+
 if __name__=='__main__':
     #import cProfile
     #cProfile.run('main()')

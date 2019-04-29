@@ -107,6 +107,14 @@ the above came these are the commands i used to combine multiple claim files to 
 
 steps to create a conda environment and run the sst tagger for my input file
 
+- move the output of pos tagging to input folder of ss tagging.
+    - note: dont do plain `mv * ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/`. Linux will tell you argument list too long. Instead create a shell script like this:
+    ```for each in ./*;
+    do
+    mv $eachfile ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/
+    done
+    ```
+- commands for running the actual sstagger    
 ```
  conda create -name py2_decompattn_nonallennlp python=2.7
  source activate py2_decompattn_nonallennlp
@@ -115,20 +123,23 @@ steps to create a conda environment and run the sst tagger for my input file
  python
  nltk.download('wordnet')
  exit
- find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}
 ```
+- remember to create a folder inside outputs dir if using xargs, and the output (the sstagged files)
+ will be written there.
+ 
+ Example:
+ 
+ ``mkdir outputs_sstagged/input_to_sstagger_output_from_pos_tagger``
 
-To run just the python parallelization: note that, xargs really doesnt help here:
-```
-find -name "logs" -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}
-``` 
+now run the below command from the place where the file `sst.sh` exists.
 
+`find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}`
 
+ 
 Notes:
 - the xargs command will run the sst.sh on each input file from the folder input_to_sstagger_output_from_pos_tagger
-- output files (the .tags) file will be created at the same location as the input file
--
-
+- i have modified the python code to create output file with inputfilename.pred.tags in the output folder mentioned above
+- P is the number of cores you can spare in your machine. 
 
 #### Step 3: merging NER tags and ss tags
 
@@ -142,7 +153,7 @@ In this phase, we need to do the smartner tagging plus ss tagging. Eg:
 
  
         
-  - status as of 29th april
+- status as of 29th april
   - back to square one. tried writing cython code to load lexicon within, but it also gets stuck after like 184 files. going very slow. 
   - marco said, run xargs on one side, i.e let xargs load files and write pred tags for everyone
   - while read up about parallel processing in python
@@ -154,11 +165,18 @@ In this phase, we need to do the smartner tagging plus ss tagging. Eg:
   - i don't want to also run the other way wher i load one single file concatenated with evidences...that way i wont even know which file is where.
   - only question now though is , should i start other 3 runs also..but that'll mean i'll have to reduce the 72 multi core processes...rehne de..
   
-      
-    - **fever-train**: finished pos tagging.
-        - running sstagging again in **tmux 11** 
-        
+ - status of sstagging for each dataset
+   - **fever-train**: 
+        - started running sstagging again in **tmux 11** at 3pm on april 29th in **clara**
+        - you can check status using
+        `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
+       
+        - count at 4pm is 3811 files done
     - **fever-dev**: 
+        - have started ss tagging run of all claims and evidences of fever dev from **tmux 13** in clara. 
+        -  you can check outputs using
+         `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
+         - count at 4pm is 283
         
     - **fnc-train**
         

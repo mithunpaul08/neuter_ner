@@ -874,6 +874,7 @@ def opts(actual_args=None):
     #for running over a directory of input files
     flag("input_folder", "Path to file with pos tags", default="input_to_sstagger_output_from_pos_tagger")
     flag("output_folder", "Path to folder where the tagged files will be kept", default="outputs_sstagged")
+    boolflag("use_xargs", "For running code parallely. Either can be run from inside cython code or using xargs. Will feed one file each using shell script inside xargs", default=False)
 
     inflag("lex", "Lexicons to load for lookup features", nargs='*')
     inflag("clist", "Collocation lists (ranked) to load for lookup features", nargs='*')
@@ -1042,13 +1043,20 @@ def main():
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
     evalData = setup(args)
-    for index,inputFile in enumerate(files):
-        fullpath=args.input_folder+"/"+inputFile
-        args.predict=fullpath
+    if not (args.use_xargs):
+            for index,inputFile in enumerate(files):
+                fullpath=args.input_folder+"/"+inputFile
+                args.predict=fullpath
+                outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
+        # if the file already exists, leave it. It might have been written in a run before
+                if not (os.path.isfile(outputFileName)):
+                    output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+    else:
+        inputFile=args.predict
         outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
         # if the file already exists, leave it. It might have been written in a run before
-       # if not (os.path.isfile(outputFileName)):
-        output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+        if not (os.path.isfile(outputFileName)):
+                    output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
 
 
 if __name__=='__main__':

@@ -234,6 +234,9 @@ def create_parser():
     parser.add_argument('--convert_NERs', default=False, type=str2bool,
                         help='mutually ',
                         metavar='BOOL')
+    parser.add_argument('--merge_ner_ss', default=False, type=str2bool,
+                        help='once you have output from sstagger, merge them both.',
+                        metavar='BOOL')
     print(parser.parse_args())
     return parser
 
@@ -273,6 +276,42 @@ def replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags,claim_ner_tags,ev
 
 
 
+#for every word, if a NER tag exists, give that priority. if not, check if it has a SS tag, if yes, pick that.
+# if a sstag exists and the word has no NER tag, pick SStag
+def mergeSSandNERTags(claim_ss_tags, ev_ss_tags, claim_ner_tags, ev_ner_tags):
+    for index,sst in enumerate(claim_ss_tags):
+        if not (sst==""):
+            nert=claim_ner_tags[index]
+            if (nert=="O"):
+                claim_ner_tags[index]=sst
+
+    for index,sst in enumerate(ev_ss_tags):
+        if not (sst==""):
+            nert=ev_ner_tags[index]
+            if (nert=="O"):
+                ev_ner_tags[index]=sst
+
+
+
+    return claim_ner_tags, ev_ner_tags
+
+
+def read_sstagged_data(filename):
+
+    sstags = []
+
+
+    with open(filename,"r") as f:
+        #for index, line in enumerate(tqdm(f, total=get_num_lines(filename))):
+            line=f.readline()
+            while(line):
+                split_line=line.split("\t")
+                sstag=split_line[7]
+                sstags.append(sstag)
+                line = f.readline()
+
+    return sstags
+
 if __name__ == '__main__':
 
     args = parse_commandline_args()
@@ -288,35 +327,49 @@ if __name__ == '__main__':
     with open('output.jsonl', 'w') as outfile:
         outfile.write('')
 
-    c="Daniel Craig is the second longest serving James Bond   ."
-    e="Daniel Craig is the second longest serving James Bond   ."
-    claim_ann, ev_ann = annotate(c, e, API)
-    assert (claim_ann is not None)
-    assert (ev_ann is not None)
 
-    for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+    ssfilename_claims = "sstagged_sample_files/claim_words_pos_datapointid_91034.pred.tags"
+    ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_91034.pred.tags"
+    if (args.merge_ner_ss):
+        claims_sstags = read_sstagged_data(ssfilename_claims)
+        ev_sstags = read_sstagged_data(ssfilename_ev)
 
-            claim_ann, ev_ann = annotate(c, e, API)
-            assert (claim_ann is not None)
-            assert (ev_ann is not None)
+        # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
+        c = all_claims[91034]
+        e = all_evidences[91034]
+        l = all_labels[91034]
+        claim_ann, ev_ann = annotate(c, e, API)
+        assert (claim_ann is not None)
+        assert (ev_ann is not None)
+        assert (len(claim_ann.tags) is len(claims_sstags))
+        claim_ner_tags = claim_ann._entities
+        ev_ner_tags = ev_ann._entities
 
-            claim_pos_tags = claim_ann.tags
-            ev_pos_tags = ev_ann.tags
-            claim_ner_tags = claim_ann._entities
-            ev_ner_tags = ev_ann._entities
-
-            if(args.convert_prepositions==True):
-                claim_ner_tags,ev_ner_tags=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags,claim_ner_tags,ev_ner_tags)
-            if (args.convert_NERs == True):
-                #def collapseAndReplaceWithNerSmartly(claim_words, claim_pos_tags, evidence_words, evidence_ner_tags):
-                claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags, ev_ann.words, ev_ner_tags)
-
-            # claim_neutered,ev_neutered= collapseAndReplaceWithNerSmartly(claim_ann, ev_ann)
+        claim_ner_tags,ev_ner_tags=mergeSSandNERTags(claims_sstags, ev_sstags, claim_ner_tags, ev_ner_tags)
 
 
-            with open('output.jsonl', 'a+') as outfile:
-                write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
-            print(index)
+    # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+    #
+    #         claim_ann, ev_ann = annotate(c, e, API)
+    #         assert (claim_ann is not None)
+    #         assert (ev_ann is not None)
+
+    claim_pos_tags = claim_ann.tags
+    ev_pos_tags = ev_ann.tags
+
+
+    if(args.convert_prepositions==True):
+        claim_ner_tags,ev_ner_tags=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags,claim_ner_tags,ev_ner_tags)
+    if (args.convert_NERs == True):
+        #def collapseAndReplaceWithNerSmartly(claim_words, claim_pos_tags, evidence_words, evidence_ner_tags):
+        claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags, ev_ann.words, ev_ner_tags)
+
+
+        with open('output.jsonl', 'a+') as outfile:
+            write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
+
+
+#            print(index)
 
 
 

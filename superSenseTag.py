@@ -17,6 +17,10 @@ def create_parser():
                         help='use docker for loading pyproc. useful in machines where you have root access.', metavar='BOOL')
     parser.add_argument('--output_folder', type=str, default='outputs/',
                         help='folder where outputs will be created')
+    parser.add_argument('--write_pos_tags', default=False, type=str2bool,
+                        help='if you want to write the pos tags to disk or not. This is used as input for the SSTagger.',
+                        metavar='BOOL')
+
 
     print(parser.parse_args())
     return parser
@@ -57,6 +61,10 @@ def read_rte_data(filename):
             all_labels.append(label)
 
     return all_claims, all_evidences, all_labels
+
+
+
+
 
 def annotate(headline, body, API):
     claim_ann = API.fastnlp.annotate(headline)
@@ -109,11 +117,13 @@ if __name__ == '__main__':
     else:
         API = ProcessorsAPI(port=args.pyproc_port)
 
-    filename=args.inputFile
+    cwd=os.getcwd()
+    filename=cwd+"/"+args.inputFile
     all_claims, all_evidences, all_labels=read_rte_data(filename)
     all_claims_neutered=[]
 
     output_folder=args.output_folder
+
 
 
     length=len(all_evidences)
@@ -125,14 +135,16 @@ if __name__ == '__main__':
             assert (claim_ann is not None)
             assert (ev_ann is not None)
 
-            # write each token and its pos tag to disk, with one line each
-            out_file_name="claim_words_pos_datapointid_"+str(index)
-            full_path_output_file=output_folder+out_file_name
-            write_token_POS_disk_as_csv(claim_ann, full_path_output_file)
-            out_file_name = "evidence_words_pos_datapointid_" + str(index)
-            full_path_output_file = output_folder + out_file_name
-            write_token_POS_disk_as_csv(ev_ann, full_path_output_file)
-            index=index+1
+            if(args.write_pos_tags):
+                # write each token and its pos tag to disk, with one line each-This is used as input for the SSTagger
+                out_file_name="claim_words_pos_datapointid_"+str(index)
+                full_path_output_file=output_folder+out_file_name
+                write_token_POS_disk_as_csv(claim_ann, full_path_output_file)
+                out_file_name = "evidence_words_pos_datapointid_" + str(index)
+                full_path_output_file = output_folder + out_file_name
+                write_token_POS_disk_as_csv(ev_ann, full_path_output_file)
+                index=index+1
+
 
 
 

@@ -114,7 +114,7 @@ steps to create a conda environment and run the sst tagger for my input file
     mv $eachfile ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/
     done
     ```
-- commands for running the actual sstagger    
+- commands for create a conda run environment for running the actual sstagger    
 ```
  conda create -name py2_decompattn_nonallennlp python=2.7
  source activate py2_decompattn_nonallennlp
@@ -131,14 +131,15 @@ steps to create a conda environment and run the sst tagger for my input file
  
  ``mkdir outputs_sstagged/input_to_sstagger_output_from_pos_tagger``
 
-now run the below command from the place where the file `sst.sh` exists.
+- Check two things. *.tags doesn't exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
+- now run the below command from the place where the file `sst.sh` exists.
 
 `find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}`
 
  
 Notes:
-- the xargs command will run the sst.sh on each input file from the folder input_to_sstagger_output_from_pos_tagger
-- i have modified the python code to create output file with inputfilename.pred.tags in the output folder mentioned above
+- the xargs command will run the sst.sh on each input file from the folder: input_to_sstagger_output_from_pos_tagger
+- i have modified the python code to create output file with $inputfilename.pred.tags in the output folder mentioned above
 - P is the number of cores you can spare in your machine. 
 
 #### Step 3: merging NER tags and ss tags
@@ -148,6 +149,10 @@ In this phase, we need to do the smartner tagging plus ss tagging. Eg:
 `input: Daniel Craig was the longest serving James Bond`
 
 `output: PERSONc1 was the longest COGNITIONc1 PERSONc2`
+
+This can be run using
+
+`python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True`
 
 # notes to self/delete later
 
@@ -171,18 +176,28 @@ In this phase, we need to do the smartner tagging plus ss tagging. Eg:
         - you can check status using
         `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
        
-        - count at 4pm is 3811 files done
+        - count at 4pm is 3811/238,394 files done
     - **fever-dev**: 
         - have started ss tagging run of all claims and evidences of fever dev from **tmux 13** in clara. 
         -  you can check outputs using
          `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
-         - count at 4pm is 283
+         - count at 4pm is 283/52504 files
         
     - **fnc-train**
-        
+        - have started a run on **jenny** from **tmux 0** 
+        - status can be checked using
+        `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
+        - count is 51/81808
     - **fnc-dev**
-        - **tmux 8**: 
+        - have started a run on **river** from tmux 0
+        - status can be checked using 
+        ` ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
+       - am using tmux1 as a watcher.
+       - status at 430pm monday april 29th is: 14/18136 files are done.
         
     - merging code
         was able to run till combining both files. next have to create a sample output
+        - able to create personc1 based on the input ner tags. However, we might have to use the tags given from SStagging, which is using collapsing. Becuase right now
+        michael and schumacher is being tagged as personc1 pesronc2, which is wrong.
+        qn) what if we never add person dash from SS tag and let our old code do collapsing? 
  

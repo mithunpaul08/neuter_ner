@@ -46,10 +46,19 @@ def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_wo
 
     return prev, dict_tokenner_newner, new_sent, full_name, unique_new_ners, unique_new_tokens, dict_newner_token
 
+def get_frequency_of_tag(curr_ner,dict_newner_token):
+    freq=1
+    if curr_ner in dict_newner_token.keys():
+        old_count= dict_newner_token[curr_ner]
+        freq=old_count+1
+        dict_newner_token[curr_ner]=freq
+    else:
+        dict_newner_token[curr_ner] = 1
+    return freq
 
 
 
-def collapse_both(claims_words_list, claims_ner_list, ev_claim):
+def collapse_continuous_names(claims_words_list, claims_ner_list, ev_claim):
     dict_newner_token = {}
     dict_tokenner_newner = {}
     unique_new_tokens = {}
@@ -60,13 +69,10 @@ def collapse_both(claims_words_list, claims_ner_list, ev_claim):
     full_name = []
 
     for index, (curr_ner, curr_word) in enumerate(zip(claims_ner_list, claims_words_list)):
-
         if (curr_ner == "O"):
-
             if (len(prev) == 0):
                 new_sent.append(curr_word)
             else:
-
                 prev, dict_tokenner_newner, new_sent, full_name, unique_new_ners, unique_new_tokens, dict_newner_token \
                     = get_new_name(prev, unique_new_ners, curr_ner,dict_tokenner_newner, curr_word,
                                         new_sent, ev_claim, full_name, unique_new_tokens, dict_newner_token)
@@ -86,6 +92,20 @@ def collapse_both(claims_words_list, claims_ner_list, ev_claim):
                                           ev_claim, full_name, unique_new_tokens, dict_newner_token)
 
     return new_sent, dict_tokenner_newner, dict_newner_token
+
+
+def append_tags_with_count(claims_words_list, claims_ner_list, ev_claim):
+    dict_ner_freq = {}
+    new_sent = []
+
+    for index, (curr_ner, curr_word) in enumerate(zip(claims_ner_list, claims_words_list)):
+        if (curr_ner == "O"):
+            new_sent.append(curr_word)
+        else:
+                freq = get_frequency_of_tag( curr_ner,dict_ner_freq)
+                new_sent.append(curr_ner+ev_claim+str(freq))
+    return new_sent
+
 
 
 def get_num_lines(file_path):
@@ -231,31 +251,58 @@ def create_parser():
     parser.add_argument('--convert_prepositions', default=False, type=str2bool,
                         help='.',
                         metavar='BOOL')
-    parser.add_argument('--convert_NERs', default=False, type=str2bool,
+    parser.add_argument('--create_smart_NERs', default=False, type=str2bool,
                         help='mutually ',
                         metavar='BOOL')
     parser.add_argument('--merge_ner_ss', default=False, type=str2bool,
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
+    parser.add_argument('--run_on_dummy_data', default=False, type=str2bool,
+                        help='once you have output from sstagger, merge them both.',
+                        metavar='BOOL')
     print(parser.parse_args())
     return parser
 
-def collapseAndReplaceWithNerSmartly(claim_words,claim_ner_tags, evidence_words, evidence_ner_tags):
-        ev_claim="c"
-        neutered_headline, dict_tokenner_newner_claims, dict_newner_token = collapse_both(claim_words,
-                                                                                          claim_ner_tags ,
+
+
+
+def mergeSmartNerAndSSTags(claim_words, claim_ner_tags, evidence_words, evidence_ner_tags):
+    ev_claim = "c"
+    neutered_claim, dict_tokenner_newner_claims, dict_newner_token = append_tags_with_count(claim_words,
+                                                                                               claim_ner_tags,
                                                                                                ev_claim)
 
-        ev_claim = "e"
-        new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = collapse_both(evidence_words, evidence_ner_tags, ev_claim)
+    ev_claim = "e"
+    new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = append_tags_with_count(
+        evidence_words, evidence_ner_tags, ev_claim)
 
-        neutered_body, found_intersection = check_exists_in_claim(new_sent_after_collapse,
+    neutered_evidence, found_intersection = check_exists_in_claim(new_sent_after_collapse,
+                                                                  dict_tokenner_newner_evidence, dict_newner_token_ev,
+                                                                  dict_tokenner_newner_claims)
+
+    claimn = " ".join(neutered_claim)
+    evidencen = " ".join(neutered_evidence)
+
+    return claimn, evidencen
+
+
+
+def collapseAndReplaceWithNerSmartly(claim_words,claim_ner_tags, evidence_words, evidence_ner_tags):
+        ev_claim="c"
+        neutered_claim, dict_tokenner_newner_claims, dict_newner_token = collapse_continuous_names(claim_words,
+                                                                                                      claim_ner_tags,
+                                                                                                      ev_claim)
+
+        ev_claim = "e"
+        new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = collapse_continuous_names(evidence_words, evidence_ner_tags, ev_claim)
+
+        neutered_evidence, found_intersection = check_exists_in_claim(new_sent_after_collapse,
                                                                        dict_tokenner_newner_evidence, dict_newner_token_ev,
                                                                        dict_tokenner_newner_claims)
 
 
-        claimn = " ".join(neutered_headline)
-        evidencen = " ".join(neutered_body)
+        claimn = " ".join(neutered_claim)
+        evidencen = " ".join(neutered_evidence)
 
         return claimn,evidencen
 
@@ -321,6 +368,7 @@ if __name__ == '__main__':
         API = ProcessorsAPI(port=args.pyproc_port)
 
     filename=args.inputFile
+    #if not (args.run_on_dummy_data):
     all_claims, all_evidences, all_labels=read_rte_data(filename)
     all_claims_neutered=[]
     all_evidences_neutered = []
@@ -343,11 +391,11 @@ if __name__ == '__main__':
         assert (ev_ann is not None)
         assert (len(claim_ann.tags) is len(claims_sstags))
         claim_ner_tags = claim_ann._entities
-        ev_ner_tags = ev_ann._entities
+        ev_ner_tags= ev_ann._entities
 
-        claim_ner_tags,ev_ner_tags=mergeSSandNERTags(claims_sstags, ev_sstags, claim_ner_tags, ev_ner_tags)
+        claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=mergeSSandNERTags(claims_sstags, ev_sstags, claim_ner_tags, ev_ner_tags)
 
-
+    #uncomment below portion for running over all claims and evidences. Commented out for debugging on just one data point
     # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
     #
     #         claim_ann, ev_ann = annotate(c, e, API)
@@ -359,10 +407,12 @@ if __name__ == '__main__':
 
 
     if(args.convert_prepositions==True):
-        claim_ner_tags,ev_ner_tags=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags,claim_ner_tags,ev_ner_tags)
-    if (args.convert_NERs == True):
+        claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
+    if (args.create_smart_NERs == True):
         #def collapseAndReplaceWithNerSmartly(claim_words, claim_pos_tags, evidence_words, evidence_ner_tags):
-        claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags, ev_ann.words, ev_ner_tags)
+        claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+    if (args.merge_ner_ss == True):
+        claim_neutered, ev_neutered =mergeSmartNerAndSSTags(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 
 
         with open('output.jsonl', 'a+') as outfile:

@@ -176,24 +176,24 @@ This can be run using
         - you can check status using
         `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
        
-        - count at 4pm is 3811/238,394 files done
+        - count at 10pm is 14,218/238,394 files done
     - **fever-dev**: 
         - have started ss tagging run of all claims and evidences of fever dev from **tmux 13** in clara. 
         -  you can check outputs using
          `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
-         - count at 4pm is 283/52504 files
+         - count at 10pm is 283/52504 files
         
     - **fnc-train**
         - have started a run on **jenny** from **tmux 0** 
         - status can be checked using
         `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
-        - count is 51/81808
+        - count is 70/81808
     - **fnc-dev**
         - have started a run on **river** from tmux 0
         - status can be checked using 
         ` ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
        - am using tmux1 as a watcher.
-       - status at 430pm monday april 29th is: 14/18136 files are done.
+       - status at 10pm monday april 29th is: 74/18136 files are done.
         
     - merging code
         was able to run till combining both files. next have to create a sample output

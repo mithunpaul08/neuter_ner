@@ -188,7 +188,7 @@ This can be run using
         - status can be checked using
         `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
         - latest status:count is 178/81808
-    - **fnc-dev**
+    - **fnc-dev**   
         - have started a run on **river** from tmux 0
         - status can be checked using 
         ` ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`

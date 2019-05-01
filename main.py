@@ -305,6 +305,9 @@ def create_parser():
     parser.add_argument('--run_on_dummy_data', default=False, type=str2bool,
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
+    parser.add_argument('--run_on_dummy_data', default=False, type=str2bool,
+                        help='once you have output from sstagger, merge them both.',
+                        metavar='BOOL')
     print(parser.parse_args())
     return parser
 
@@ -373,17 +376,21 @@ def replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags,claim_ner_tags,ev
 def mergeSSandNERTags(ss_tags, ner_tags ):
     # give priority to NER tags when there is a collision,. Except when NER tag is MISC. In that case pick SSTag
     for index,sst in enumerate(ss_tags):
-        #if the ss TAG IS NOT empty  #get the corresponding ner tag
         if not (sst==""):
-            nert=ner_tags[index]
-            if not (nert=="O"):
-                # if the NER tag is not O,  there is a collision between NER and SSTag. Check if the NER tag is MISC
-                if(nert=="MISC"):
-                    #if its MISC, pick the corresponding SSTag #if not, pick the NER tag itself -i.e dont, do anything.
-                    ner_tags[index]=sst
-            else:
-                #if the NER tag is 0 and SSTag exists, replace NER tag with SSTag
+            #if the sstag is _, we need it as is for the collapsing process
+            if(sst=="_"):
                 ner_tags[index] = sst
+            else:
+                # if the ss TAG IS NOT empty  #get the corresponding ner tag
+                nert=ner_tags[index]
+                if not (nert=="O"):
+                    # if the NER tag is not O,  there is a collision between NER and SSTag. Check if the NER tag is MISC
+                    if(nert=="MISC"):
+                        #if its MISC, pick the corresponding SSTag #if not, pick the NER tag itself -i.e dont, do anything.
+                        ner_tags[index]=sst
+                else:
+                    #if the NER tag is 0 and SSTag exists, replace NER tag with SSTag
+                    ner_tags[index] = sst
     return ner_tags
 
 
@@ -397,7 +404,15 @@ def read_sstagged_data(filename):
             line=f.readline()
             while(line):
                 split_line=line.split("\t")
-                sstag=split_line[7]
+
+                #if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
+                sstag6=split_line[6]
+                sstag7 = split_line[7]
+                if(sstag6=="_"):
+                    sstag=sstag6
+                else:
+                    sstag=sstag7
+
                 sstags.append(sstag)
                 line = f.readline()
 

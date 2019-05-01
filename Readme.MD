@@ -176,28 +176,31 @@ This can be run using
         - you can check status using
         `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
        
-        - latest status:count  is 33,588/238,394 files done
+        - latest status:count  is72,184/238,394 files done
     - **fever-dev**: 
         - have started ss tagging run of all claims and evidences of fever dev from **tmux 13** in clara. 
         -  you can check outputs using
          `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
-         - latest status: count is 29,774/52504 files
+         - latest status: count is 51,676/52504 files
         
     - **fnc-train**
         - have started a run on **jenny** from **tmux 0** 
         - status can be checked using
         `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
-        - latest status:count is 110/81808
+        - latest status:count is 178/81808
     - **fnc-dev**
         - have started a run on **river** from tmux 0
         - status can be checked using 
         ` ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
        - am using tmux1 as a watcher.
-       - latest status: 211/18136 files are done.
+       - latest status: 420/18136 files are done.
         
     - merging code
         was able to run till combining both files. next have to create a sample output
         - able to create personc1 based on the input ner tags. However, we might have to use the tags given from SStagging, which is using collapsing. Becuase right now
         michael and schumacher is being tagged as personc1 pesronc2, which is wrong.
-        qn) what if we never add person dash from SS tag and let our old code do collapsing? 
+        qn) what if we never add person dash alone from SS tag and let our old code do collapsing? 
+        - remove dots / punctuations
+        - always give priority for NER except when MISC
+        - no overlap/id for verbs
  

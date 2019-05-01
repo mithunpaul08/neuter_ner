@@ -6,7 +6,7 @@ from processors import *
 def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                  unique_new_tokens, dict_newner_token):
     separator = ""
-    prev_ner_tag = prev[0]
+    #curr_ner = prev[0]
     new_nertag_i = ""
     full_name_c = " ".join(full_name)
 
@@ -16,18 +16,18 @@ def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_wo
 
     else:
 
-        if (prev_ner_tag in unique_new_ners.keys()):
-            old_index = unique_new_ners[prev_ner_tag]
+        if (curr_ner in unique_new_ners.keys()):
+            old_index = unique_new_ners[curr_ner]
             new_index = old_index + 1
-            unique_new_ners[prev_ner_tag] = new_index
+            unique_new_ners[curr_ner] = new_index
             # to try PERSON SPACE C1 instead of PERSON-C1
-            new_nertag_i = prev_ner_tag + separator + ev_claim + str(new_index)
-            # new_nertag_i = prev_ner_tag + separator + ev_claim + str(new_index)
+            new_nertag_i = curr_ner + separator + ev_claim + str(new_index)
+            # new_nertag_i = curr_ner + separator + ev_claim + str(new_index)
             unique_new_tokens[full_name_c] = new_nertag_i
 
         else:
-            unique_new_ners[prev_ner_tag] = 1
-            new_nertag_i = prev_ner_tag + separator + ev_claim + "1"
+            unique_new_ners[curr_ner] = 1
+            new_nertag_i = curr_ner + separator + ev_claim + "1"
             unique_new_tokens[full_name_c] = new_nertag_i
 
     if not ((full_name_c, prev[0]) in dict_tokenner_newner):
@@ -46,6 +46,87 @@ def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_wo
 
     return prev, dict_tokenner_newner, new_sent, full_name, unique_new_ners, unique_new_tokens, dict_newner_token
 
+def attach_freq_to_nertag(ner_tag, ner_dictionary,separator,ev_claim):
+    new_index = get_frequency_of_tag(ner_tag, ner_dictionary)
+    new_nertag_i = ner_tag + separator + ev_claim + str(new_index)
+    return new_nertag_i
+
+def collapse_continuous_names(claims_words_list, claims_ner_list, ev_claim):
+
+    #dict_newNerBasedName_lemma:a mapping from newNerBasedName to its old lemma value(called henceforth as token) Eg:{PERSONc1:Michael Schumacher}.
+    dict_newNerBasedName_lemma = {}
+    # dict_token_ner_newner:a mapping from a tuple (lemma, original NER tag of the word) to its newNerBasedName  Eg:{(Michael Schumacher,PERSON):PERSONc1}
+    dict_token_ner_newner = {}
+    #dict_lemmas_newNerBasedName. A mapping from LEMMA/token of the word to its newNerBasedName Eg:{Michael Schumacher:PERSONc1}
+    dict_lemmas_newNerBasedName = {}
+    #dict_newNerBasedName_freq: A mapping from newNerBasedName to the number of times it occurs in a given sentences
+    dict_newNerBasedName_freq = {}
+    #a stack to hold all the ner tags before current- this is useful for checking if a name is spread across multiple NER tags. Eg: JRR Tolkein= PERSON,PERSON,PERSON
+    prev = []
+    #the final result of combining all tags and lemmas is stored here
+    new_sent = []
+    #this full_name is used to store multiple parts of same name.Eg:Michael Schumacher
+    full_name = []
+
+
+    #in this code, triggers happen only when a continuous bunch of nER tags end. Eg: PERSON , PERSON, O.
+    for index, (curr_ner, curr_word) in enumerate(zip(claims_ner_list, claims_words_list)):
+        if (curr_ner == "O"):
+            if (len(prev) == 0):
+                # if there were no tags just before this O, it means, its the end of a combined name. just add that O and move on
+                new_sent.append(curr_word)
+            else:
+                # instead if there was something pushed into a stack, this O means, we are just done with those couple of continuous tags. Collapse names, add new name to dictionaries and empty stack
+                prev, dict_token_ner_newner, new_sent, full_name, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma \
+                    = get_new_name(prev, dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
+                                                               new_sent, ev_claim, full_name, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
+                new_sent.append(curr_word)
+        else:
+            #if length of the list called previous is zero, it means, no tag was collapsed until now.
+            if (len(prev) == 0):
+                prev.append(curr_ner)
+                full_name.append(curr_word)
+            else:
+                #if the previous ner tag and current ner tag is the same, it means its most probably part of same name. Eg: JRR Tolkein. Collapse it into one nER entity
+                if (prev[(len(prev) - 1)] == curr_ner):
+                    prev.append(curr_ner)
+                    full_name.append(curr_word)
+                else:
+                    # if the previous ner tag and current ner tag are not the same, this O means, we are just done with those couple of continuous tags. No collapsing, but add both names to dictionaries and empty stack
+                    prev, dict_token_ner_newner, new_sent, full_name, dict_newNerBasedName_freq, \
+                    dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma = \
+                        append_count_to_two_consecutive_ner_tags(prev, dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word, new_sent,
+                                                                 ev_claim, full_name, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
+
+    return new_sent, dict_token_ner_newner, dict_newNerBasedName_lemma
+
+
+def append_count_to_two_consecutive_ner_tags(prev, dict_newNerBasedName_freq, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
+                                             dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma):
+
+    #do same thing twice for both current and previous tags/words
+    prev_tag=prev[(len(prev)-1)]
+    prev_word="".join(full_name)
+    new_nertag_i=attach_freq_to_nertag(prev_tag,dict_newNerBasedName_freq , "", ev_claim)
+    add_to_dict_if_not_exists(prev_word, new_nertag_i, dict_lemmas_newNerBasedName)
+    add_to_dict_if_not_exists(new_nertag_i,prev_word, dict_newNerBasedName_lemma)
+    new_sent.append(new_nertag_i)
+
+    new_nertag_i=attach_freq_to_nertag(curr_ner, dict_newNerBasedName_freq, "", ev_claim)
+    add_to_dict_if_not_exists(curr_word, new_nertag_i, dict_lemmas_newNerBasedName)
+    new_sent.append(new_nertag_i)
+
+    full_name = []
+    prev = []
+    if (curr_ner != "O"):
+        prev.append(curr_ner)
+
+    return prev, dict_tokenner_newner, new_sent, full_name, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma
+
+def add_to_dict_if_not_exists(key, value, dict):
+    if not (key in dict.keys()):
+        dict[key]=value
+
 def get_frequency_of_tag(curr_ner,dict_newner_token):
     freq=1
     if curr_ner in dict_newner_token.keys():
@@ -56,42 +137,6 @@ def get_frequency_of_tag(curr_ner,dict_newner_token):
         dict_newner_token[curr_ner] = 1
     return freq
 
-
-
-def collapse_continuous_names(claims_words_list, claims_ner_list, ev_claim):
-    dict_newner_token = {}
-    dict_tokenner_newner = {}
-    unique_new_tokens = {}
-    unique_new_ners = {}
-    prev = []
-    new_sent = []
-
-    full_name = []
-
-    for index, (curr_ner, curr_word) in enumerate(zip(claims_ner_list, claims_words_list)):
-        if (curr_ner == "O"):
-            if (len(prev) == 0):
-                new_sent.append(curr_word)
-            else:
-                prev, dict_tokenner_newner, new_sent, full_name, unique_new_ners, unique_new_tokens, dict_newner_token \
-                    = get_new_name(prev, unique_new_ners, curr_ner,dict_tokenner_newner, curr_word,
-                                        new_sent, ev_claim, full_name, unique_new_tokens, dict_newner_token)
-                new_sent.append(curr_word)
-        else:
-            if (len(prev) == 0):
-                prev.append(curr_ner)
-                full_name.append(curr_word)
-            else:
-                if (prev[(len(prev) - 1)] == curr_ner):
-                    prev.append(curr_ner)
-                    full_name.append(curr_word)
-                else:
-                    prev, dict_tokenner_newner, new_sent, full_name, unique_new_ners, \
-                    unique_new_tokens, dict_newner_token = \
-                        get_new_name(prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent,
-                                          ev_claim, full_name, unique_new_tokens, dict_newner_token)
-
-    return new_sent, dict_tokenner_newner, dict_newner_token
 
 
 def append_tags_with_count(claims_words_list, claims_ner_list, ev_claim):
@@ -325,22 +370,21 @@ def replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags,claim_ner_tags,ev
 
 #for every word, if a NER tag exists, give that priority. if not, check if it has a SS tag, if yes, pick that.
 # if a sstag exists and the word has no NER tag, pick SStag
-def mergeSSandNERTags(claim_ss_tags, ev_ss_tags, claim_ner_tags, ev_ner_tags):
-    for index,sst in enumerate(claim_ss_tags):
+def mergeSSandNERTags(ss_tags, ner_tags ):
+    # give priority to NER tags when there is a collision,. Except when NER tag is MISC. In that case pick SSTag
+    for index,sst in enumerate(ss_tags):
+        #if the ss TAG IS NOT empty  #get the corresponding ner tag
         if not (sst==""):
-            nert=claim_ner_tags[index]
-            if (nert=="O"):
-                claim_ner_tags[index]=sst
-
-    for index,sst in enumerate(ev_ss_tags):
-        if not (sst==""):
-            nert=ev_ner_tags[index]
-            if (nert=="O"):
-                ev_ner_tags[index]=sst
-
-
-
-    return claim_ner_tags, ev_ner_tags
+            nert=ner_tags[index]
+            if not (nert=="O"):
+                # if the NER tag is not O,  there is a collision between NER and SSTag. Check if the NER tag is MISC
+                if(nert=="MISC"):
+                    #if its MISC, pick the corresponding SSTag #if not, pick the NER tag itself -i.e dont, do anything.
+                    ner_tags[index]=sst
+            else:
+                #if the NER tag is 0 and SSTag exists, replace NER tag with SSTag
+                ner_tags[index] = sst
+    return ner_tags
 
 
 def read_sstagged_data(filename):
@@ -393,8 +437,8 @@ if __name__ == '__main__':
         claim_ner_tags = claim_ann._entities
         ev_ner_tags= ev_ann._entities
 
-        claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=mergeSSandNERTags(claims_sstags, ev_sstags, claim_ner_tags, ev_ner_tags)
-
+        claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
+        ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
     #uncomment below portion for running over all claims and evidences. Commented out for debugging on just one data point
     # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
     #

@@ -1056,8 +1056,8 @@ def main():
         inputFile=args.predict
         outputFileName=args.output_folder+"/"+inputFile+".pred.tags"
         # if the file already exists, leave it. It might have been written in a run before
-        #if not (os.path.isfile(outputFileName)):
-        output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+        if not (os.path.isfile(outputFileName)):
+            output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
 
 
 if __name__=='__main__':

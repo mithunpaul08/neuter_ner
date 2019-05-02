@@ -195,12 +195,10 @@ This can be run using
        - am using tmux1 as a watcher.
        - latest status: 420/18136 files are done.
         
-    - merging code
-        was able to run till combining both files. next have to create a sample output
-        - able to create personc1 based on the input ner tags. However, we might have to use the tags given from SStagging, which is using collapsing. Becuase right now
-        michael and schumacher is being tagged as personc1 pesronc2, which is wrong.
-        qn) what if we never add person dash alone from SS tag and let our old code do collapsing? 
-        - remove dots / punctuations
-        - always give priority for NER except when MISC
-        - no overlap/id for verbs
+    - merging sstags+nertags with collapsing: status as of may 1st 2019
+        - tried debugging/fixing the old collapsing code. it still is buggy -especially at the part where TWO DIFFERENT NER tags are back to back PERSON PERSON 0 , it collapses correctly. But FOOD, TIME O, it goes haywife
+        . gave up. now trying route 2: i.e keep dashes, write new code for collapsing alone, and use old code for finding overlap.
+        Todo
+            - remove dots / punctuations
+            - no overlap/id for verbs
  

@@ -1,5 +1,5 @@
 from tqdm import tqdm
-import json,mmap,os,argparse
+import json,mmap,os,argparse,string
 import processors
 from processors import *
 
@@ -161,7 +161,7 @@ def get_num_lines(file_path):
             lines += 1
         return lines
 
-def read_rte_data(filename):
+def read_rte_data(filename,args):
         tr_len=1000
         all_labels = []
         all_claims = []
@@ -175,6 +175,9 @@ def read_rte_data(filename):
                 evidences = x["evidence"]
                 label = x["label"]
 
+                if (args.remove_punctuations == True):
+                    claim = claim.translate(str.maketrans('', '', string.punctuation))
+                    evidences = evidences.translate(str.maketrans('', '', string.punctuation))
 
                 all_claims.append(claim)
                 all_evidences.append(evidences)
@@ -305,7 +308,7 @@ def create_parser():
     parser.add_argument('--run_on_dummy_data', default=False, type=str2bool,
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
-    parser.add_argument('--run_on_dummy_data', default=False, type=str2bool,
+    parser.add_argument('--remove_punctuations', default=False, type=str2bool,
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
     print(parser.parse_args())
@@ -314,7 +317,7 @@ def create_parser():
 
 
 
-def mergeSmartNerAndSSTags(claim_words, claim_ner_tags, evidence_words, evidence_ner_tags):
+def collapseAndCreateSmartTagsSSNer(claim_words, claim_ner_tags, evidence_words, evidence_ner_tags):
     ev_claim = "c"
     neutered_claim, dict_tokenner_newner_claims, dict_newner_token = append_tags_with_count(claim_words,
                                                                                                claim_ner_tags,
@@ -394,26 +397,24 @@ def mergeSSandNERTags(ss_tags, ner_tags ):
     return ner_tags
 
 
-def read_sstagged_data(filename):
-
+def read_sstagged_data(filename,args):
     sstags = []
-
-
+    puncts = set(string.punctuation)
     with open(filename,"r") as f:
-        #for index, line in enumerate(tqdm(f, total=get_num_lines(filename))):
             line=f.readline()
             while(line):
                 split_line=line.split("\t")
-
-                #if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
-                sstag6=split_line[6]
-                sstag7 = split_line[7]
-                if(sstag6=="_"):
-                    sstag=sstag6
-                else:
-                    sstag=sstag7
-
-                sstags.append(sstag)
+                #pick only the words/lemmas that are not punctutations. -this had to be done in a existential check way because we had already written a million sstag files by the time we coded up merging
+                # and didn't want to rewrite them all without punctuations in strings.
+                if not(split_line[1] in puncts) and (args.remove_punctuations == True):
+                    #if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
+                    sstag6=split_line[6]
+                    sstag7 = split_line[7]
+                    if(sstag6=="_"):
+                        sstag=sstag6
+                    else:
+                        sstag=sstag7
+                    sstags.append(sstag)
                 line = f.readline()
 
     return sstags
@@ -428,7 +429,7 @@ if __name__ == '__main__':
 
     filename=args.inputFile
     #if not (args.run_on_dummy_data):
-    all_claims, all_evidences, all_labels=read_rte_data(filename)
+    all_claims, all_evidences, all_labels=read_rte_data(filename,args)
     all_claims_neutered=[]
     all_evidences_neutered = []
     with open('output.jsonl', 'w') as outfile:
@@ -438,8 +439,8 @@ if __name__ == '__main__':
     ssfilename_claims = "sstagged_sample_files/claim_words_pos_datapointid_91034.pred.tags"
     ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_91034.pred.tags"
     if (args.merge_ner_ss):
-        claims_sstags = read_sstagged_data(ssfilename_claims)
-        ev_sstags = read_sstagged_data(ssfilename_ev)
+        claims_sstags = read_sstagged_data(ssfilename_claims,args)
+        ev_sstags = read_sstagged_data(ssfilename_ev,args)
 
         # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
         c = all_claims[91034]
@@ -449,6 +450,7 @@ if __name__ == '__main__':
         assert (claim_ann is not None)
         assert (ev_ann is not None)
         assert (len(claim_ann.tags) is len(claims_sstags))
+        assert (len(ev_ann.tags) is len(ev_sstags))
         claim_ner_tags = claim_ann._entities
         ev_ner_tags= ev_ann._entities
 
@@ -471,7 +473,7 @@ if __name__ == '__main__':
         #def collapseAndReplaceWithNerSmartly(claim_words, claim_pos_tags, evidence_words, evidence_ner_tags):
         claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
     if (args.merge_ner_ss == True):
-        claim_neutered, ev_neutered =mergeSmartNerAndSSTags(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+        claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 
 
         with open('output.jsonl', 'a+') as outfile:

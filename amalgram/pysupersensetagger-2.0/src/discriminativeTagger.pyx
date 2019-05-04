@@ -758,9 +758,9 @@ class DiscriminativeTagger(object):
         for sent,o0Feats in dataset:
             sent,derivation = decoder.send((sent,o0Feats))
             if print_predictions:
-                # print predictions
-                #print(sent)
-                #print()
+                #print predictions
+                print(sent)
+                print("ging to write output file")
                 f=open(output_file,"w",0)
                 f.write(sent.__str__())
                 f.close()
@@ -1000,40 +1000,40 @@ def analyze(tokens, poses):
     
 def predict(args, t,output_file,featurized_dataset, sentence=None, print_predictions=True):
     a =datetime.now()
-    print("11 just getting inside predict function")
+    #print("11 just getting inside predict function")
     if args.test_predict is not None or args.test is not None:
         # evaluate (test), and possibly print predictions for that data
-        print("7 args.test_predict is not None or args.test is not None")
+        #print("7 args.test_predict is not None or args.test is not None")
         if featurized_dataset is None:
-            print("8  featurized dataset is none")
+            #print("8  featurized dataset is none")
             featurized_dataset = SupersenseFeaturizer(featureExtractor, SupersenseTrainSet(args.test_predict or args.test, 
                                                                                 t._labels, legacy0=args.legacy0,
                                                                                 keep_in_memory=True), 
                                                       t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
         b = datetime.now()
         c=b-a
-        print("value of time taken is")
-        print(c)
+        #print("value of time taken is")
+        #print(c)
         t.decode_dataset(featurized_dataset,output_file, print_predictions=(args.test_predict is not None and print_predictions), 
                          useBIO=args.bio, includeLossTerm=False, costAugVal=0.0)
         
     if args.predict is not None or sentence:
-        print("1 inside args.predict is not None or sentence:1 ")
+        #print("1 inside args.predict is not None or sentence:1 ")
         
         # predict on a separate dataset
         
         if args.predict is not None:
-            print("2 args.predict is not None:")
+            #print("2 args.predict is not None:")
             dataSet = SupersenseDataSet(args.predict, 
                                         t._labels, legacy0=args.legacy0, 
                                         keep_in_memory=False,
                                         autoreset=False)
-            print(dataSet)
+            #print(dataSet)
         else:
-            print("3 am inside else of args.predict is not None")
-            print(sentence)
+            #print("3 am inside else of args.predict is not None")
+            #print(sentence)
             dataSet = [sentence]
-            print(dataSet)
+            #print(dataSet)
         predData = SupersenseFeaturizer(featureExtractor, dataSet,   # could be stdin, which should never be reset 
                                         t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
 
@@ -1047,6 +1047,31 @@ def predict(args, t,output_file,featurized_dataset, sentence=None, print_predict
     else:
         #print("10 inside else after elif")
         t.tagStandardInput()
+
+def no_parallelization():
+    args = opts()
+    import os
+    cwd=os.getcwd()
+    files=os.listdir(args.input_folder)
+    evalData = setup(args)
+    if not (args.use_xargs):
+        for index,inputFile in enumerate(files):
+                fullpath=args.input_folder+"/"+inputFile
+                args.predict=fullpath
+                outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
+                if not (os.path.isfile(outputFileName)):
+                    output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+    else:
+        inputFile=args.predict
+        outputFileName=args.output_folder+"/"+inputFile+".pred.tags"
+        #print(inputFile)
+        #print(outputFileName)
+        # if the file already exists, leave it. It might have been written in a run before
+        if not (os.path.isfile(outputFileName)):
+            output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)    
+
+
+
 
 def parallelize():
     line_num=0
@@ -1067,7 +1092,7 @@ def parallelize():
         #sys.exit(1)
         if not (os.path.isfile(outputFileName)):
             #output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
-            jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileName,evalData)))
+            output=jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileName,evalData)))
     for job in jobs:
         job.get()
     pool.close()
@@ -1076,7 +1101,8 @@ def main():
     '''
     Parse the given command line arguments, then act accordingly.
     '''
-    parallelize()
+    #parallelize()
+    no_parallelization()
 
 
 
@@ -1086,7 +1112,7 @@ if __name__=='__main__':
     #import cProfile
     #cProfile.run('main()')
     try:
-        print("inside main of discriminative tagger")
+        #print("inside main of discriminative tagger")
         main()
     except KeyboardInterrupt:
         raise

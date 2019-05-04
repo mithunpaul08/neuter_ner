@@ -12,7 +12,6 @@ import discriminativeTagger
 @timeit.Timer
 def go():
     try:
-        print("inside try of go")
         discriminativeTagger.main()
     except KeyboardInterrupt:
         raise

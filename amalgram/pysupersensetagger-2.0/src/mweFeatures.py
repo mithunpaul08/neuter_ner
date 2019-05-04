@@ -136,9 +136,9 @@ def extractLexiconCandidates(sent):
     according to that segmentation.
     '''
     #assert mwe_lexicons._lexicons   # actually, depends on whether any --lex args are present...
-    print("14 inside extractLexiconCandidates")
+    #print("14 inside extractLexiconCandidates")
     sentence_lemmas = [t.stem for t in sent]
-    print("15 aftersentence_lemmas")
+    #print("15 aftersentence_lemmas")
     return ({lexiconname: lex.shortest_path_decoding(sentence_lemmas, max_gap_length=2)[2] 
             for lexiconname,lex in mwe_lexicons._lexicons.items()}, 
             {listname: lex.shortest_path_decoding(sentence_lemmas, max_gap_length=2)[2] 

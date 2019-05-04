@@ -15,7 +15,7 @@ from cython.view cimport array as cvarray
 import multiprocessing as mp
 from labeledSentence import LabeledSentence
 import morph, tags2sst
-
+import os
 from pyutil.ds import features 
 
 import supersenseFeatureExtractor
@@ -1052,8 +1052,9 @@ def parallelize():
     line_num=0
     pool = mp.Pool(mp.cpu_count()-1)
     jobs = []
-    import os
     cwd=os.getcwd()
+    args = opts()
+    evalData = setup(args)
     files=os.listdir(args.input_folder)
     for index,inputFile in enumerate(files):
         fullpath=args.input_folder+"/"+inputFile
@@ -1073,8 +1074,6 @@ def main():
     '''
     Parse the given command line arguments, then act accordingly.
     '''
-    args = opts()
-    evalData = setup(args)
     parallelize()
 
 

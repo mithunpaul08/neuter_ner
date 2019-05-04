@@ -172,22 +172,22 @@ This can be run using
   
  - status of sstagging for each dataset
    - **fever-train**: 
-        - started running sstagging again in **tmux 11** at 3pm on april 29th in **clara**
+        - started running sstagging again in **tmux 3** at 10am on may 4th in **amy**
         - you can check status using
         `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
        
-        - latest status:count  is 122347/238,394 files done
+        - latest status:count  is 156155/238,394 files done
     - **fever-dev**: 
-        - have started ss tagging run of all claims and evidences of fever dev from **tmux 13** in clara. 
+        - have started ss tagging run of all claims and evidences of fever dev from **dead tmux 13** in clara. 
         -  you can check outputs using
          `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
          - latest status: count is 51,676/52504 files
         
     - **fnc-train**
-        - have started a run on **amy** from **tmux 0** 
+        - have started a run on **started amy** from **tmux 0** 
         - status can be checked using
         `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
-        - latest status:count is 669/81808
+        - latest status:count is 1220/81808
         update: mihai, wants me to stop using jenny so that robert can use it. i'll move to amy if its easy.
         update: started again on amy. tmux 0. also uncommented code that will ignore already written files, hopefully. at 7pm wednesday
     - **fnc-dev**   
@@ -195,7 +195,7 @@ This can be run using
         - status can be checked using 
         ` ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
        - am using tmux1 as a watcher.
-       - latest status: 687/18136 files are done.
+       - latest status: 845/18136 files are done.
         
     - merging sstags+nertags with collapsing: status as of may 1st 2019.7pm
         - started adding dash to the stage1 merge. also removed punctuations  
@@ -203,6 +203,12 @@ This can be run using
         For collapsing
         - when you see a word, look one step ahead and see if the next guy ahead is a dash. If yes, keep looking ahead, and keep track of/count all the dashes. 
         - Then collapse all the ones you have seen so far. skip the 3 or whatever number of dashes count and jump to next word/tag
-    
+    - for overlapping,
+        use existing code itself?
             - no overlap/id for verbs
+            
+            
+- adding parallelization inside python
+    - writing code in tmux 0 inside amy
+    - if you hit compile time error/stuck do this:`mithunpaul@amy:~/.pyxbld/lib.linux-x86_64-2.7$ rm discriminativeTagger.so `
  

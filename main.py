@@ -101,6 +101,45 @@ def collapse_continuous_names(claims_words_list, claims_ner_list, ev_claim):
     return new_sent, dict_token_ner_newner, dict_newNerBasedName_lemma
 
 
+def collapse_continuous_names_with_dashes(claims_words_list, claims_ner_list, ev_claim):
+
+    #dict_newNerBasedName_lemma:a mapping from newNerBasedName to its old lemma value(called henceforth as token) Eg:{PERSONc1:Michael Schumacher}.
+    dict_newNerBasedName_lemma = {}
+    # dict_token_ner_newner:a mapping from a tuple (lemma, original NER tag of the word) to its newNerBasedName  Eg:{(Michael Schumacher,PERSON):PERSONc1}
+    dict_token_ner_newner = {}
+    #dict_lemmas_newNerBasedName. A mapping from LEMMA/token of the word to its newNerBasedName Eg:{Michael Schumacher:PERSONc1}
+    dict_lemmas_newNerBasedName = {}
+    #dict_newNerBasedName_freq: A mapping from newNerBasedName to the number of times it occurs in a given sentences
+    dict_newNerBasedName_freq = {}
+    #a stack to hold all the ner tags before current- this is useful for checking if a name is spread across multiple NER tags. Eg: JRR Tolkein= PERSON,PERSON,PERSON
+    prev = []
+    #the final result of combining all tags and lemmas is stored here
+    new_sent = []
+    #this full_name is used to store multiple parts of same name.Eg:Michael Schumacher
+    full_name = []
+
+
+    #in this code, triggers happen only when a continuous bunch of nER tags end. Eg: PERSON , PERSON, O.
+    for index, (curr_ner, curr_word) in enumerate(zip(claims_ner_list, claims_words_list)):
+        if (curr_ner == "O"):
+            if (len(prev) == 0):
+                # if there were no tags just before this O, it means, its the end of a combined name. just add that O and move on
+                new_sent.append(curr_word)
+        else:
+            if (curr_ner=="_"):
+                print("ner tag is _")
+            else:
+                new_sent.append(curr_ner)
+                prev, dict_token_ner_newner, new_sent, full_name, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma \
+                    = get_new_name(prev, dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
+                                   new_sent, ev_claim, full_name, dict_lemmas_newNerBasedName,
+                                   dict_newNerBasedName_lemma)
+
+
+    return new_sent, dict_token_ner_newner, dict_newNerBasedName_lemma
+
+
+
 def append_count_to_two_consecutive_ner_tags(prev, dict_newNerBasedName_freq, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                                              dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma):
 
@@ -319,6 +358,9 @@ def create_parser():
 
 def collapseAndCreateSmartTagsSSNer(claim_words, claim_ner_tags, evidence_words, evidence_ner_tags):
     ev_claim = "c"
+    neutered_claim, dict_tokenner_newner_claims, dict_newner_token = collapse_continuous_names_with_dashes(claim_words,
+                                                                                               claim_ner_tags,
+                                                                                               ev_claim)
     neutered_claim, dict_tokenner_newner_claims, dict_newner_token = append_tags_with_count(claim_words,
                                                                                                claim_ner_tags,
                                                                                                ev_claim)
@@ -470,7 +512,6 @@ if __name__ == '__main__':
     if(args.convert_prepositions==True):
         claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
     if (args.create_smart_NERs == True):
-        #def collapseAndReplaceWithNerSmartly(claim_words, claim_pos_tags, evidence_words, evidence_ner_tags):
         claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
     if (args.merge_ner_ss == True):
         claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)

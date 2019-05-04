@@ -12,7 +12,7 @@ from collections import defaultdict, Counter
 from datetime import datetime
 cimport cython
 from cython.view cimport array as cvarray
-
+import multiprocessing as mp
 from labeledSentence import LabeledSentence
 import morph, tags2sst
 
@@ -1048,31 +1048,37 @@ def predict(args, t,output_file,featurized_dataset=None, sentence=None, print_pr
         print("10 inside else after elif")
         t.tagStandardInput()
 
+def parallelize():
+    line_num=0
+    pool = mp.Pool(mp.cpu_count()-1)
+    jobs = []
+    import os
+    cwd=os.getcwd()
+    files=os.listdir(args.input_folder)
+    for index,inputFile in enumerate(files):
+        fullpath=args.input_folder+"/"+inputFile
+        print("input file is:")
+        print(fullpath)
+        args.predict=fullpath
+        outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
+        # if the file already exists, leave it. It might have been written in a run before
+        if not (os.path.isfile(outputFileName)):
+            #output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+            jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileName,featurized_dataset=evalData)))
+    for job in jobs:
+        job.get()
+    pool.close()
+
 def main():
     '''
     Parse the given command line arguments, then act accordingly.
     '''
     args = opts()
-    import os
-    cwd=os.getcwd()
-    files=os.listdir(args.input_folder)
     evalData = setup(args)
-    if not (args.use_xargs):
-        for index,inputFile in enumerate(files):
-                fullpath=args.input_folder+"/"+inputFile
-                print("input file is:")
-                print(fullpath)
-                args.predict=fullpath
-                outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
-        # if the file already exists, leave it. It might have been written in a run before
-                if not (os.path.isfile(outputFileName)):
-                    output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
-    else:
-        inputFile=args.predict
-        outputFileName=args.output_folder+"/"+inputFile+".pred.tags"
-        # if the file already exists, leave it. It might have been written in a run before
-        if not (os.path.isfile(outputFileName)):
-            output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+    parallelize()
+
+
+
 
 
 if __name__=='__main__':

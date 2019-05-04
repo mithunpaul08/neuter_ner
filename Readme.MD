@@ -184,7 +184,7 @@ This can be run using
          - latest status: count is 51,676/52504 files
         
     - **fnc-train**
-        - have started a run on **jenny** from **tmux 0** 
+        - have started a run on **amy** from **tmux 0** 
         - status can be checked using
         `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
         - latest status:count is 669/81808

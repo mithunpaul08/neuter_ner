@@ -9,7 +9,7 @@ from __future__ import print_function, division
 import sys, codecs, random, math, time
 from numbers import Number
 from collections import defaultdict, Counter
-
+from datetime import datetime
 cimport cython
 from cython.view cimport array as cvarray
 
@@ -999,40 +999,53 @@ def analyze(tokens, poses):
     return result
     
 def predict(args, t,output_file,featurized_dataset=None, sentence=None, print_predictions=True):
-    
+    a =datetime.now()
+    print("11 just getting inside predict function")
     if args.test_predict is not None or args.test is not None:
         # evaluate (test), and possibly print predictions for that data
-        
+        print("7 args.test_predict is not None or args.test is not None")
         if featurized_dataset is None:
+            print("8  featurized dataset is none")
             featurized_dataset = SupersenseFeaturizer(featureExtractor, SupersenseTrainSet(args.test_predict or args.test, 
                                                                                 t._labels, legacy0=args.legacy0,
                                                                                 keep_in_memory=True), 
                                                       t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
-        
+        b = datetime.now()
+        c=b-a
+        print("value of time taken is")
+        print(c)
         t.decode_dataset(featurized_dataset,output_file, print_predictions=(args.test_predict is not None and print_predictions), 
                          useBIO=args.bio, includeLossTerm=False, costAugVal=0.0)
         
     if args.predict is not None or sentence:
+        print("1 inside args.predict is not None or sentence:1 ")
+        
         # predict on a separate dataset
         
         if args.predict is not None:
+            print("2 args.predict is not None:")
             dataSet = SupersenseDataSet(args.predict, 
                                         t._labels, legacy0=args.legacy0, 
                                         keep_in_memory=False,
                                         autoreset=False)
+            print(dataSet)
         else:
+            print("3 am inside else of args.predict is not None")
+            print(sentence)
             dataSet = [sentence]
-        
+            print(dataSet)
         predData = SupersenseFeaturizer(featureExtractor, dataSet,   # could be stdin, which should never be reset 
                                         t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
 
         t.decode_dataset(predData,output_file,print_predictions=print_predictions, useBIO=args.bio, includeLossTerm=False, costAugVal=0.0)
         
         
-    
+        
     elif args.test is None and args.weights:
+        print("9 inside elif")
         t.printWeights(sys.stdout)
     else:
+        print("10 inside else after elif")
         t.tagStandardInput()
 
 def main():
@@ -1047,6 +1060,8 @@ def main():
     if not (args.use_xargs):
         for index,inputFile in enumerate(files):
                 fullpath=args.input_folder+"/"+inputFile
+                print("input file is:")
+                print(fullpath)
                 args.predict=fullpath
                 outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
         # if the file already exists, leave it. It might have been written in a run before
@@ -1064,6 +1079,7 @@ if __name__=='__main__':
     #import cProfile
     #cProfile.run('main()')
     try:
+        print("inside main of discriminative tagger")
         main()
     except KeyboardInterrupt:
         raise

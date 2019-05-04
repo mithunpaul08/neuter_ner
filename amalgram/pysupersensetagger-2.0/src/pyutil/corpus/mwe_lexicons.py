@@ -212,6 +212,7 @@ class MultiwordLexicon(object):
           < a_b c d e (4) < a b c d e (5)
         '''
         # cost value is the number of edges in the path
+        print("16 inside djikstra")
         queue = []
         e = len(sentence_lemmas)
         assert 0<=start<e
@@ -263,6 +264,7 @@ class MultiwordLexicon(object):
                         heappush(queue, (len(path)+1+gapCost, b, e, newpath+path, newtags+tags, newtokinfo+tokinfo))
                         #+b+1
             if not queue:
+                print("17 inside if not queue. going to raise an exception")
                 raise Exception('Something went wrong: '+repr(sentence_lemmas))
 
             val, e, _, path, tags, tokinfo = heappop(queue)   # old beginning is the new end

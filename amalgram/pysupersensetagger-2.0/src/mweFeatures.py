@@ -144,7 +144,6 @@ def extractLexiconCandidates(sent):
             {listname: lex.shortest_path_decoding(sentence_lemmas, max_gap_length=2)[2] 
             for listname,lex in mwe_lexicons._lists.items()})
 
-
 """
 def extractLexiconCandidates(sent, lowercase=True):
     sent_cands = []

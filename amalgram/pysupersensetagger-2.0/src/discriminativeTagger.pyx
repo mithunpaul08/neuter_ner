@@ -1030,10 +1030,10 @@ def predict(args, t,output_file,featurized_dataset, sentence=None, print_predict
                                         autoreset=False)
             print(dataSet)
         else:
-            #print("3 am inside else of args.predict is not None")
-            #print(sentence)
+            print("3 am inside else of args.predict is not None")
+            print(sentence)
             dataSet = [sentence]
-            #print(dataSet)
+            print(dataSet)
         predData = SupersenseFeaturizer(featureExtractor, dataSet,   # could be stdin, which should never be reset 
                                         t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
 
@@ -1063,6 +1063,8 @@ def parallelize():
         args.predict=fullpath
         outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
         # if the file already exists, leave it. It might have been written in a run before
+        #print(f"output file full path is {outputFileName}")
+        #sys.exit(1)
         if not (os.path.isfile(outputFileName)):
             #output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
             jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileName,evalData)))

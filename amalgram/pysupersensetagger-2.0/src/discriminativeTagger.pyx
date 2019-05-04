@@ -1030,10 +1030,10 @@ def predict(args, t,output_file,featurized_dataset, sentence=None, print_predict
                                         autoreset=False)
             print(dataSet)
         else:
-            print("3 am inside else of args.predict is not None")
-            print(sentence)
+            #print("3 am inside else of args.predict is not None")
+            #print(sentence)
             dataSet = [sentence]
-            print(dataSet)
+            #print(dataSet)
         predData = SupersenseFeaturizer(featureExtractor, dataSet,   # could be stdin, which should never be reset 
                                         t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
 
@@ -1042,10 +1042,10 @@ def predict(args, t,output_file,featurized_dataset, sentence=None, print_predict
         
         
     elif args.test is None and args.weights:
-        print("9 inside elif")
+        #print("9 inside elif")
         t.printWeights(sys.stdout)
     else:
-        print("10 inside else after elif")
+        #print("10 inside else after elif")
         t.tagStandardInput()
 
 def parallelize():
@@ -1058,8 +1058,8 @@ def parallelize():
     files=os.listdir(args.input_folder)
     for index,inputFile in enumerate(files):
         fullpath=args.input_folder+"/"+inputFile
-        print("input file is:")
-        print(fullpath)
+        #print("input file is:")
+        #print(fullpath)
         args.predict=fullpath
         outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
         # if the file already exists, leave it. It might have been written in a run before

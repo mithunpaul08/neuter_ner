@@ -212,7 +212,7 @@ class MultiwordLexicon(object):
           < a_b c d e (4) < a b c d e (5)
         '''
         # cost value is the number of edges in the path
-        print("16 inside djikstra")
+        #print("16 inside djikstra")
         queue = []
         e = len(sentence_lemmas)
         assert 0<=start<e

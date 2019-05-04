@@ -92,6 +92,8 @@ def collapse_continuous_names(claims_words_list, claims_ner_list, ev_claim):
                     prev.append(curr_ner)
                     full_name.append(curr_word)
                 else:
+
+
                     # if the previous ner tag and current ner tag are not the same, this O means, we are just done with those couple of continuous tags. No collapsing, but add both names to dictionaries and empty stack
                     prev, dict_token_ner_newner, new_sent, full_name, dict_newNerBasedName_freq, \
                     dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma = \
@@ -112,7 +114,7 @@ def collapse_continuous_names_with_dashes(claims_words_list, claims_ner_list, ev
     #dict_newNerBasedName_freq: A mapping from newNerBasedName to the number of times it occurs in a given sentences
     dict_newNerBasedName_freq = {}
     #a stack to hold all the ner tags before current- this is useful for checking if a name is spread across multiple NER tags. Eg: JRR Tolkein= PERSON,PERSON,PERSON
-    prev = []
+    prev_ner = ""
     #the final result of combining all tags and lemmas is stored here
     new_sent = []
     #this full_name is used to store multiple parts of same name.Eg:Michael Schumacher
@@ -122,22 +124,54 @@ def collapse_continuous_names_with_dashes(claims_words_list, claims_ner_list, ev
     #in this code, triggers happen only when a continuous bunch of nER tags end. Eg: PERSON , PERSON, O.
     for index, (curr_ner, curr_word) in enumerate(zip(claims_ner_list, claims_words_list)):
         if (curr_ner == "O"):
-            if (len(prev) == 0):
+            if ((prev_ner) == ""):
                 # if there were no tags just before this O, it means, its the end of a combined name. just add that O and move on
                 new_sent.append(curr_word)
         else:
             if (curr_ner=="_"):
                 print("ner tag is _")
+                list_of_indices_to_collapse = find_how_many_indices_to_collapse(index, claims_ner_list)
+                assert (len(claim_ann.tags) is not 0)
+                new_lemma_name=join_indices_to_new_name(claims_words_list,list_of_indices_to_collapse)
+                str_new_lemma_name=" ".join(new_lemma_name)
+
+                #add it to all dictionaries where the curr_ner=prev_ner Eg: Michael Schumacher:Person and curr_word=str_new_lemma_name
+                dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma \
+                    = append_count_to_ner_tags(dict_newNerBasedName_freq, prev_ner, dict_token_ner_newner, str_new_lemma_name,
+                                               new_sent, ev_claim,
+                                               dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
             else:
-                new_sent.append(curr_ner)
-                prev, dict_token_ner_newner, new_sent, full_name, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma \
-                    = get_new_name(prev, dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
-                                   new_sent, ev_claim, full_name, dict_lemmas_newNerBasedName,
-                                   dict_newNerBasedName_lemma)
+                prev_ner=curr_ner
+                #look ahead, if the next NER value is a dash, don't add to dictionary. else add.
+                if not (claims_ner_list[index+1]=="_"):
+
+
+                    dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma\
+                        = append_count_to_ner_tags(dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
+                                                 new_sent, ev_claim,
+                                                 dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
+
+
+
 
 
     return new_sent, dict_token_ner_newner, dict_newNerBasedName_lemma
 
+
+def append_count_to_ner_tags( dict_newNerBasedName_freq, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim,
+                                             dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma):
+    # if the ner value is stative, don't find new ner based name. eg:stativec1. just add it to all dictionaries
+    if(curr_ner=="stative"):
+        new_nertag_i=curr_ner
+    else:
+        new_nertag_i = attach_freq_to_nertag(curr_ner, dict_newNerBasedName_freq, "", ev_claim)
+    lemma_ner_tuple = (curr_word, curr_ner)
+    new_sent.append(new_nertag_i)
+    add_to_dict_if_not_exists(curr_word, new_nertag_i, dict_lemmas_newNerBasedName)
+    add_to_dict_if_not_exists(new_nertag_i,curr_word, dict_newNerBasedName_lemma)
+    add_to_dict_if_not_exists(lemma_ner_tuple, new_nertag_i, dict_tokenner_newner)
+
+    return dict_tokenner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma
 
 
 def append_count_to_two_consecutive_ner_tags(prev, dict_newNerBasedName_freq, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
@@ -166,6 +200,10 @@ def add_to_dict_if_not_exists(key, value, dict):
     if not (key in dict.keys()):
         dict[key]=value
 
+def replace_value(key, value, dict):
+        dict[key]=value
+
+
 def get_frequency_of_tag(curr_ner,dict_newner_token):
     freq=1
     if curr_ner in dict_newner_token.keys():
@@ -176,7 +214,26 @@ def get_frequency_of_tag(curr_ner,dict_newner_token):
         dict_newner_token[curr_ner] = 1
     return freq
 
+#if there is one NER followed by more than one dashes, collect them all together so that it can be assigned to one name/new_ner_tag etc
+def find_how_many_indices_to_collapse(curr_index, list_ner_tags):
+    #very first time add the NER tag before _ Eg: Formula in Formula one
+    list_indices_to_collapse=[]
+    list_indices_to_collapse.append(curr_index-1)
+    #then keep adding indices unti you hit a word that is not _
 
+    while (curr_index<len(list_ner_tags)):
+        if  (list_ner_tags[curr_index] == "_"):
+            list_indices_to_collapse.append(curr_index)
+            curr_index = curr_index + 1
+        else:
+            return list_indices_to_collapse
+    return list_indices_to_collapse
+
+def join_indices_to_new_name(all_words,list_indices):
+    new_name=[]
+    for i in list_indices:
+        new_name.append(all_words[i])
+    return new_name
 
 def append_tags_with_count(claims_words_list, claims_ner_list, ev_claim):
     dict_ner_freq = {}
@@ -361,12 +418,8 @@ def collapseAndCreateSmartTagsSSNer(claim_words, claim_ner_tags, evidence_words,
     neutered_claim, dict_tokenner_newner_claims, dict_newner_token = collapse_continuous_names_with_dashes(claim_words,
                                                                                                claim_ner_tags,
                                                                                                ev_claim)
-    neutered_claim, dict_tokenner_newner_claims, dict_newner_token = append_tags_with_count(claim_words,
-                                                                                               claim_ner_tags,
-                                                                                               ev_claim)
-
     ev_claim = "e"
-    new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = append_tags_with_count(
+    new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = collapse_continuous_names_with_dashes(
         evidence_words, evidence_ner_tags, ev_claim)
 
     neutered_evidence, found_intersection = check_exists_in_claim(new_sent_after_collapse,
@@ -382,7 +435,7 @@ def collapseAndCreateSmartTagsSSNer(claim_words, claim_ner_tags, evidence_words,
 
 def collapseAndReplaceWithNerSmartly(claim_words,claim_ner_tags, evidence_words, evidence_ner_tags):
         ev_claim="c"
-        neutered_claim, dict_tokenner_newner_claims, dict_newner_token = collapse_continuous_names(claim_words,
+        neutered_claim, dict_token_ner_newner_claims, dict_newNerBasedName_lemma = collapse_continuous_names(claim_words,
                                                                                                       claim_ner_tags,
                                                                                                       ev_claim)
 
@@ -391,7 +444,7 @@ def collapseAndReplaceWithNerSmartly(claim_words,claim_ner_tags, evidence_words,
 
         neutered_evidence, found_intersection = check_exists_in_claim(new_sent_after_collapse,
                                                                        dict_tokenner_newner_evidence, dict_newner_token_ev,
-                                                                       dict_tokenner_newner_claims)
+                                                                      dict_token_ner_newner_claims)
 
 
         claimn = " ".join(neutered_claim)

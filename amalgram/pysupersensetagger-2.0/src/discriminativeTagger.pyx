@@ -998,7 +998,7 @@ def analyze(tokens, poses):
     result["tags_tsv"] = unicode(sentence)
     return result
     
-def predict(args, t,output_file,featurized_dataset=None, sentence=None, print_predictions=True):
+def predict(args, t,output_file,featurized_dataset, sentence=None, print_predictions=True):
     a =datetime.now()
     print("11 just getting inside predict function")
     if args.test_predict is not None or args.test is not None:
@@ -1065,7 +1065,7 @@ def parallelize():
         # if the file already exists, leave it. It might have been written in a run before
         if not (os.path.isfile(outputFileName)):
             #output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
-            jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileName,featurized_dataset=evalData)))
+            jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileName,evalData)))
     for job in jobs:
         job.get()
     pool.close()

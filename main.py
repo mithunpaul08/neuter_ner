@@ -350,6 +350,9 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
                         if(actual_ner_tag==ner_cl):
                             val_claim = dict_tokenner_newner_claims[tup]
                             combined_sent.append(val_claim)
+                        #if it doesn't, just consider it as a regular token and add it as is
+                        else:
+                            combined_sent.append(token)
 
 
                         #now that you found that there is an overlap between your evidence token and the claim token, no need to go through the claims dictionary which maps tokens to ner

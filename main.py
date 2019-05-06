@@ -103,7 +103,7 @@ def collapse_continuous_names(claims_words_list, claims_ner_list, ev_claim):
     return new_sent, dict_token_ner_newner, dict_newNerBasedName_lemma
 
 
-def collapse_continuous_names_with_dashes(claims_words_list, claims_ner_list, ev_claim):
+def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
 
     #dict_newNerBasedName_lemma:a mapping from newNerBasedName to its old lemma value(called henceforth as token) Eg:{PERSONc1:Michael Schumacher}.
     dict_newNerBasedName_lemma = {}
@@ -122,17 +122,18 @@ def collapse_continuous_names_with_dashes(claims_words_list, claims_ner_list, ev
 
 
     #in this code, triggers happen only when a continuous bunch of nER tags end. Eg: PERSON , PERSON, O.
-    for index, (curr_ner, curr_word) in enumerate(zip(claims_ner_list, claims_words_list)):
+    for index, (curr_ner, curr_word) in enumerate(zip(ner_list, words_list)):
         if (curr_ner == "O"):
-            if ((prev_ner) == ""):
                 # if there were no tags just before this O, it means, its the end of a combined name. just add that O and move on
                 new_sent.append(curr_word)
+                prev_ner=curr_ner
         else:
-            if (curr_ner=="_"):
-                print("ner tag is _")
-                list_of_indices_to_collapse = find_how_many_indices_to_collapse(index, claims_ner_list)
+            if (curr_ner=="_" and prev_ner not in ["O","_"]):
+                #if the current NER tag is _ and the previous NER tag was something other than a  _ or O it means, this _
+                #  was just after a proper NER tag, like FOOD, NUMBER etc. its time to collapse.
+                list_of_indices_to_collapse = find_how_many_indices_to_collapse(index, ner_list)
                 assert (len(claim_ann.tags) is not 0)
-                new_lemma_name=join_indices_to_new_name(claims_words_list,list_of_indices_to_collapse)
+                new_lemma_name=join_indices_to_new_name(words_list, list_of_indices_to_collapse)
                 str_new_lemma_name=" ".join(new_lemma_name)
 
                 #add it to all dictionaries where the curr_ner=prev_ner Eg: Michael Schumacher:Person and curr_word=str_new_lemma_name
@@ -140,16 +141,22 @@ def collapse_continuous_names_with_dashes(claims_words_list, claims_ner_list, ev
                     = append_count_to_ner_tags(dict_newNerBasedName_freq, prev_ner, dict_token_ner_newner, str_new_lemma_name,
                                                new_sent, ev_claim,
                                                dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
+                prev_ner = curr_ner
             else:
-                prev_ner=curr_ner
-                #look ahead, if the next NER value is a dash, don't add to dictionary. else add.
-                if not (claims_ner_list[index+1]=="_"):
-
-
-                    dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma\
-                        = append_count_to_ner_tags(dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
-                                                 new_sent, ev_claim,
-                                                 dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
+                #if the curr_ner is _ and the previous one was O or _, it is an anomaly
+                # , it really doesn't make sense/doesn't need collapsing. Just add the word as is
+                if (curr_ner == "_" and prev_ner in ["O","_"]):
+                    new_sent.append(curr_word)
+                    prev_ner = curr_ner
+                else:
+                    #if you reach here, it means, the current_ner is none of O,_ with O before it, or _ with a proper tag before it. So this must be a proper tag, like FOOD, NUMBER etc
+                    prev_ner=curr_ner
+                    #look ahead, if the next NER value is a dash, don't add to dictionary. else add.
+                    if not (ner_list[index + 1] == "_"):
+                        dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma\
+                            = append_count_to_ner_tags(dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
+                                                     new_sent, ev_claim,
+                                                     dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
 
 
 
@@ -419,10 +426,10 @@ def collapseAndCreateSmartTagsSSNer(claim_words, claim_ner_tags, evidence_words,
                                                                                                claim_ner_tags,
                                                                                                ev_claim)
     ev_claim = "e"
-    new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = collapse_continuous_names_with_dashes(
+    ev_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = collapse_continuous_names_with_dashes(
         evidence_words, evidence_ner_tags, ev_claim)
 
-    neutered_evidence, found_intersection = check_exists_in_claim(new_sent_after_collapse,
+    neutered_evidence, found_intersection = check_exists_in_claim(ev_after_collapse,
                                                                   dict_tokenner_newner_evidence, dict_newner_token_ev,
                                                                   dict_tokenner_newner_claims)
 
@@ -475,8 +482,9 @@ def mergeSSandNERTags(ss_tags, ner_tags ):
     # give priority to NER tags when there is a collision,. Except when NER tag is MISC. In that case pick SSTag
     for index,sst in enumerate(ss_tags):
         if not (sst==""):
-            #if the sstag is _, we need it as is for the collapsing process
-            if(sst=="_"):
+            #if the sstag is _, , we need it as is for the collapsing process
+            #however check if the tag before this wasn't empty- there were cases of "_,_
+            if(sst=="_" and not ner_tags[index-1]=="O"):
                 ner_tags[index] = sst
             else:
                 # if the ss TAG IS NOT empty  #get the corresponding ner tag

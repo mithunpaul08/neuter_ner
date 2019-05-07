@@ -1046,7 +1046,7 @@ def main():
     evalData = setup(args)
     if not (args.use_xargs):
         for index,inputFile in enumerate(files):
-                fullpath=args.input_folder+"/"+inputFile
+                fullpath=inputFile
                 args.predict=fullpath
                 outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
         # if the file already exists, leave it. It might have been written in a run before

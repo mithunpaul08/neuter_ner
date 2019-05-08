@@ -136,11 +136,15 @@ steps to create a conda environment and run the sst tagger for my input file
 
 `find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}`
 
+also here is a version of the same command that i desinged which will ask the user permission
+`find ./input_to_sstagger_output_from_pos_tagger/ -print0 | xargs -0 -n 1 -I{} -t -p ./sst.sh {}`
  
 Notes:
 - the xargs command will run the sst.sh on each input file from the folder: input_to_sstagger_output_from_pos_tagger
 - i have modified the python code to create output file with $inputfilename.pred.tags in the output folder mentioned above
 - P is the number of cores you can spare in your machine. 
+- this command will create the output (*.pred.tags) at exactly the same location as the input file. Which means, you must do `rm *.tags` before every run else it will
+start creating files like `*.pred.tags.pred.tags`
 
 #### Step 3: merging NER tags and ss tags
 
@@ -165,40 +169,46 @@ This can be run using
 
 `python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True`
 
+
+
 # notes to self/delete later
 
  
-        
-- status as of 29th april
-  - back to square one. tried writing cython code to load lexicon within, but it also gets stuck after like 184 files. going very slow. 
-  - marco said, run xargs on one side, i.e let xargs load files and write pred tags for everyone
-  - while read up about parallel processing in python
-  - in folder: `neuter_ner_fever_training`, will start xargs based code
-  - in folder: `neuter_ner_fever_dev` will continue experimenting with  
-  - update: stared a run on tmux 13 for fever_training. I think i'll just let it keep going and
-  not even work on python parallelization. Marco said if you want to do parallelization you cant beat xargs. No point trying to hack the system. 
-  it'll get there when you get there.e
-  - i don't want to also run the other way wher i load one single file concatenated with evidences...that way i wont even know which file is where.
-  - only question now though is , should i start other 3 runs also..but that'll mean i'll have to reduce the 72 multi core processes...rehne de..
-  
- - status of sstagging for each dataset
+ 
+ - status of sstagging for each dataset:status as of may 7th 2019.5pm
+    - although one thing i can do is move out the input files corresponding to the ones where outputs were generated
+    - when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
+    or google: ```xargs site:*.edu```
+    - for fever-train: moved all the already written .pred.tags files to :`net/kate/storage/work/mithunpaul/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger$`
+    - also deleted the corresponding files from `/net/kate/storage/work/mithunpaul/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger`
+   - will try to run the xargs based command again to make it convert the rest of the files.
+   - update: the plain xargs is getting stuck at huge evidence files. So i am going to run pairs of claims and evidences
+   `./input_to_sstagger_output_from_pos_tagger/ -iname "*1*" -print0 | xargs -0 -n 1 -I{} -t -P 30 ./sst.sh {}`
+   
+   - i am running out of ideas. if i run using xargs, its getting stuck at the djikstra calculation for huge evidence files. plus not to mention loading lexicons.
+   if i run using python parallelization, it doesn't even write a file..wtf..
+   - have started on tmux0 on clara and watching from tmux5 on amy
    - **fever-train**: 
         - started running sstagging again in **tmux 3** at 10am on may 4th in **amy**
         - you can check status using
         `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
-       
         - latest status:count  is 156155/238,394 files done
+        -update: its written 10636 files more of which 10407 have size more than zero bytes. So hopefully there is some stuff there.
     - **fever-dev**: 
-        - have started ss tagging run of all claims and evidences of fever dev from **dead tmux 13** in clara. 
         -  you can check outputs using
          `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
          - latest status: count is 51,676/52504 files
-        
-    - **fnc-train**
+        -update: have moved already tagged files to :
+        `:~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/already_tagged`
+        -will try the python based parallelization thing now
+        - remove all input files corresponding to the 51k files that were already tagged.
+        - so now the input file directory must be left with 52504-51676=828 input files. a good number to check if the cython parallel processing code is workig
+        - the actual set of input files are kept here: `~/neuter_ner_fever_dev/outputs`
+    - **fnc-train** (this is the only thing running.)
         - have started a run on **started amy** from **tmux 0** 
         - status can be checked using
         `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
-        - latest status:count is 1220/81808
+        - latest status:count is 1456/81808
         update: mihai, wants me to stop using jenny so that robert can use it. i'll move to amy if its easy.
         update: started again on amy. tmux 0. also uncommented code that will ignore already written files, hopefully. at 7pm wednesday
     - **fnc-dev**   
@@ -208,18 +218,16 @@ This can be run using
        - am using tmux1 as a watcher.
        - latest status: 845/18136 files are done.
         
-    - merging sstags+nertags with collapsing: status as of may 1st 2019.7pm
-        - started adding dash to the stage1 merge. also removed punctuations  
-        Next:
-        For collapsing
-        - when you see a word, look one step ahead and see if the next guy ahead is a dash. If yes, keep looking ahead, and keep track of/count all the dashes. 
-        - Then collapse all the ones you have seen so far. skip the 3 or whatever number of dashes count and jump to next word/tag
-    - for overlapping,
-        use existing code itself?
-            - no overlap/id for verbs
+- python parallel processing
+    will try again on say fever-dev.
+- merging sstags+nertags with collapsing: status as of may 7th 2019.5pm
+        - done with both merging and collapsing. have to test with couple of different examples though.        
             
-            
-- adding parallelization inside python
-    - writing code in tmux 0 inside amy
-    - if you hit compile time error/stuck do this:`mithunpaul@amy:~/.pyxbld/lib.linux-x86_64-2.7$ rm discriminativeTagger.so `
+- Commonly encountered errors
+    - if you hit compile time error with text as
+    `ImportError: Building module discriminativeTagger failed: ["CompileError: command 'gcc' failed with exit status 1\n"]` it means you have a compilation error. Kill the command and scroll up to find the compilation error.
+    - if your code is not responding/hangs for more than a minute after you hit `./sst.sh logs` 
+    or hit a error which says cannot find compiled *.so files, do this:`rm ~/.pyxbld/lib.linux-x86_64-2.7/*.so`
+    - if it says package x not found, that means you haven't turned on conda. do `source activate py2`
+    - if nonoe of this works, i.e tmux window is not responding, get out of the tmux window and do `tmux kill-session -t 4`
  

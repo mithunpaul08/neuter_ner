@@ -27,7 +27,8 @@ from dataFeaturizer import SupersenseDataSet, SupersenseTrainSet, SupersenseFeat
 from decoding cimport _ground0, _ground, c_viterbi, i_viterbi
 
 # inline functions _ground0() and _ground() are duplicated in decoding.pyx
-
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 cdef class Weights(object):
     cdef float _l0, _l1, _sql2
@@ -760,7 +761,6 @@ class DiscriminativeTagger(object):
             if print_predictions:
                 #print predictions
                 print(sent)
-                print("ging to write output file")
                 f=open(output_file,"w",0)
                 f.write(sent.__str__())
                 f.close()
@@ -1050,26 +1050,30 @@ def predict(args, t,output_file,featurized_dataset, sentence=None, print_predict
 
 def no_parallelization():
     args = opts()
+    evalData = setup(args)
+    if (args.use_xargs):
+        run_with_xargs(args,evalData)
+    else:
+        run_with_python_parallelization(args,evalData)
+
+
+def run_with_python_parallelization(args,evalData):
     import os
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
-    evalData = setup(args)
-    if not (args.use_xargs):
-        for index,inputFile in enumerate(files):
+    print("inside run_with_python_parallization")
+    for index,inputFile in enumerate(files):
                 fullpath=inputFile
                 args.predict=fullpath
                 outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
                 if not (os.path.isfile(outputFileName)):
                     output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
-    else:
+
+def run_with_xargs(args,evalData):
         inputFile=args.predict
         outputFileName=args.output_folder+"/"+inputFile+".pred.tags"
-        #print(inputFile)
-        #print(outputFileName)
-        # if the file already exists, leave it. It might have been written in a run before
         if not (os.path.isfile(outputFileName)):
-            output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)    
-
+            predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)    
 
 
 

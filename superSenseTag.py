@@ -2,6 +2,7 @@ from tqdm import tqdm
 import json,mmap,os,argparse
 import processors
 from processors import *
+from nltk.tokenize import sent_tokenize
 
 def parse_commandline_args():
     return create_parser().parse_args()
@@ -108,6 +109,15 @@ def write_token_POS_disk_as_csv(annotated_sent,full_path_output_file):
                 for word,postag in zip(annotated_sent.words, annotated_sent.tags):
                     outfile.write(word+"\t"+postag+"\n")
 
+def write_list_of_evidence_sentences_to_disk(annotated_sentences,full_path_output_file):
+        if not (os.path.isfile(full_path_output_file)):
+            with open(full_path_output_file, 'w') as outfile:
+                outfile.write('')
+                with open(full_path_output_file, 'a+') as outfile:
+                    for annotated_sent in annotated_sentences:
+                        for word, postag in zip(annotated_sent.words, annotated_sent.tags):
+                            outfile.write(word + "\t" + postag + "\n")
+                        outfile.write("\n")
 
 if __name__ == '__main__':
 
@@ -130,20 +140,27 @@ if __name__ == '__main__':
     index=0
 
     for (c, e ,l) in tqdm(zip(all_claims, all_evidences,all_labels),total=length):
+        claim_ann = API.fastnlp.annotate(c)
+        assert (claim_ann is not None)
 
-            claim_ann, ev_ann = annotate(c, e, API)
-            assert (claim_ann is not None)
+        # new requirement. SSTagger wants a newline after every sentence. So will have to find sentence boundaries.
+        evidence_sentences=sent_tokenize(e)
+        evidence_sentences_annotated=[]
+        for evidence_sentence in evidence_sentences:
+            ev_ann = API.fastnlp.annotate(evidence_sentence)
             assert (ev_ann is not None)
+            evidence_sentences_annotated.append(ev_ann)
 
-            if(args.write_pos_tags):
-                # write each token and its pos tag to disk, with one line each-This is used as input for the SSTagger
-                out_file_name="claim_words_pos_datapointid_"+str(index)
-                full_path_output_file=output_folder+out_file_name
-                write_token_POS_disk_as_csv(claim_ann, full_path_output_file)
-                out_file_name = "evidence_words_pos_datapointid_" + str(index)
-                full_path_output_file = output_folder + out_file_name
-                write_token_POS_disk_as_csv(ev_ann, full_path_output_file)
-                index=index+1
+        if(args.write_pos_tags):
+            # write each token and its pos tag to disk, with one line each-This is used as input for the SSTagger
+            out_file_name="claim_words_pos_datapointid_"+str(index)
+            full_path_output_file=output_folder+out_file_name
+            write_token_POS_disk_as_csv(claim_ann, full_path_output_file)
+
+            out_file_name = "evidence_words_pos_datapointid_" + str(index)
+            full_path_output_file = output_folder + out_file_name
+            write_list_of_evidence_sentences_to_disk(evidence_sentences_annotated, full_path_output_file)
+            index=index+1
 
 
 

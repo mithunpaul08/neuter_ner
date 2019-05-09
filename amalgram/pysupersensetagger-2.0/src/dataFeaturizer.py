@@ -40,7 +40,8 @@ class SupersenseDataSet(DataSet):
         self._f.close()
     
     def open_file(self):
-        self._f = open(self._path)  # using codecs.open() was screwing up line buffering
+        self._f = codecs.open(self._path,'r','utf-8')  # using codecs.open() was screwing up line buffering
+        #self._f = open(self._path)  # using codecs.open() was screwing up line buffering
     
     def reset(self):
         '''Stop reading more input instances, and prepare to start at the beginning.'''
@@ -176,13 +177,20 @@ class SupersenseFeaturizer(object):
     
     def __iter__(self):
         for j,sent in enumerate(self._data):
+            #print("4 inside iter statement. value of sentence is:")
+            #print(sent)
+            #print("5 done with sentence number")
+            #print(j)
             if self._features is None or j>=len(self._features):  # not yet in cache
+                #print("12 inside the if self._featureues")
                 lexiconCandidatesThisSent = self._extractor.extractLexiconCandidates(sent)
+                #print("12.1 after lexiconcandidates")
                 supersenseCandidatesThisSent = self._extractor.extractWNSupersenseCandidates(sent)
-                
+                #print("12.2 after supersensecandidatesthissent")
                 o0FeatsEachToken = []
                 
                 for i in range(len(sent)):
+                    #print("13 inside for loop range(len(sent")
                     # zero-order features (lifted)
                     o0FeatureMap = self._extractor.extractFeatureValues(sent, i, 
                                                                         usePredictedLabels=False, 
@@ -191,13 +199,17 @@ class SupersenseFeaturizer(object):
                                                                         candidatesThisSentence=(lexiconCandidatesThisSent,supersenseCandidatesThisSent))
                     
                     if not o0FeatureMap:
+                        #print("14 inside oOfeatureMap.going to raise exception")
                         raise Exception('No 0-order features found for this token')
                     
                     # domain-specific features
                     baseFeatures = list(o0FeatureMap.named_items())
                     for pre in self._domain_prefixes or ():
+                        #print("15 inside for pre in self._domain")
                         if sent.sentId.startswith(pre):
+                            #print("16 inside if sent.sentid")
                             for f,v in baseFeatures:
+                                #print("17 inside for f,v in basefeatures")
                                 o0FeatureMap[(pre,f)] = v
                     
                     o0FeatsEachToken.append(o0FeatureMap)

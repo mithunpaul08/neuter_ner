@@ -761,6 +761,8 @@ class DiscriminativeTagger(object):
             if print_predictions:
                 #print predictions
                 print(sent)
+                #print("22 value of outputfileis")
+                #print(output_file)
                 f=open(output_file,"w",0)
                 f.write(sent.__str__())
                 f.close()
@@ -999,7 +1001,6 @@ def analyze(tokens, poses):
     return result
     
 def predict(args, t,output_file,featurized_dataset, sentence=None, print_predictions=True):
-    a =datetime.now()
     #print("11 just getting inside predict function")
     if args.test_predict is not None or args.test is not None:
         # evaluate (test), and possibly print predictions for that data
@@ -1010,10 +1011,6 @@ def predict(args, t,output_file,featurized_dataset, sentence=None, print_predict
                                                                                 t._labels, legacy0=args.legacy0,
                                                                                 keep_in_memory=True), 
                                                       t._featureIndexes, cache_features=False, domain_prefixes=args.domains)
-        b = datetime.now()
-        c=b-a
-        #print("value of time taken is")
-        #print(c)
         t.decode_dataset(featurized_dataset,output_file, print_predictions=(args.test_predict is not None and print_predictions), 
                          useBIO=args.bio, includeLossTerm=False, costAugVal=0.0)
         
@@ -1023,15 +1020,15 @@ def predict(args, t,output_file,featurized_dataset, sentence=None, print_predict
         # predict on a separate dataset
         
         if args.predict is not None:
-            #print("2 args.predict is not None:")
+         #   print("2 args.predict is not None:")
             dataSet = SupersenseDataSet(args.predict, 
                                         t._labels, legacy0=args.legacy0, 
                                         keep_in_memory=False,
                                         autoreset=False)
             #print(dataSet)
         else:
-            #print("3 am inside else of args.predict is not None")
-            #print(sentence)
+          #  print("3 am inside else of args.predict is not None")
+            print(sentence)
             dataSet = [sentence]
             #print(dataSet)
         predData = SupersenseFeaturizer(featureExtractor, dataSet,   # could be stdin, which should never be reset 
@@ -1045,68 +1042,71 @@ def predict(args, t,output_file,featurized_dataset, sentence=None, print_predict
         #print("9 inside elif")
         t.printWeights(sys.stdout)
     else:
-        #print("10 inside else after elif")
+       # print("10 inside else after elif")
         t.tagStandardInput()
 
-def split_based_on_xargs():
+def split_based_on_xargs(run_parallely):
     args = opts()
     evalData = setup(args)
-    if (args.use_xargs):
-        run_with_xargs(args,evalData)
+    if(run_parallely==True):
+        if (args.use_xargs):
+            run_with_xargs(args,evalData)
+        else:
+            run_with_python_parallelization(args,evalData)
     else:
-        run_with_python_parallelization(args,evalData)
+        run_without_python_parallelization(args,evalData)
+
+
+def run_without_python_parallelization(args,evalData):
+    import os
+    cwd=os.getcwd()
+    files=os.listdir(args.input_folder)
+    for index,inputFile in enumerate(files):
+                fullpath_inputFile=os.path.join(cwd,args.input_folder,inputFile)
+                args.predict=fullpath_inputFile
+                outputFileName=inputFile+".pred.tags"
+                outputFileFullPath=os.path.join(cwd,args.output_folder,outputFileName)
+                if not (os.path.isfile(outputFileFullPath)):
+                        output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
 
 
 def run_with_python_parallelization(args,evalData):
     import os
+    line_num=0
+    pool = mp.Pool(mp.cpu_count()-1)
+    jobs = []
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
-    print("inside run_with_python_parallization")
+   # print("inside run_with_python_parallization")
     for index,inputFile in enumerate(files):
-                fullpath=inputFile
-                args.predict=fullpath
-                outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
-                if not (os.path.isfile(outputFileName)):
-                    output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
+                fullpath_inputFile=os.path.join(cwd,args.input_folder,inputFile)
+                args.predict=fullpath_inputFile
+                outputFileName=inputFile+".pred.tags"
+                outputFileFullPath=os.path.join(cwd,args.output_folder,outputFileName)
+    #            print(fullpath_inputFile)
+     #           print(outputFileFullPath)
+                if not (os.path.isfile(outputFileFullPath)):
+                #output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
+                    jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileFullPath,evalData)))
+                for job in jobs:
+                    job.get()
+                    pool.close()
 
 def run_with_xargs(args,evalData):
         inputFile=args.predict
         outputFileName=args.output_folder+"/"+inputFile+".pred.tags"
         if not (os.path.isfile(outputFileName)):
-            predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)    
+            predict(args, _tagger_model,outputFileName,evalData)    
 
 
 
-def parallelize():
-    line_num=0
-    pool = mp.Pool(mp.cpu_count()-1)
-    jobs = []
-    cwd=os.getcwd()
-    args = opts()
-    evalData = setup(args)
-    files=os.listdir(args.input_folder)
-    for index,inputFile in enumerate(files):
-        fullpath=args.input_folder+"/"+inputFile
-        #print("input file is:")
-        #print(fullpath)
-        args.predict=fullpath
-        outputFileName=cwd+"/"+args.output_folder+"/"+inputFile+".pred.tags"
-        # if the file already exists, leave it. It might have been written in a run before
-        #print(f"output file full path is {outputFileName}")
-        #sys.exit(1)
-        if not (os.path.isfile(outputFileName)):
-            #output=predict(args, _tagger_model,outputFileName,featurized_dataset=evalData)
-            output=jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileName,evalData)))
-    for job in jobs:
-        job.get()
-    pool.close()
 
 def main():
     '''
     Parse the given command line arguments, then act accordingly.
     '''
-    split_based_on_xargs()
-
+    run_with_parallelization=False
+    split_based_on_xargs(run_with_parallelization)
 
 
 

@@ -761,6 +761,7 @@ class DiscriminativeTagger(object):
             if print_predictions:
                 #print predictions
                 print(sent)
+                print(f"value of output file inside decode_dataset {output_file}")
                 f=open(output_file,"w",0)
                 f.write(sent.__str__())
                 f.close()

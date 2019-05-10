@@ -95,6 +95,51 @@ This code base of mine, which you are looking at, I am using to generate these t
 `
 
 
+Notes to self
+- on laptop and clara use conda environment `meanteacher` 
+steps
+    
+- status of POS tagging as of 2pm may 9th 2019
+    - had to do it again after becky suggested adding new line after every sentence in evidence.
+    - steps for self verification
+        - go to a new folder check
+         -remove outputs if exists check
+         -create outputs folder check
+        - git pull check
+        - verify the log -1
+        - start meanteacher conda env
+        - change port
+        - change input file
+        - change docker false
+        - verify claim written
+        - verify new line written after evidences    
+    - fnc train
+        - server:clara
+        - tmux: 3
+        - folder: neuter_ner_fnc_train
+        - port:8887
+        - status: 57% done
+    - fnc dev
+        - server:clara
+        - tmux: 4
+        - folder: neuter_ner_fnc_dev
+        - port:8888
+        - status:**all done**. 9068 data points=18136 files
+    - fever-train
+        - server:clara
+        - tmux: 5
+        - folder: neuter_ner_fever_training
+        - port:    8889
+        - status: **all done**238394 files
+    - fever-dev
+        - server:clara
+        - tmux: 6
+        - folder: neuter_ner_fever_dev
+        - port:    8886
+        - status: **all done**52504 files
+         
+    
+    
 Notes
 - classic fever data has only 3 classes/labels,. viz.,SUPPORTS, REFUTES, NOT ENOUGH INFO. Here we have already converted into 4 classes after that of [fnc](http://www.fakenewschallenge.org/), viz., AGREE, DISAGREE, DISCUSS, UNRELATED 
 - this command will create a huge number of files, one per each claim-evidence pair.
@@ -107,8 +152,7 @@ Notes
 
 the above came these are the commands i used to combine multiple claim files to one
 
-steps to create a conda environment and run the sst tagger for my input file
-
+steps 
 - move the output of pos tagging to input folder of ss tagging.
     - note: dont do plain `mv * ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/`. Linux will tell you argument list too long. Instead create a shell script like this:
     ```for each in ./*;
@@ -175,22 +219,20 @@ This can be run using
 
 # notes to self/delete later
 
+  
+ - status of sstagging for each dataset:status as of may 9th 2pm: restarted whole pos tagging and sstagging after becky found the /n solution in data files
  
- 
- - status of sstagging for each dataset:status as of may 7th 2019.5pm
     - although one thing i can do is move out the input files corresponding to the ones where outputs were generated
     - when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
     or google: ```xargs site:*.edu```
     
-   - i am running out of ideas. if i run using xargs, its getting stuck at the djikstra calculation for huge evidence files. plus not to mention loading lexicons.
-   if i run using python parallelization, it doesn't even write a file..wtf..
    - have started on tmux0 on clara and watching from tmux5 on amy
    - ideas from becky
         - add an empty line after every sentence in evidence.
         - try time out, i.e if the djikstra doesn't time out after say 10 mins, move onto next file.
 
-   - **fever-train**: 
-        - you can check status using
+   - **fever-train**:
+   yu can check status using
         `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
         - latest status:count  is 178670/238,394 files done
         -update: its written 10636 files more of which 10407 have size more than zero bytes. So hopefully there is some stuff there.
@@ -201,6 +243,13 @@ This can be run using
        `./input_to_sstagger_output_from_pos_tagger/ -iname "*1*" -print0 | xargs -0 -n 1 -I{} -t -P 30 ./sst.sh {}`
        
     - **fever-dev**: 
+    status as of 2pm may 9th: restarted sstagging after postagging with fresh data points. run on tmux 4.
+    wrote 1 file in 1 minute. Might have to do parallel processing on this. its printing stuff on screen though 
+    checklist
+        - move the output of pos tagging to input folder of ss tagging.
+        - source deactivate current
+        - source activate  py2
+        
         -  you can check outputs using
          `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
          - latest status: count is 51,676/52504 files

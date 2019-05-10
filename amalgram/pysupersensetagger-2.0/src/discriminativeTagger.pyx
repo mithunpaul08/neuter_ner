@@ -755,18 +755,17 @@ class DiscriminativeTagger(object):
         decoder = self.decode(nLabels, self._weights,
                               useBIO=useBIO, includeLossTerm=includeLossTerm, costAugVal=costAugVal)
         decoder.next()
-        f=open(output_file,"w+",0)
-        for sent,o0Feats in dataset:
-            sent,derivation = decoder.send((sent,o0Feats))
-            if print_predictions:
-                #print predictions
-                print(sent)
-                print(f"value of output file inside decode_dataset {output_file}")
-                f.write(sent.__str__())
-                f.close()
+        with open(output_file,"w+",0) as f:
+            for sent,o0Feats in dataset:
+                sent,derivation = decoder.send((sent,o0Feats))
+                if print_predictions:
+                    #print predictions
+                    print(sent)
+                    print(f"value of output file inside decode_dataset {output_file}")
+                    f.write(sent.__str__())
         decoder.next()  # show summary statistics
         decoder.close() # a formality
-
+        
     def printFeatures(self, out):
         print(len(self._featureIndexes),'lifted features x',len(self._labels),'labels =',len(self._featureIndexes)*len(self._labels),'grounded features', file=out)
         print('labels:',self._labels,'\n', file=out)

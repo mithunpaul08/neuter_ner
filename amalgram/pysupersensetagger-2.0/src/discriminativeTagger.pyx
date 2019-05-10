@@ -1063,7 +1063,7 @@ def run_without_python_parallelization(args,evalData):
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
     for index,inputFile in enumerate(files):
-                print(f"input file is{inputFile})"
+                print(f"input file is{inputFile}")
                 fullpath_inputFile=os.path.join(cwd,args.input_folder,inputFile)
                 args.predict=fullpath_inputFile
                 print(f"fullpath_inputFile file is{fullpath_inputFile}")

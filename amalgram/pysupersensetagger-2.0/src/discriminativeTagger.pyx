@@ -1066,10 +1066,10 @@ def run_without_python_parallelization(args,evalData):
                 print(f"input file is{inputFile})"
                 fullpath_inputFile=os.path.join(cwd,args.input_folder,inputFile)
                 args.predict=fullpath_inputFile
-                print(f"fullpath_inputFile file is{fullpath_inputFile})"
+                print(f"fullpath_inputFile file is{fullpath_inputFile}")
                 outputFileName=inputFile+".pred.tags"
                 outputFileFullPath=os.path.join(cwd,args.output_folder,outputFileName)
-                print(f"outputFileFullPath file is{outputFileFullPath})"
+                print(f"outputFileFullPath file is{outputFileFullPath}")
                 #if not (os.path.isfile(outputFileFullPath)):
                 output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
                 sys.exit(1)

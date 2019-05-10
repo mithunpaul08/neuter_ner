@@ -1048,10 +1048,13 @@ def split_based_on_xargs(run_parallely):
     evalData = setup(args)
     if(run_parallely==True):
         if (args.use_xargs):
+            print("inside args.use_xargs=true ")
             run_with_xargs(args,evalData)
         else:
+            print("inside run_with_python_parallelization ")
             run_with_python_parallelization(args,evalData)
     else:
+        print("inside run_with_python_parallelization ")
         run_without_python_parallelization(args,evalData)
 
 
@@ -1060,12 +1063,17 @@ def run_without_python_parallelization(args,evalData):
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
     for index,inputFile in enumerate(files):
+                print(f"input file is{inputFile})"
                 fullpath_inputFile=os.path.join(cwd,args.input_folder,inputFile)
                 args.predict=fullpath_inputFile
+                print(f"fullpath_inputFile file is{fullpath_inputFile})"
                 outputFileName=inputFile+".pred.tags"
                 outputFileFullPath=os.path.join(cwd,args.output_folder,outputFileName)
-                if not (os.path.isfile(outputFileFullPath)):
-                        output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
+                print(f"outputFileFullPath file is{outputFileFullPath})"
+                #if not (os.path.isfile(outputFileFullPath)):
+                output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
+                sys.exit(1)
+
 
 
 def run_with_python_parallelization(args,evalData):

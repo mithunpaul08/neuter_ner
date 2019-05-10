@@ -755,14 +755,15 @@ class DiscriminativeTagger(object):
         decoder = self.decode(nLabels, self._weights,
                               useBIO=useBIO, includeLossTerm=includeLossTerm, costAugVal=costAugVal)
         decoder.next()
-        
+        f=open(output_file,"w",0)
+        f.close()
+        f=open(output_file,"a+",0)
         for sent,o0Feats in dataset:
             sent,derivation = decoder.send((sent,o0Feats))
             if print_predictions:
                 #print predictions
                 print(sent)
                 print(f"value of output file inside decode_dataset {output_file}")
-                f=open(output_file,"w",0)
                 f.write(sent.__str__())
                 f.close()
         decoder.next()  # show summary statistics

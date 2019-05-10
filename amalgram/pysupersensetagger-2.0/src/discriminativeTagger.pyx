@@ -763,9 +763,10 @@ class DiscriminativeTagger(object):
                     print(sent)
                     print(f"value of output file inside decode_dataset {output_file}")
                     f.write(sent.__str__())
+                f.write("\n")
         decoder.next()  # show summary statistics
         decoder.close() # a formality
-        
+
     def printFeatures(self, out):
         print(len(self._featureIndexes),'lifted features x',len(self._labels),'labels =',len(self._featureIndexes)*len(self._labels),'grounded features', file=out)
         print('labels:',self._labels,'\n', file=out)

@@ -99,7 +99,7 @@ Notes to self
 - on laptop and clara use conda environment `meanteacher` 
 steps
     
-- status of POS tagging as of 2pm may 9th 2019
+- status of ss tagging as of 12 midnight may 9th 2019
     - had to do it again after becky suggested adding new line after every sentence in evidence.
     - steps for self verification
         - go to a new folder check
@@ -221,6 +221,7 @@ This can be run using
 
   
  - status of sstagging for each dataset:status as of may 9th 2pm: restarted whole pos tagging and sstagging after becky found the /n solution in data files
+- per folder status is here `https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing`
  
     - although one thing i can do is move out the input files corresponding to the ones where outputs were generated
     - when you want to learn something, check if there is a course in stanford or berkeley that covers that topic

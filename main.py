@@ -1,5 +1,5 @@
 from tqdm import tqdm
-import json,mmap,os,argparse,string
+import json,mmap,os,argparse,string,sys
 import processors
 from processors import *
 
@@ -505,6 +505,7 @@ def mergeSSandNERTags(ss_tags, ner_tags ):
 
 def read_sstagged_data(filename,args):
     sstags = []
+    words=[]
     puncts = set(string.punctuation)
     with open(filename,"r") as f:
             line=f.readline()
@@ -512,18 +513,33 @@ def read_sstagged_data(filename,args):
                 split_line=line.split("\t")
                 #pick only the words/lemmas that are not punctutations. -this had to be done in a existential check way because we had already written a million sstag files by the time we coded up merging
                 # and didn't want to rewrite them all without punctuations in strings.
-                if not(split_line[1] in puncts) and (args.remove_punctuations == True):
-                    #if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
-                    sstag6=split_line[6]
+                if(args.remove_punctuations == True):
+                    if not(split_line[1] in puncts):
+                        #if the 6th column has a dash, add it.
+                        # A dash in sstagger means, this word, with the word just before
+                        # it was collapsed into one entity. i.e it was I(inside) in BIO notation.
+                        lemma=split_line[1]
+                        sstag6=split_line[6]
+                        sstag7 = split_line[7]
+                        if(sstag6=="_"):
+                            sstag=sstag6
+                        else:
+                            sstag=sstag7
+                        sstags.append(sstag)
+                        words.append(lemma)
+                else:
+                    # if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
+                    sstag6 = split_line[6]
                     sstag7 = split_line[7]
-                    if(sstag6=="_"):
-                        sstag=sstag6
+                    if (sstag6 == "_"):
+                        sstag = sstag6
                     else:
-                        sstag=sstag7
+                        sstag = sstag7
                     sstags.append(sstag)
+                    lemma = split_line[1]
+                    words.append(lemma)
                 line = f.readline()
-
-    return sstags
+    return sstags,words
 
 if __name__ == '__main__':
 
@@ -542,21 +558,27 @@ if __name__ == '__main__':
         outfile.write('')
 
 
-    ssfilename_claims = "sstagged_sample_files/claim_words_pos_datapointid_91034.pred.tags"
-    ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_91034.pred.tags"
+    ssfilename_claims = "sstagged_sample_files/claim_words_pos_datapointid_8476.pred.tags"
+    ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_8476.pred.tags"
     if (args.merge_ner_ss):
-        claims_sstags = read_sstagged_data(ssfilename_claims,args)
-        ev_sstags = read_sstagged_data(ssfilename_ev,args)
+        claims_sstags, sstagged_claim_words = read_sstagged_data(ssfilename_claims,args)
+        ev_sstags, sstagged_ev_words = read_sstagged_data(ssfilename_ev,args)
 
         # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
-        c = all_claims[91034]
-        e = all_evidences[91034]
-        l = all_labels[91034]
+        c = all_claims[8476]
+        e = all_evidences[8476]
+        l = all_labels[8476]
         claim_ann, ev_ann = annotate(c, e, API)
         assert (claim_ann is not None)
         assert (ev_ann is not None)
         assert (len(claim_ann.tags) is len(claims_sstags))
+        for x,y in zip(ev_ann.words, sstagged_ev_words):
+            print(x,y)
+            if not(x==y):
+                sys.exit(1)
         assert (len(ev_ann.tags) is len(ev_sstags))
+        assert(claim_ann.lemmas[0] is sstagged_claim_words[0])
+        assert (ev_ann.lemmas[0] is sstagged_ev_words[0])
         claim_ner_tags = claim_ann._entities
         ev_ner_tags= ev_ann._entities
 

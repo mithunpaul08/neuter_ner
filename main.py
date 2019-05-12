@@ -5,6 +5,8 @@ from processors import *
 import unidecode
 from unidecode import unidecode
 from cleantext import clean
+from os import listdir
+from os.path import isfile,join
 
 def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                  unique_new_tokens, dict_newner_token):
@@ -427,6 +429,8 @@ def create_parser():
                         help='name of the folder to write output to')
     parser.add_argument('--smart_ner_sstags_output_file_name', type=str, default='smartner_sstags_merged',
                         help='name of the folder to write output to')
+    parser.add_argument('--input_folder_for_smartnersstagging_merging', type=str, default='sstagged_files',
+                        help='name of the folder where sstagged files will be read from')
     print(parser.parse_args())
     return parser
 
@@ -581,80 +585,102 @@ if __name__ == '__main__':
     all_claims, all_evidences, all_labels=read_rte_data(filename,args)
     all_claims_neutered=[]
     all_evidences_neutered = []
-    with open('output.jsonl', 'w') as outfile:
+
+    merge_sstag_nertag_output_file = os.path.join(args.outputFolder, args.smart_ner_sstags_output_file_name)
+    with open(merge_sstag_nertag_output_file, 'w') as outfile:
         outfile.write('')
+    # go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence file with this id, and open it.
+    ss_claim_file_full_path= ""
+    ssfilename_ev=""
+    assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
+    for file in listdir(args.input_folder_for_smartnersstagging_merging):
+        file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
+        if isfile(file_full_path):
+            if file.startswith("claim"):
+                split_file_name=file.split("_")
+                datapoint_id_pred_tags=split_file_name[4]
+                dataPointId_split=datapoint_id_pred_tags.split(".")
+                dataPointId=dataPointId_split[0]
+                ss_claim_file_full_path=file_full_path
+                ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
+                ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
+                if not ss_claim_file_full_path:
+                    print("ss_claim_file_full_path is empty")
+                    assert(1 is 2)
+                if not ssfilename_ev:
+                    print("ssfilename_ev is empty")
+                    assert (1 is 2)
 
-    #ideally: go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence file with this id, and open it.
-    ssfilename_claims = "sstagged_sample_files/claim_words_pos_datapointid_91034.pred.tags"
-    ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_91034.pred.tags"
-    if (args.merge_ner_ss):
-        claims_sstags, sstagged_claim_words = read_sstagged_data(ssfilename_claims,args)
-        assert (len(claims_sstags) is len(sstagged_claim_words))
-        ev_sstags, sstagged_ev_words = read_sstagged_data(ssfilename_ev,args)
-        assert(len(ev_sstags) is len(sstagged_ev_words))
-        # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
-        c = all_claims[91034]
-        e = all_evidences[91034]
-        l = all_labels[91034]
-        e=remove_punctuations(e)
-        assert (len(e.split(" ")) is len(sstagged_ev_words))
-        for x,y in zip(sstagged_ev_words, e.split(" ")):
-            if not(x==y):
-                print("found mismatch between text read from sstags and text from data file. going to exit")
-                sys.exit(1)
+                if (args.merge_ner_ss):
+                    claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
+                    assert (len(claims_sstags) is len(sstagged_claim_words))
+                    ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
+                    assert(len(ev_sstags) is len(sstagged_ev_words))
+                    # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
+                    if not (dataPointId):
+                        print("dataPointId is empty")
+                        assert (1 is 2)
+                    dataPointId_int=int(dataPointId)
+                    c = all_claims[dataPointId_int]
+                    e = all_evidences[dataPointId_int]
+                    l = all_labels[dataPointId_int]
+                    e=remove_punctuations(e)
+                    assert (len(e.split(" ")) is len(sstagged_ev_words))
+                    for x,y in zip(sstagged_ev_words, e.split(" ")):
+                        if not(x==y):
+                            print("found mismatch between text read from sstags and text from data file. going to exit")
+                            sys.exit(1)
 
-        #remove punctuations and unicode from claims also and make sure its same size as
-        c=remove_punctuations(c)
-        assert (len(c.split(" ")) is len(sstagged_claim_words))
-        for x,y in zip(sstagged_claim_words, c.split(" ")):
-            if not(x==y):
-                print("found mismatch between text read from sstags and text from data file. going to exit")
-                sys.exit(1)
+                    #remove punctuations and unicode from claims also and make sure its same size as
+                    c=remove_punctuations(c)
+                    assert (len(c.split(" ")) is len(sstagged_claim_words))
+                    for x,y in zip(sstagged_claim_words, c.split(" ")):
+                        if not(x==y):
+                            print("found mismatch between text read from sstags and text from data file. going to exit")
+                            sys.exit(1)
 
-        claim_ann, ev_ann = annotate(c, e, API)
-        assert (claim_ann is not None)
-        assert (ev_ann is not None)
-        assert (len(claim_ann.tags) is len(claims_sstags))
-        assert (len(ev_ann.tags) is len(ev_sstags))
-        if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
-            print("found mismatch between text read from sstags and text from data file. going to exit")
-            sys.exit(1)
-        if not ((ev_ann.words[0])== (sstagged_ev_words[0])):
-            print("found mismatch between text read from sstags and text from data file. going to exit")
-            sys.exit(1)
+                    claim_ann, ev_ann = annotate(c, e, API)
+                    assert (claim_ann is not None)
+                    assert (ev_ann is not None)
+                    assert (len(claim_ann.tags) is len(claims_sstags))
+                    assert (len(ev_ann.tags) is len(ev_sstags))
+                    if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
+                        print("found mismatch between text read from sstags and text from data file. going to exit")
+                        sys.exit(1)
+                    if not ((ev_ann.words[0])== (sstagged_ev_words[0])):
+                        print("found mismatch between text read from sstags and text from data file. going to exit")
+                        sys.exit(1)
 
-        claim_ner_tags = claim_ann._entities
-        ev_ner_tags= ev_ann._entities
+                    claim_ner_tags = claim_ann._entities
+                    ev_ner_tags= ev_ann._entities
 
-        assert (len(claims_sstags) is len(claim_ner_tags))
-        assert (len(ev_sstags) is len(ev_ner_tags))
+                    assert (len(claims_sstags) is len(claim_ner_tags))
+                    assert (len(ev_sstags) is len(ev_ner_tags))
 
-        claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
-        ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
-    #uncomment below portion for running over all claims and evidences. Commented out for debugging on just one data point
-    # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
-    #
-    #         claim_ann, ev_ann = annotate(c, e, API)
-    #         assert (claim_ann is not None)
-    #         assert (ev_ann is not None)
-
-    claim_pos_tags = claim_ann.tags
-    ev_pos_tags = ev_ann.tags
+                    claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
+                    ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
 
 
-    if(args.convert_prepositions==True):
-        claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
-    if (args.create_smart_NERs == True):
-        claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
-    if (args.merge_ner_ss == True):
-        claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+                    claim_pos_tags = claim_ann.tags
+                    ev_pos_tags = ev_ann.tags
 
-        outputFile=os.path.join(args.outputFolder,args.smart_ner_sstags_output_file_name)
-        with open(outputFile, 'a+') as outfile:
-            write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
+        # uncomment below portion if your claim and evidence are in separate files
+        # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+        #
+        #         claim_ann, ev_ann = annotate(c, e, API)
+        #         assert (claim_ann is not None)
+        #         assert (ev_ann is not None)
+
+                    if(args.convert_prepositions==True):
+                        claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
+                    if (args.create_smart_NERs == True):
+                        claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+                    if (args.merge_ner_ss == True):
+                        claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 
 
-#            print(index)
+                        with open(merge_sstag_nertag_output_file, 'a+') as outfile:
+                            write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
 
 
 

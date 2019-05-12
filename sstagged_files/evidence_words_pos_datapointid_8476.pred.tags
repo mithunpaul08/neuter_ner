@@ -1,0 +1,169 @@
+1	The	the	DT	O	0			
+2	New	new	NNP	B-LOCATION	0		LOCATION	
+3	York	york	NNP	Ī	2	_		
+4	Post	post	NNP	Ī	3	_		
+5	is	be	VBZ	O-`a	0		`a	
+6	reporting	report	VBG	O-communication	0		communication	
+7	this	this	DT	O	0			
+8	morning	morning	NN	O-TIME	0		TIME	
+9	that	that	IN	O	0			
+10	the	the	DT	O	0			
+11	World	world	NNP	B-GROUP	0		GROUP	
+12	Health	health	NNP	Ī	11	_		
+13	Organization	organization	NNP	Ī	12	_		
+14	is	be	VBZ	O-`a	0		`a	
+15	looking	look	VBG	B-communication	0		communication	
+16	into	into	IN	Ī	15	_		
+17	whether	whether	IN	O	0			
+18	ISIS	isis	NNP	B-GROUP	0		GROUP	
+19	fighters	fighter	NNS	Ī	18	_		
+20	in	in	IN	O	0			
+21	Iraq	iraq	NNP	B-LOCATION	0		LOCATION	
+22	have	have	VBP	Ī	21	_		
+23	Ebola	ebola	NNP	Ī	22	_		
+24	.	.	.	O	0			
+1	Yes	yes	UH	O	0			
+2	,	,	,	O	0			
+3	that	that	IN	O	0			
+4	'	'	''	O	0			
+5	s	s	VBZ	O-stative	0		stative	
+6	two	two	CD	O	0			
+7	catastrophes	catastrophe	NNS	O-COGNITION	0		COGNITION	
+8	combined	combine	VBN	O-stative	0		stative	
+9	.	.	.	O	0			
+1	And	and	CC	O	0			
+2	it	it	PRP	O	0			
+3	'	'	''	O	0			
+4	s	s	VBZ	O-stative	0		stative	
+5	not	not	RB	O	0			
+6	just	just	RB	O	0			
+7	the	the	DT	O	0			
+8	Post	post	NN	O-LOCATION	0		LOCATION	
+9	,	,	,	O	0			
+10	Mashable	mashable	JJ	O	0			
+11	had	have	VBD	O-stative	0		stative	
+12	a	a	DT	O	0			
+13	piece	piece	NN	O-ARTIFACT	0		ARTIFACT	
+14	earlier	earlier	RBR	O	0			
+15	this	this	DT	O	0			
+16	week	week	NN	O-TIME	0		TIME	
+17	about	about	IN	O	0			
+18	reports	report	NNS	O-COMMUNICATION	0		COMMUNICATION	
+19	from	from	IN	O	0			
+20	the	the	DT	O	0			
+21	Iraqi	iraqi	JJ	O	0			
+22	media	medium	NNS	O-PERSON	0		PERSON	
+23	that	that	WDT	O	0			
+24	ISIS	isis	NNP	O-GROUP	0		GROUP	
+25	militants	militant	NNS	O-PERSON	0		PERSON	
+26	have	have	VBP	O-`a	0		`a	
+27	contracted	contract	VBN	O-communication	0		communication	
+28	the	the	DT	O	0			
+29	disease	disease	NN	O-STATE	0		STATE	
+30	.	.	.	O	0			
+1	Their	their	PRP$	O	0			
+2	report	report	NN	O-COGNITION	0		COGNITION	
+3	,	,	,	O	0			
+4	however	however	RB	O	0			
+5	,	,	,	O	0			
+6	does	do	VBZ	O-`a	0		`a	
+7	contain	contain	VB	O-cognition	0		cognition	
+8	some	some	DT	O	0			
+9	response	response	NN	O-COMMUNICATION	0		COMMUNICATION	
+10	from	from	IN	O	0			
+11	people	person	NNS	O-PERSON	0		PERSON	
+12	with	with	IN	O	0			
+13	knowledge	knowledge	NN	O-COGNITION	0		COGNITION	
+14	of	of	IN	O	0			
+15	whatever	whatever	WDT	O	0			
+16	'	'	''	O	0			
+17	s	s	VBZ	O-`a	0		`a	
+18	going	go	VBG	B-stative	0		stative	
+19	on	on	RP	Ī	18	_		
+20	.	.	.	O	0			
+1	Firstly	firstly	RB	O	0			
+2	,	,	,	O	0			
+3	a	a	DT	O	0			
+4	WHO	who	WP	O	0			
+5	spokesperson	spokesperson	NN	O-PERSON	0		PERSON	
+6	told	tell	VBD	O-communication	0		communication	
+7	them	them	PRP	O	0			
+8	they	they	PRP	O	0			
+9	'	'	''	O	0			
+10	ve	ve	FW	O	0			
+11	had	have	VBD	O-stative	0		stative	
+12	``	``	``	O	0			
+13	no	no	DT	O	0			
+14	official	official	JJ	O	0			
+15	notification	notification	NN	O-COGNITION	0		COGNITION	
+16	''	''	''	O	0			
+17	from	from	IN	O	0			
+18	the	the	DT	O	0			
+19	Iraq	iraq	NNP	O-LOCATION	0		LOCATION	
+20	government	government	NN	O-GROUP	0		GROUP	
+21	about	about	IN	O	0			
+22	the	the	DT	O	0			
+23	cases	case	NNS	O-EVENT	0		EVENT	
+24	.	.	.	O	0			
+1	And	and	CC	O	0			
+2	secondly	secondly	RB	O	0			
+3	,	,	,	O	0			
+4	a	a	DT	O	0			
+5	spokesperson	spokesperson	NN	O-PERSON	0		PERSON	
+6	for	for	IN	O	0			
+7	the	the	DT	O	0			
+8	Iraqi	iraqi	JJ	O	0			
+9	health	health	NN	O-STATE	0		STATE	
+10	ministry	ministry	NN	O-GROUP	0		GROUP	
+11	called	call	VBD	O-communication	0		communication	
+12	the	the	DT	O	0			
+13	reports	report	NNS	O-COMMUNICATION	0		COMMUNICATION	
+14	``	``	``	O	0			
+15	incorrect	incorrect	JJ	O	0			
+16	''	''	''	O	0			
+17	and	and	CC	O	0			
+18	``	``	``	O	0			
+19	unfounded	unfounded	JJ	O	0			
+20	,	,	,	O	0			
+21	''	''	''	O	0			
+22	citing	cite	VBG	O-communication	0		communication	
+23	,	,	,	O	0			
+24	for	for	IN	B	0			
+25	one	one	CD	Ī	24	_		
+26	,	,	,	O	0			
+27	the	the	DT	O	0			
+28	the	the	DT	O	0			
+29	lack	lack	NN	O-QUANTITY	0		QUANTITY	
+30	of	of	IN	O	0			
+31	``	``	``	O	0			
+32	diagnostic	diagnostic	JJ	O	0			
+33	capablities	capablities	NNS	O-ARTIFACT	0		ARTIFACT	
+34	''	''	''	O	0			
+35	for	for	IN	O	0			
+36	doctors	doctor	NNS	O-PERSON	0		PERSON	
+37	in	in	IN	O	0			
+38	Iraq	iraq	NNP	O-LOCATION	0		LOCATION	
+39	to	to	TO	O	0			
+40	confirm	confirm	VB	O-cognition	0		cognition	
+41	cases	case	NNS	O-QUANTITY	0		QUANTITY	
+42	of	of	IN	O	0			
+43	Ebola	ebola	NNP	O-LOCATION	0		LOCATION	
+44	.	.	.	O	0			
+1	-LSB-	-lsb-	-LRB-	O	0			
+2	image	image	NN	O-COMMUNICATION	0		COMMUNICATION	
+3	via	via	IN	O	0			
+4	Shutterstock	shutterstock	NNP	O-PERSON	0		PERSON	
+5	,	,	,	O	0			
+6	Steve	steve	NNP	B-PERSON	0		PERSON	
+7	Allen/Shutterstock	allen/shutterstock	NNP	Ī	6	_		
+8	-RSB-	-rsb-	-RRB-	O	0			
+9	--	--	:	O	0			
+10	--	--	:	O	0			
+11	Follow	follow	VB	O-social	0		social	
+12	Josh	josh	NNP	B-GROUP	0		GROUP	
+13	Feldman	feldman	NNP	Ī	12	_		
+14	on	on	IN	O	0			
+15	Twitter	twitter	NNP	O-TIME	0		TIME	
+16	:	:	:	O	0			
+17	@	@	SYM	O	0			
+18	feldmaniac	feldmaniac	NN	O-ATTRIBUTE	0		ATTRIBUTE	

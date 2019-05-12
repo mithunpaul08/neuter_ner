@@ -1,0 +1,10 @@
+1	Small	small	JJ	O	0			
+2	red	red	JJ	O	0			
+3	book	book	NN	O-COMMUNICATION	0		COMMUNICATION	
+4	among	among	IN	O	0			
+5	finds	find	VBZ	O-cognition	0		cognition	
+6	in	in	IN	O	0			
+7	113-year-old	113-year-old	JJ	O	0			
+8	Boston	boston	NNP	O-LOCATION	0		LOCATION	
+9	time	time	NN	B-ARTIFACT	0		ARTIFACT	
+10	capsule	capsule	NN	Ī	9	_		

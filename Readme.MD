@@ -286,8 +286,9 @@ This can be run using
         `/net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/already_tagged`
 - merging sstags+nertags with collapsing: status as of may 11th 2019.9pm
   
-        - write logic for merging based on file id
-        - start runs
+        - write logic for merging based on file id:9 to 9.30pm
+        
+        - start runs (inshah allah) 9.30pm
                 
             
 - Commonly encountered errors

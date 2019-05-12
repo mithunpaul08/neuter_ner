@@ -527,9 +527,11 @@ def read_sstagged_data(filename,args):
                 word = split_line[1]
                 if (args.remove_punctuations == True):
                     word=remove_punctuations(word)
+                    #remove punctuations twice, . this is done because words like "-lrb-" was first tripped, but the stripper was not removing lsb itself.
+                    word = remove_punctuations(word)
                 #if the word is empty now, it means it was a punctuation, and hence removed. Don't add the word or  its tag
                 if not(word == ""):
-                    #if not (word.lower() in ["lsb","lrb","rsb","-lsb-","-LSB-","-RSB-","-rsb-"]):
+                    if not (word.lower() in ["lrb","rrb","lcb","rcb","lsb","rsb"]):
                             # if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
                             sstag6 = split_line[6]
                             sstag7 = split_line[7]
@@ -540,8 +542,8 @@ def read_sstagged_data(filename,args):
                             sstags.append(sstag)
                             words.append(word)
                             line = f.readline()
-                    # else:
-                    #     line = f.readline()
+                    else:
+                        line = f.readline()
                 else:
                     line = f.readline()
     return sstags,words
@@ -621,41 +623,37 @@ if __name__ == '__main__':
                         print("dataPointId is empty")
                         assert (1 is 2)
                     dataPointId_int=int(dataPointId)
-                    c = all_claims[dataPointId_int]
-                    e = all_evidences[dataPointId_int]
+                    claim_before_removing_punctuations = all_claims[dataPointId_int]
+                    evidence_before_removing_punctuations = all_evidences[dataPointId_int]
                     l = all_labels[dataPointId_int]
 
+                    evidence_after_removing_punctuations=remove_punctuations(evidence_before_removing_punctuations)
 
-
-
-
-                    e=remove_punctuations(e)
-
-                    print(f"value of evidence from lexicalized data:{e}")
+                    print(f"value of evidence from lexicalized data:{evidence_after_removing_punctuations}")
                     print(f"value of evidence from sstagged data:{sstagged_ev_words}")
-                    l_ev_lexicalized=len(e.split(" "))
+                    l_ev_lexicalized=len(evidence_after_removing_punctuations.split(" "))
                     print(f"value of length of evidence from lexicalized data:{l_ev_lexicalized }")
                     print(f"value of length of evidence from sstagged data:{len(sstagged_ev_words) }")
 
-                    assert (len(e.split(" ")) is len(sstagged_ev_words))
-                    for x,y in zip(sstagged_ev_words, e.split(" ")):
+                    assert (len(evidence_after_removing_punctuations.split(" ")) is len(sstagged_ev_words))
+                    for x,y in zip(sstagged_ev_words, evidence_after_removing_punctuations.split(" ")):
                         if not(x==y):
                             print("found mismatch between text read from sstags and text from data file. going to exit")
                             sys.exit(1)
 
                     #remove punctuations and unicode from claims also and make sure its same size as
-                    c=remove_punctuations(c)
-                    print(f"value of claim from lexicalized data:{c}")
+                    claim_after_removing_punctuations=remove_punctuations(claim_before_removing_punctuations)
+                    print(f"value of claim from lexicalized data:{claim_after_removing_punctuations}")
                     print(f"value of claim from sstagged data:{sstagged_claim_words}")
 
 
-                    assert (len(c.split(" ")) is len(sstagged_claim_words))
-                    for x,y in zip(sstagged_claim_words, c.split(" ")):
+                    assert (len(claim_after_removing_punctuations.split(" ")) is len(sstagged_claim_words))
+                    for x,y in zip(sstagged_claim_words, claim_after_removing_punctuations.split(" ")):
                         if not(x==y):
                             print("found mismatch between text read from sstags and text from data file. going to exit")
                             sys.exit(1)
 
-                    claim_ann, ev_ann = annotate(c, e, API)
+                    claim_ann, ev_ann = annotate(claim_after_removing_punctuations, evidence_after_removing_punctuations, API)
                     assert (claim_ann is not None)
                     assert (ev_ann is not None)
                     assert (len(claim_ann.tags) is len(claims_sstags))

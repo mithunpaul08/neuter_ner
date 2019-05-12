@@ -530,7 +530,7 @@ def read_sstagged_data(filename,args):
                 #if the word is empty now, it means it was a punctuation, and hence removed. Don't add the word or  its tag
                 if not(word == ""):
                     # if the word is lsb or lrb, just ignore. this was because the punctuation cleaner wasn't cleaning it
-                    if not (word.lower() in ["lsb","lrb","rsb","-lsb-","-LSB-","-RSB-","-rsb-"]):
+                    #if not (word.lower() in ["lsb","lrb","rsb","-lsb-","-LSB-","-RSB-","-rsb-"]):
                             # if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
                             sstag6 = split_line[6]
                             sstag7 = split_line[7]

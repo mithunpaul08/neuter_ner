@@ -127,8 +127,6 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
     total_string_length=len(ner_list)
     #in this code, triggers happen only when a continuous bunch of nER tags end. Eg: PERSON , PERSON, O.
     for index, (curr_ner, curr_word) in enumerate(zip(ner_list, words_list)):
-        print(index,curr_word)
-
         # skip as many indices as we have already collapsed. This is because say if NEW YORK POST is collapsed into one entity, we don't want it to add post again to any of dictionaries or
         # new sentence words
         if index in (list_of_indices_to_collapse):
@@ -164,8 +162,6 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
                     #if you reach here, it means, the current_ner is none of O,_ with O before it, or _ with a proper tag before it. So this must be a proper tag, like FOOD, NUMBER etc
                     prev_ner=curr_ner
                     #look ahead, if the next NER value is a dash, don't add to dictionary. else add.
-                    if(index>130):
-                        print("135")
                     if((index+1) < total_string_length):
                             if not (ner_list[index + 1] == "_"):
                                 dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma= append_count_to_ner_tags(dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
@@ -588,18 +584,18 @@ if __name__ == '__main__':
     with open('output.jsonl', 'w') as outfile:
         outfile.write('')
 
-
-    ssfilename_claims = "sstagged_sample_files/claim_words_pos_datapointid_8476.pred.tags"
-    ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_8476.pred.tags"
+    #ideally: go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence file with this id, and open it.
+    ssfilename_claims = "sstagged_sample_files/claim_words_pos_datapointid_91034.pred.tags"
+    ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_91034.pred.tags"
     if (args.merge_ner_ss):
         claims_sstags, sstagged_claim_words = read_sstagged_data(ssfilename_claims,args)
         assert (len(claims_sstags) is len(sstagged_claim_words))
         ev_sstags, sstagged_ev_words = read_sstagged_data(ssfilename_ev,args)
         assert(len(ev_sstags) is len(sstagged_ev_words))
         # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
-        c = all_claims[8476]
-        e = all_evidences[8476]
-        l = all_labels[8476]
+        c = all_claims[91034]
+        e = all_evidences[91034]
+        l = all_labels[91034]
         e=remove_punctuations(e)
         assert (len(e.split(" ")) is len(sstagged_ev_words))
         for x,y in zip(sstagged_ev_words, e.split(" ")):
@@ -620,10 +616,6 @@ if __name__ == '__main__':
         assert (ev_ann is not None)
         assert (len(claim_ann.tags) is len(claims_sstags))
         assert (len(ev_ann.tags) is len(ev_sstags))
-        print(claim_ann.words[0])
-        print(sstagged_claim_words[0])
-        print(ev_ann.words[0])
-        print(sstagged_ev_words[0])
         if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
             print("found mismatch between text read from sstags and text from data file. going to exit")
             sys.exit(1)

@@ -284,13 +284,10 @@ This can be run using
        - latest status: 845/18136 files are done.
         - update: moved tagged files to
         `/net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/already_tagged`
-- merging sstags+nertags with collapsing: status as of may 11th 2019.5pm
-        - done with both merging and collapsing. have to test with couple of different examples though.
-        - was testing with another example file. did clean up of punctuation. Next: do clean up based on if(args.punctuation true)
-        - next: make sure pos tags also match
-        - merge this boston tablet example
-        - test again with michael schumacher example
+- merging sstags+nertags with collapsing: status as of may 11th 2019.9pm
+  
         - write logic for merging based on file id
+        - start runs
                 
             
 - Commonly encountered errors

@@ -417,7 +417,7 @@ def create_parser():
     parser.add_argument('--run_on_dummy_data', default=False, type=str2bool,
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
-    parser.add_argument('--remove_punctuations', default=False, type=str2bool,
+    parser.add_argument('--remove_punctuations', default=True, type=str2bool,
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
     print(parser.parse_args())
@@ -509,38 +509,19 @@ def mergeSSandNERTags(ss_tags, ner_tags ):
 def read_sstagged_data(filename,args):
     sstags = []
     words=[]
-    puncts = set(string.punctuation)
     line_counter=0
     with open(filename,"r") as f:
             line=f.readline()
             while(line):
                 line_counter=line_counter+1
                 split_line=line.split("\t")
-
                 word = split_line[1]
-                word=remove_punctuations_word(word)
+                if (args.remove_punctuations == True):
+                    word=remove_punctuations(word)
                 #if the word is empty now, it means it was a punctuation, and hence removed. Don't add the word or  its tag
                 if not(word == ""):
-                    if(line_counter>150):
-                        print("150")
                     # if the word is lsb or lrb, just ignore. this was because the punctuation cleaner wasn't cleaning it
                     if not (word.lower() in ["lsb","lrb","rsb","-lsb-","-LSB-","-RSB-","-rsb-"]):
-                        #pick only the words/lemmas that are not punctutations. -this had to be done in a existential check way because we had already written a million sstag files by the time we coded up merging
-                        # and didn't want to rewrite them all without punctuations in strings.
-                        if (args.remove_punctuations == True):
-                            if not(split_line[1] in puncts):
-                                #if the 6th column has a dash, add it.
-                                # A dash in sstagger means, this word, with the word just before
-                                # it was collapsed into one entity. i.e it was I(inside) in BIO notation.
-                                sstag6=split_line[6]
-                                sstag7 = split_line[7]
-                                if(sstag6=="_"):
-                                    sstag=sstag6
-                                else:
-                                    sstag=sstag7
-                                sstags.append(sstag)
-                                words.append(word)
-                        else:
                             # if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
                             sstag6 = split_line[6]
                             sstag7 = split_line[7]
@@ -551,16 +532,13 @@ def read_sstagged_data(filename,args):
                             sstags.append(sstag)
                             words.append(word)
                             line = f.readline()
-
                     else:
-                        print("found word to be lrb")
                         line = f.readline()
                 else:
-                    print("found word is a punctuation")
                     line = f.readline()
     return sstags,words
 
-def remove_punctuations_word(word):
+def remove_punctuations(word):
     return clean(word,
           fix_unicode=True,  # fix various unicode errors
           to_ascii=True,  # transliterate to closest ASCII representation
@@ -604,58 +582,33 @@ if __name__ == '__main__':
     ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_8476.pred.tags"
     if (args.merge_ner_ss):
         claims_sstags, sstagged_claim_words = read_sstagged_data(ssfilename_claims,args)
+        assert (len(claims_sstags) is len(sstagged_claim_words))
         ev_sstags, sstagged_ev_words = read_sstagged_data(ssfilename_ev,args)
         assert(len(ev_sstags) is len(sstagged_ev_words))
-
         # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
         c = all_claims[8476]
         e = all_evidences[8476]
         l = all_labels[8476]
-
-        #c_decoded = unidecode(c)
-        #c=remove_punctuations(c_decoded.split(" "))
-
-        e=clean(e,
-              fix_unicode=True,  # fix various unicode errors
-              to_ascii=True,  # transliterate to closest ASCII representation
-              lower=False,  # lowercase text
-              no_line_breaks=False,  # fully strip line breaks as opposed to only normalizing them
-              no_urls=False,  # replace all URLs with a special token
-              no_emails=False,  # replace all email addresses with a special token
-              no_phone_numbers=False,  # replace all phone numbers with a special token
-              no_numbers=False,  # replace all numbers with a special token
-              no_digits=False,  # replace all digits with a special token
-              no_currency_symbols=False,  # replace all currency symbols with a special token
-              no_punct=True,  # fully remove punctuation
-              replace_with_url="<URL>",
-              replace_with_email="<EMAIL>",
-              replace_with_phone_number="<PHONE>",
-              replace_with_number="<NUMBER>",
-              replace_with_digit="0",
-              replace_with_currency_symbol="<CUR>",
-              lang="en"  # set to 'de' for German special handling
-              )
-
-        #sstagged_str=" ".join(sstagged_ev_words)
-
-
-
+        e=remove_punctuations(e)
+        assert (len(e.split(" ")) is len(sstagged_ev_words))
         for x,y in zip(sstagged_ev_words, e.split(" ")):
-            print(x,y)
             if not(x==y):
+                print("found mismatch between text read from sstags and text from data file. going to exit")
                 sys.exit(1)
-        #
-        #
-        # sstagged_claim_words=remove_punctuations(sstagged_claim_words_decoded.split(" "))
-        #
-        # sstagged_ev_words_decoded = unidecode(" ".join(sstagged_ev_words))
-        # sstagged_ev_words = remove_punctuations(sstagged_ev_words_decoded.split(" "))
+
+        #remove punctuations and unicode from claims also and make sure its same size as
+        c=remove_punctuations(c)
+        assert (len(c.split(" ")) is len(sstagged_claim_words))
+        for x,y in zip(sstagged_claim_words, c.split(" ")):
+            if not(x==y):
+                print("found mismatch between text read from sstags and text from data file. going to exit")
+                sys.exit(1)
 
         claim_ann, ev_ann = annotate(c, e, API)
         assert (claim_ann is not None)
         assert (ev_ann is not None)
         assert (len(claim_ann.tags) is len(claims_sstags))
-        
+
 
         assert (len(ev_ann.tags) is len(ev_sstags))
         assert(claim_ann.words[0] is sstagged_claim_words[0])

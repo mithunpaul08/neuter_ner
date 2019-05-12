@@ -425,7 +425,7 @@ def create_parser():
                         metavar='BOOL')
     parser.add_argument('--outputFolder', type=str, default='outputs',
                         help='name of the folder to write output to')
-    parser.add_argument('--smart_ner_sstags_output_file_name', type=str, default='smartner_sstags_merged',
+    parser.add_argument('--smart_ner_sstags_output_file_name', type=str, default='smartner_sstags_merged.jsonl',
                         help='name of the folder to write output to')
     parser.add_argument('--input_folder_for_smartnersstagging_merging', type=str, default='sstagged_files',
                         help='name of the folder where sstagged files will be read from')

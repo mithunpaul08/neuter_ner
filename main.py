@@ -298,7 +298,7 @@ def read_rte_data(filename,args):
 
 def write_json_to_disk(claim, evidence,label,outfile):
     total = {'claim': claim,
-             'evidence_from_lexicalized_data':evidence,
+             'evidence':evidence,
              "label":label}
     json.dump(total, outfile)
     outfile.write('\n')
@@ -614,9 +614,9 @@ if __name__ == '__main__':
                     ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
                     ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
                     if not ss_claim_file_full_path:
-                        raise Exception("ss_claim_file_full_path is empty")
+                        print("ss_claim_file_full_path is empty")
                     if not ssfilename_ev:
-                        raise Exception("ssfilename_ev is empty")
+                        print("ssfilename_ev is empty")
 
                     print(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
                     print(f"value of ssfilename_ev is:{ssfilename_ev}")
@@ -633,11 +633,11 @@ if __name__ == '__main__':
                         if not (len(ev_sstags)== len(sstagged_ev_words)):
                             print(f"value of len(ev_sstags):{len(ev_sstags)}")
                             print(f"value of len(sstagged_ev_words) :{len(sstagged_ev_words)}")
-                            raise Exception("value of len(ev_sstags) and len(sstagged_ev_words) don't match ")
+                            print("value of len(ev_sstags) and len(sstagged_ev_words) don't match ")
 
 
                         if not (dataPointId):
-                            raise Exception("dataPointId is empty")
+                            print("dataPointId is empty")
 
                         dataPointId_int=int(dataPointId)
                         claim_before_removing_punctuations = all_claims[dataPointId_int]
@@ -709,12 +709,14 @@ if __name__ == '__main__':
                         for x,y in zip(sstagged_claim_words, claim.split(" ")):
                             if not(x==y):
                                 print(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId}")
+                                break;
 
 
 
                         for x,y in zip(sstagged_ev_words, evidence_from_lexicalized_data.split(" ")):
                             if not(x==y):
                                 print(f"found mismatch between evidence_from_lexicalized_data text read from sstags and text from data file. datapoint id is: {dataPointId}")
+                                break;
 
             # uncomment below portion if your claim and evidence_from_lexicalized_data are in separate files
             # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
@@ -738,7 +740,7 @@ if __name__ == '__main__':
                         print(f"value of len(evidence_from_lexicalized_data is :{le}")
                         print(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
                         if not (len(evidence_from_lexicalized_data.split(" ")) == len(sstagged_ev_words)):
-                            raise Exception(
+                            print(
                                 "value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
 
                         lc = len(claim.split(" "))
@@ -746,7 +748,7 @@ if __name__ == '__main__':
                         print(f"value of len(claim is :{lc}")
                         print(f"value of len(sstagged_claim_words) is :{ld}")
                         if not (lc == ld):
-                            raise Exception(
+                            print(
                                 "value of len(claim and len(sstagged_claim_words)) don't match ")
 
                         lcat = len(claim_ann.tags)
@@ -754,7 +756,7 @@ if __name__ == '__main__':
                         print(f"value of len(claim_ann.tags) is :{lcat}")
                         print(f"value of len(claims_sstags) is :{lcsst}")
                         if not (lcat == lcsst):
-                            raise Exception(
+                            print(
                                 "value of len(claim_ann.tags) and len(claims_sstags) don't match ")
 
                         lcet = len(ev_ann.tags)
@@ -762,7 +764,7 @@ if __name__ == '__main__':
                         print(f"value of len(lcet.tags) is :{lcet}")
                         print(f"value oflesst is :{lesst}")
                         if not (lcet == lesst):
-                            raise Exception(
+                            print(
                                 "value of len(ev_ann.tags) and len(ev_sstags) don't match ")
 
                         if not ((claim_ann.words[0]) == (sstagged_claim_words[0])):
@@ -776,7 +778,7 @@ if __name__ == '__main__':
                         print(f"value of len(claims_sstags) is :{lcet}")
                         print(f"value claim_ner_tags is :{lesst}")
                         if not (lcet == lesst):
-                            raise Exception(
+                            print(
                                 "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
 
                         lcet = len(ev_sstags)
@@ -784,7 +786,7 @@ if __name__ == '__main__':
                         print(f"value of len(ev_sstags) is :{lcet}")
                         print(f"value ev_ner_tags is :{lesst}")
                         if not (lcet == lesst):
-                            raise Exception(
+                            print(
                                 "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
 
     except IOError:

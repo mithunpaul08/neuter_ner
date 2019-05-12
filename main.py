@@ -648,10 +648,7 @@ if __name__ == '__main__':
 
 
                     assert (len(evidence.split(" ")) is len(sstagged_ev_words))
-                    for x,y in zip(sstagged_ev_words, evidence.split(" ")):
-                        if not(x==y):
-                            print("found mismatch between text read from sstags and text from data file. going to exit")
-                            sys.exit(1)
+
                     claim=claim_before_removing_punctuations
                     #remove punctuations and unicode from claims also and make sure its same size as
                     if (args.remove_punctuations == True):
@@ -663,10 +660,7 @@ if __name__ == '__main__':
 
 
                     assert (len(claim.split(" ")) is len(sstagged_claim_words))
-                    for x,y in zip(sstagged_claim_words, claim.split(" ")):
-                        if not(x==y):
-                            print("found mismatch between text read from sstags and text from data file. going to exit")
-                            sys.exit(1)
+
 
                     claim_ann, ev_ann = annotate(claim, evidence, API)
                     assert (claim_ann is not None)
@@ -674,10 +668,10 @@ if __name__ == '__main__':
                     assert (len(claim_ann.tags) is len(claims_sstags))
                     assert (len(ev_ann.tags) is len(ev_sstags))
                     if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
-                        print("found mismatch between text read from sstags and text from data file. going to exit")
+                        print("the first word is different between claim_ann.words and sstagged_claim_words")
                         sys.exit(1)
                     if not ((ev_ann.words[0])== (sstagged_ev_words[0])):
-                        print("found mismatch between text read from sstags and text from data file. going to exit")
+                        print("the first word is different between ev_ann.words and sstagged_ev_words")
                         sys.exit(1)
 
                     claim_ner_tags = claim_ann._entities
@@ -693,6 +687,22 @@ if __name__ == '__main__':
                     claim_pos_tags = claim_ann.tags
                     ev_pos_tags = ev_ann.tags
 
+                    print(f"value of claim_pos_tags is:{claim_pos_tags}")
+                    print(f"value of ev_pos_tags is:{ev_pos_tags}")
+                    print(f"value of claims_sstags is:{claims_sstags}")
+                    print(f"value of ev_sstags is:{ev_sstags}")
+                    print(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
+                    print(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
+
+                    for x,y in zip(sstagged_claim_words, claim.split(" ")):
+                        if not(x==y):
+                            print("found mismatch between claim text read from sstags and text from data file. going to exit")
+                            sys.exit(1)
+                            
+                    for x,y in zip(sstagged_ev_words, evidence.split(" ")):
+                        if not(x==y):
+                            print("found mismatch between evidence text read from sstags and text from data file. going to exit")
+                            sys.exit(1)
         # uncomment below portion if your claim and evidence are in separate files
         # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
         #

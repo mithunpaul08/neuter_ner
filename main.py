@@ -282,7 +282,7 @@ def read_rte_data(filename,args):
                 multiple_ev = False
                 x = json.loads(line)
                 claim = x["claim"]
-                evidences = x["evidence"]
+                evidences = x["evidence_from_lexicalized_data"]
                 label = x["label"]
 
                 if (args.remove_punctuations == True):
@@ -298,7 +298,7 @@ def read_rte_data(filename,args):
 
 def write_json_to_disk(claim, evidence,label,outfile):
     total = {'claim': claim,
-             'evidence':evidence,
+             'evidence_from_lexicalized_data':evidence,
              "label":label}
     json.dump(total, outfile)
     outfile.write('\n')
@@ -319,7 +319,7 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
 
 
 
-        #for every token (irrespective of NER or not) in evidence
+        #for every token (irrespective of NER or not) in evidence_from_lexicalized_data
         for ev_new_ner_value in new_ev_sent_after_collapse:
 
             found_intersection=False
@@ -339,12 +339,12 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
                     name_cl_split = set(name_cl.split(" "))
 
 
-                    #check if any of the names/tokens in claim have an intersection with what you just got from evidence ev_new_ner_value. Eg: tolkein
+                    #check if any of the names/tokens in claim have an intersection with what you just got from evidence_from_lexicalized_data ev_new_ner_value. Eg: tolkein
                     if (token_split.issubset(name_cl_split) or name_cl_split.issubset(token_split)):
                         found_intersection = True
 
 
-                        # also confirm that NER value of the thing you found just now in evidence also matches the corresponding NER value in claim. This is to avoid john amsterdam PER overlapping with AMSTERDAM LOC
+                        # also confirm that NER value of the thing you found just now in evidence_from_lexicalized_data also matches the corresponding NER value in claim. This is to avoid john amsterdam PER overlapping with AMSTERDAM LOC
                         actual_ner_tag=""
                         for k, v in dict_tokenner_newner_evidence.items():
 
@@ -353,7 +353,7 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
 
                                 break
 
-                        #now check if this NER tag in evidence also matches with that in claims
+                        #now check if this NER tag in evidence_from_lexicalized_data also matches with that in claims
                         if(actual_ner_tag==ner_cl):
                             val_claim = dict_tokenner_newner_claims[tup]
                             combined_sent.append(val_claim)
@@ -362,7 +362,7 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
                             combined_sent.append(token)
 
 
-                        #now that you found that there is an overlap between your evidence token and the claim token, no need to go through the claims dictionary which maps tokens to ner
+                        #now that you found that there is an overlap between your evidence_from_lexicalized_data token and the claim token, no need to go through the claims dictionary which maps tokens to ner
                         break;
 
 
@@ -371,7 +371,7 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
                     new_ner=""
 
 
-                    #get the evidence's PER-E1 like value
+                    #get the evidence_from_lexicalized_data's PER-E1 like value
                     for k,v in dict_tokenner_newner_evidence.items():
                         #print(k,v)
                         if(ev_new_ner_value==v):
@@ -597,7 +597,7 @@ if __name__ == '__main__':
     merge_sstag_nertag_output_file = os.path.join(args.outputFolder, args.smart_ner_sstags_output_file_name)
     with open(merge_sstag_nertag_output_file, 'w') as outfile:
         outfile.write('')
-    # go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence file with this id, and open it.
+    # go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence_from_lexicalized_data file with this id, and open it.
     ss_claim_file_full_path= ""
     ssfilename_ev=""
     try:
@@ -627,7 +627,7 @@ if __name__ == '__main__':
                         print(f"done reading read_sstagged_data for ss_claim_file_full_path")
                         ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
                         print(f"done reading read_sstagged_data for ss_evidence_file_full_path")
-                        print(f"value of evidence from sstagged data:{sstagged_ev_words}")
+                        print(f"value of evidence_from_lexicalized_data from sstagged data:{sstagged_ev_words}")
                         print(f"value of ev_sstags:{ev_sstags}")
 
                         if not (len(ev_sstags)== len(sstagged_ev_words)):
@@ -641,22 +641,27 @@ if __name__ == '__main__':
 
                         dataPointId_int=int(dataPointId)
                         claim_before_removing_punctuations = all_claims[dataPointId_int]
-                        evidence_before_removing_punctuations = all_evidences[dataPointId_int]
+                        evidence_from_lexicalized_data = all_evidences[dataPointId_int]
                         l = all_labels[dataPointId_int]
-                        evidence=evidence_before_removing_punctuations
-                        print(f"value of evidence from lexicalized data:{evidence}")
+                        print(f"value of evidence_from_lexicalized_data from lexicalized data:{evidence_from_lexicalized_data}")
                         if(args.remove_punctuations==True):
-                            evidence=remove_punctuations(evidence_before_removing_punctuations)
-                            evidence = remove_rrb_lsb_etc(evidence)
+                            evidence_from_lexicalized_data=remove_punctuations(evidence_from_lexicalized_data)
+                            evidence_from_lexicalized_data = remove_rrb_lsb_etc(evidence_from_lexicalized_data)
 
 
-                        l_ev_lexicalized=len(evidence.split(" "))
-                        print(f"value of length of evidence from lexicalized data:{l_ev_lexicalized }")
-                        print(f"value of length of evidence from sstagged data:{len(sstagged_ev_words) }")
+                        l_ev_lexicalized=len(evidence_from_lexicalized_data.split(" "))
+                        print(f"value of length of evidence_from_lexicalized_data from lexicalized data:{l_ev_lexicalized }")
+                        print(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
 
 
 
-                        assert (len(evidence.split(" ")) is len(sstagged_ev_words))
+                        if not (len(evidence_from_lexicalized_data.split(" ")) ==len(sstagged_ev_words)):
+                            le=len(evidence_from_lexicalized_data.split(" "))
+                            print(f"value of len(evidence_from_lexicalized_data is :{le}")
+                            print(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
+                            raise Exception("value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
+
+
 
                         claim=claim_before_removing_punctuations
                         #remove punctuations and unicode from claims also and make sure its same size as
@@ -671,7 +676,7 @@ if __name__ == '__main__':
                         assert (len(claim.split(" ")) is len(sstagged_claim_words))
 
 
-                        claim_ann, ev_ann = annotate(claim, evidence, API)
+                        claim_ann, ev_ann = annotate(claim, evidence_from_lexicalized_data, API)
                         assert (claim_ann is not None)
                         assert (ev_ann is not None)
                         assert (len(claim_ann.tags) is len(claims_sstags))
@@ -709,11 +714,11 @@ if __name__ == '__main__':
 
 
 
-                        for x,y in zip(sstagged_ev_words, evidence.split(" ")):
+                        for x,y in zip(sstagged_ev_words, evidence_from_lexicalized_data.split(" ")):
                             if not(x==y):
-                                print(f"found mismatch between evidence text read from sstags and text from data file. datapoint id is: {dataPointId}")
+                                print(f"found mismatch between evidence_from_lexicalized_data text read from sstags and text from data file. datapoint id is: {dataPointId}")
 
-            # uncomment below portion if your claim and evidence are in separate files
+            # uncomment below portion if your claim and evidence_from_lexicalized_data are in separate files
             # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
             #
             #         claim_ann, ev_ann = annotate(c, e, API)

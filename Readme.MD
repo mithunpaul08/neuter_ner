@@ -287,6 +287,10 @@ This can be run using
 - merging sstags+nertags with collapsing: status as of may 11th 2019.5pm
         - done with both merging and collapsing. have to test with couple of different examples though.
         - was testing with another example file. did clean up of punctuation. Next: do clean up based on if(args.punctuation true)
+        - next: make sure pos tags also match
+        - merge this boston tablet example
+        - test again with michael schumacher example
+        - write logic for merging based on file id
                 
             
 - Commonly encountered errors

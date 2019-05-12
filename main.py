@@ -123,9 +123,16 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
     #this full_name is used to store multiple parts of same name.Eg:Michael Schumacher
     full_name = []
 
-
+    list_of_indices_to_collapse=[]
+    total_string_length=len(ner_list)
     #in this code, triggers happen only when a continuous bunch of nER tags end. Eg: PERSON , PERSON, O.
     for index, (curr_ner, curr_word) in enumerate(zip(ner_list, words_list)):
+        print(index,curr_word)
+
+        # skip as many indices as we have already collapsed. This is because say if NEW YORK POST is collapsed into one entity, we don't want it to add post again to any of dictionaries or
+        # new sentence words
+        if index in (list_of_indices_to_collapse):
+            continue;
         if (curr_ner == "O"):
                 # if there were no tags just before this O, it means, its the end of a combined name. just add that O and move on
                 new_sent.append(curr_word)
@@ -145,6 +152,8 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
                                                new_sent, ev_claim,
                                                dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
                 prev_ner = curr_ner
+
+
             else:
                 #if the curr_ner is _ and the previous one was O or _, it is an anomaly
                 # , it really doesn't make sense/doesn't need collapsing. Just add the word as is
@@ -155,15 +164,13 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
                     #if you reach here, it means, the current_ner is none of O,_ with O before it, or _ with a proper tag before it. So this must be a proper tag, like FOOD, NUMBER etc
                     prev_ner=curr_ner
                     #look ahead, if the next NER value is a dash, don't add to dictionary. else add.
-                    if not (ner_list[index + 1] == "_"):
-                        dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma\
-                            = append_count_to_ner_tags(dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
+                    if(index>130):
+                        print("135")
+                    if((index+1) < total_string_length):
+                            if not (ner_list[index + 1] == "_"):
+                                dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma= append_count_to_ner_tags(dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
                                                      new_sent, ev_claim,
                                                      dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
-
-
-
-
 
     return new_sent, dict_token_ner_newner, dict_newNerBasedName_lemma
 
@@ -420,6 +427,10 @@ def create_parser():
     parser.add_argument('--remove_punctuations', default=True, type=str2bool,
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
+    parser.add_argument('--outputFolder', type=str, default='outputs',
+                        help='name of the folder to write output to')
+    parser.add_argument('--smart_ner_sstags_output_file_name', type=str, default='smartner_sstags_merged',
+                        help='name of the folder to write output to')
     print(parser.parse_args())
     return parser
 
@@ -608,13 +619,23 @@ if __name__ == '__main__':
         assert (claim_ann is not None)
         assert (ev_ann is not None)
         assert (len(claim_ann.tags) is len(claims_sstags))
-
-
         assert (len(ev_ann.tags) is len(ev_sstags))
-        assert(claim_ann.words[0] is sstagged_claim_words[0])
-        assert (ev_ann.words[0] is sstagged_ev_words[0])
+        print(claim_ann.words[0])
+        print(sstagged_claim_words[0])
+        print(ev_ann.words[0])
+        print(sstagged_ev_words[0])
+        if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
+            print("found mismatch between text read from sstags and text from data file. going to exit")
+            sys.exit(1)
+        if not ((ev_ann.words[0])== (sstagged_ev_words[0])):
+            print("found mismatch between text read from sstags and text from data file. going to exit")
+            sys.exit(1)
+
         claim_ner_tags = claim_ann._entities
         ev_ner_tags= ev_ann._entities
+
+        assert (len(claims_sstags) is len(claim_ner_tags))
+        assert (len(ev_sstags) is len(ev_ner_tags))
 
         claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
         ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
@@ -636,8 +657,8 @@ if __name__ == '__main__':
     if (args.merge_ner_ss == True):
         claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 
-
-        with open('output.jsonl', 'a+') as outfile:
+        outputFile=os.path.join(args.outputFolder,args.smart_ner_sstags_output_file_name)
+        with open(outputFile, 'a+') as outfile:
             write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
 
 

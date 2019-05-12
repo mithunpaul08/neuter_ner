@@ -626,14 +626,18 @@ if __name__ == '__main__':
                     e = all_evidences[dataPointId_int]
                     l = all_labels[dataPointId_int]
 
-                    print(f"value of claim from lexicalized data:{c}")
-                    print(f"value of evidence from lexicalized data:{e}")
-                    print(f"value of claim from sstagged data:{sstagged_claim_words}")
-                    print(f"value of evidence from sstagged data:{sstagged_ev_words}")
+
 
 
 
                     e=remove_punctuations(e)
+
+                    print(f"value of evidence from lexicalized data:{e}")
+                    print(f"value of claim from sstagged data:{sstagged_claim_words}")
+                    l_ev_lexicalized=len(e.split(" "))
+                    print(f"value of length of evidence from lexicalized data:{l_ev_lexicalized }")
+                    print(f"value of length of evidence from sstagged data:{len(sstagged_ev_words) }")
+
                     assert (len(e.split(" ")) is len(sstagged_ev_words))
                     for x,y in zip(sstagged_ev_words, e.split(" ")):
                         if not(x==y):
@@ -642,6 +646,9 @@ if __name__ == '__main__':
 
                     #remove punctuations and unicode from claims also and make sure its same size as
                     c=remove_punctuations(c)
+                    print(f"value of claim from lexicalized data:{c}")
+                    print(f"value of evidence from sstagged data:{sstagged_ev_words}")
+
                     assert (len(c.split(" ")) is len(sstagged_claim_words))
                     for x,y in zip(sstagged_claim_words, c.split(" ")):
                         if not(x==y):

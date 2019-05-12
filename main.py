@@ -599,129 +599,131 @@ if __name__ == '__main__':
     # go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence file with this id, and open it.
     ss_claim_file_full_path= ""
     ssfilename_ev=""
-    assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
-    for file in listdir(args.input_folder_for_smartnersstagging_merging):
-        file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
-        if isfile(file_full_path):
-            if file.startswith("claim"):
-                split_file_name=file.split("_")
-                datapoint_id_pred_tags=split_file_name[4]
-                dataPointId_split=datapoint_id_pred_tags.split(".")
-                dataPointId=dataPointId_split[0]
-                ss_claim_file_full_path=file_full_path
-                ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
-                ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
-                if not ss_claim_file_full_path:
-                    print("ss_claim_file_full_path is empty")
-                    assert(1 is 2)
-                if not ssfilename_ev:
-                    print("ssfilename_ev is empty")
-                    assert (1 is 2)
-
-                print(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
-                print(f"value of ssfilename_ev is:{ssfilename_ev}")
-
-                if (args.merge_ner_ss):
-                    claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
-                    assert (len(claims_sstags) is len(sstagged_claim_words))
-                    ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
-                    assert(len(ev_sstags) is len(sstagged_ev_words))
-
-                    if not (dataPointId):
-                        print("dataPointId is empty")
+    try:
+        assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
+        for file in listdir(args.input_folder_for_smartnersstagging_merging):
+            file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
+            if isfile(file_full_path):
+                if file.startswith("claim"):
+                    split_file_name=file.split("_")
+                    datapoint_id_pred_tags=split_file_name[4]
+                    dataPointId_split=datapoint_id_pred_tags.split(".")
+                    dataPointId=dataPointId_split[0]
+                    ss_claim_file_full_path=file_full_path
+                    ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
+                    ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
+                    if not ss_claim_file_full_path:
+                        print("ss_claim_file_full_path is empty")
+                        assert(1 is 2)
+                    if not ssfilename_ev:
+                        print("ssfilename_ev is empty")
                         assert (1 is 2)
-                    dataPointId_int=int(dataPointId)
-                    claim_before_removing_punctuations = all_claims[dataPointId_int]
-                    evidence_before_removing_punctuations = all_evidences[dataPointId_int]
-                    l = all_labels[dataPointId_int]
-                    evidence=evidence_before_removing_punctuations
-                    if(args.remove_punctuations==True):
-                        evidence=remove_punctuations(evidence_before_removing_punctuations)
-                        evidence = remove_rrb_lsb_etc(evidence)
 
-                    print(f"value of evidence from lexicalized data:{evidence}")
-                    print(f"value of evidence from sstagged data:{sstagged_ev_words}")
-                    l_ev_lexicalized=len(evidence.split(" "))
-                    print(f"value of length of evidence from lexicalized data:{l_ev_lexicalized }")
-                    print(f"value of length of evidence from sstagged data:{len(sstagged_ev_words) }")
+                    print(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
+                    print(f"value of ssfilename_ev is:{ssfilename_ev}")
 
+                    if (args.merge_ner_ss):
+                        claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
+                        assert (len(claims_sstags) is len(sstagged_claim_words))
+                        ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
+                        assert(len(ev_sstags) is len(sstagged_ev_words))
 
+                        if not (dataPointId):
+                            print("dataPointId is empty")
+                            assert (1 is 2)
+                        dataPointId_int=int(dataPointId)
+                        claim_before_removing_punctuations = all_claims[dataPointId_int]
+                        evidence_before_removing_punctuations = all_evidences[dataPointId_int]
+                        l = all_labels[dataPointId_int]
+                        evidence=evidence_before_removing_punctuations
+                        if(args.remove_punctuations==True):
+                            evidence=remove_punctuations(evidence_before_removing_punctuations)
+                            evidence = remove_rrb_lsb_etc(evidence)
 
-                    assert (len(evidence.split(" ")) is len(sstagged_ev_words))
-
-                    claim=claim_before_removing_punctuations
-                    #remove punctuations and unicode from claims also and make sure its same size as
-                    if (args.remove_punctuations == True):
-                        claim=remove_punctuations(claim_before_removing_punctuations)
-                        claim = remove_rrb_lsb_etc(claim)
-
-                    print(f"value of claim from lexicalized data:{claim}")
-                    print(f"value of claim from sstagged data:{sstagged_claim_words}")
-
-
-                    assert (len(claim.split(" ")) is len(sstagged_claim_words))
+                        print(f"value of evidence from lexicalized data:{evidence}")
+                        print(f"value of evidence from sstagged data:{sstagged_ev_words}")
+                        l_ev_lexicalized=len(evidence.split(" "))
+                        print(f"value of length of evidence from lexicalized data:{l_ev_lexicalized }")
+                        print(f"value of length of evidence from sstagged data:{len(sstagged_ev_words) }")
 
 
-                    claim_ann, ev_ann = annotate(claim, evidence, API)
-                    assert (claim_ann is not None)
-                    assert (ev_ann is not None)
-                    assert (len(claim_ann.tags) is len(claims_sstags))
-                    assert (len(ev_ann.tags) is len(ev_sstags))
-                    if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
-                        print(f"the first word is different between claim_ann.words and sstagged_claim_words.datapoint id is: {dataPointId_int}")
-                    if not ((ev_ann.words[0])== (sstagged_ev_words[0])):
-                        print(f"the first word is different between ev_ann.words and sstagged_ev_words.datapoint id is: {dataPointId_int}")
 
-                    claim_ner_tags = claim_ann._entities
-                    ev_ner_tags= ev_ann._entities
+                        assert (len(evidence.split(" ")) is len(sstagged_ev_words))
 
-                    assert (len(claims_sstags) is len(claim_ner_tags))
-                    assert (len(ev_sstags) is len(ev_ner_tags))
+                        claim=claim_before_removing_punctuations
+                        #remove punctuations and unicode from claims also and make sure its same size as
+                        if (args.remove_punctuations == True):
+                            claim=remove_punctuations(claim_before_removing_punctuations)
+                            claim = remove_rrb_lsb_etc(claim)
 
-                    claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
-                    ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
+                        print(f"value of claim from lexicalized data:{claim}")
+                        print(f"value of claim from sstagged data:{sstagged_claim_words}")
 
 
-                    claim_pos_tags = claim_ann.tags
-                    ev_pos_tags = ev_ann.tags
-
-                    # print(f"value of claim_pos_tags is:{claim_pos_tags}")
-                    # print(f"value of ev_pos_tags is:{ev_pos_tags}")
-                    print(f"value of claim_ner_tags is:{claim_ner_tags}")
-                    print(f"value of ev_ner_tags is:{ev_ner_tags}")
-                    print(f"value of claims_sstags is:{claims_sstags}")
-                    print(f"value of ev_sstags is:{ev_sstags}")
-                    print(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
-                    print(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
-
-                    for x,y in zip(sstagged_claim_words, claim.split(" ")):
-                        if not(x==y):
-                            print(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId_int}")
-                            sys.exit(1)
+                        assert (len(claim.split(" ")) is len(sstagged_claim_words))
 
 
-                    for x,y in zip(sstagged_ev_words, evidence.split(" ")):
-                        if not(x==y):
-                            print(f"found mismatch between evidence text read from sstags and text from data file. datapoint id is: {dataPointId_int}")
+                        claim_ann, ev_ann = annotate(claim, evidence, API)
+                        assert (claim_ann is not None)
+                        assert (ev_ann is not None)
+                        assert (len(claim_ann.tags) is len(claims_sstags))
+                        assert (len(ev_ann.tags) is len(ev_sstags))
+                        if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
+                            print(f"the first word is different between claim_ann.words and sstagged_claim_words.datapoint id is: {dataPointId}")
+                        if not ((ev_ann.words[0])== (sstagged_ev_words[0])):
+                            print(f"the first word is different between ev_ann.words and sstagged_ev_words.datapoint id is: {dataPointId}")
 
-        # uncomment below portion if your claim and evidence are in separate files
-        # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
-        #
-        #         claim_ann, ev_ann = annotate(c, e, API)
-        #         assert (claim_ann is not None)
-        #         assert (ev_ann is not None)
+                        claim_ner_tags = claim_ann._entities
+                        ev_ner_tags= ev_ann._entities
 
-                    if(args.convert_prepositions==True):
-                        claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
-                    if (args.create_smart_NERs == True):
-                        claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
-                    if (args.merge_ner_ss == True):
-                        claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+                        assert (len(claims_sstags) is len(claim_ner_tags))
+                        assert (len(ev_sstags) is len(ev_ner_tags))
 
-
-                        with open(merge_sstag_nertag_output_file, 'a+') as outfile:
-                            write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
+                        claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
+                        ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
 
 
+                        claim_pos_tags = claim_ann.tags
+                        ev_pos_tags = ev_ann.tags
+
+                        # print(f"value of claim_pos_tags is:{claim_pos_tags}")
+                        # print(f"value of ev_pos_tags is:{ev_pos_tags}")
+                        print(f"value of claim_ner_tags is:{claim_ner_tags}")
+                        print(f"value of ev_ner_tags is:{ev_ner_tags}")
+                        print(f"value of claims_sstags is:{claims_sstags}")
+                        print(f"value of ev_sstags is:{ev_sstags}")
+                        print(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
+                        print(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
+
+                        for x,y in zip(sstagged_claim_words, claim.split(" ")):
+                            if not(x==y):
+                                print(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId}")
+
+
+
+                        for x,y in zip(sstagged_ev_words, evidence.split(" ")):
+                            if not(x==y):
+                                print(f"found mismatch between evidence text read from sstags and text from data file. datapoint id is: {dataPointId}")
+
+            # uncomment below portion if your claim and evidence are in separate files
+            # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
+            #
+            #         claim_ann, ev_ann = annotate(c, e, API)
+            #         assert (claim_ann is not None)
+            #         assert (ev_ann is not None)
+
+                        if(args.convert_prepositions==True):
+                            claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
+                        if (args.create_smart_NERs == True):
+                            claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+                        if (args.merge_ner_ss == True):
+                            claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+
+
+                            with open(merge_sstag_nertag_output_file, 'a+') as outfile:
+                                write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
+
+    except:
+        print(f"error occured. value of current datapoint is {dataPointId}")
 
 

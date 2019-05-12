@@ -211,6 +211,8 @@ combined: '	A 	NUMBERc1 	TIMEc1 		Foodc1 		Numberc2 	MISCc1 			stativec1 	PERSON
 evidence: 'He 	is 		a 	seven-time 	Formula 	One 		World Champion 	and 	is 	widely 	regarded 	as one of the greatest Formula One drivers of all time .'
 combined:	'He 	stativee1 	a 	seven-time 	MISCc1 	Numberc2  	MISCc1 			and 	is 	widely      sociale1 	as NUMBERe2 of the greatest Foodc1 Numberc2 PERSONe1 of all time .'
 ```
+
+- for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
 This can be run using
 
 `source activate meanteacher`
@@ -250,6 +252,10 @@ This can be run using
         - write logic for merging based on file id:9 to 9.30pm
         
         - start runs (inshah allah) 9.30pm
+        checklist
+        - make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
+        - make sure input folder name is correct
+        - make sure you are providing the same data/inputfile i.e plain text file
                 
             
 - Commonly encountered errors

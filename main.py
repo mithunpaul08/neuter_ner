@@ -609,6 +609,9 @@ if __name__ == '__main__':
                     print("ssfilename_ev is empty")
                     assert (1 is 2)
 
+                print(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
+                print(f"value of ssfilename_ev is:{ssfilename_ev}")
+
                 if (args.merge_ner_ss):
                     claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
                     assert (len(claims_sstags) is len(sstagged_claim_words))
@@ -622,6 +625,14 @@ if __name__ == '__main__':
                     c = all_claims[dataPointId_int]
                     e = all_evidences[dataPointId_int]
                     l = all_labels[dataPointId_int]
+
+                    print(f"value of claim from lexicalized data:{c}")
+                    print(f"value of evidence from lexicalized data:{e}")
+                    print(f"value of claim from sstagged data:{sstagged_claim_words}")
+                    print(f"value of evidence from sstagged data:{sstagged_ev_words}")
+
+
+
                     e=remove_punctuations(e)
                     assert (len(e.split(" ")) is len(sstagged_ev_words))
                     for x,y in zip(sstagged_ev_words, e.split(" ")):

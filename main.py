@@ -626,8 +626,10 @@ if __name__ == '__main__':
                         assert (len(claims_sstags) is len(sstagged_claim_words))
                         print(f"done reading read_sstagged_data for ss_claim_file_full_path")
                         ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
-                        assert(len(ev_sstags) is len(sstagged_ev_words))
                         print(f"done reading read_sstagged_data for ss_evidence_file_full_path")
+                        print(f"value of evidence from sstagged data:{sstagged_ev_words}")
+                        print(f"value of ev_sstags:{ev_sstags}")
+                        assert (len(ev_sstags) is len(sstagged_ev_words))
 
 
                         if not (dataPointId):
@@ -638,12 +640,12 @@ if __name__ == '__main__':
                         evidence_before_removing_punctuations = all_evidences[dataPointId_int]
                         l = all_labels[dataPointId_int]
                         evidence=evidence_before_removing_punctuations
+                        print(f"value of evidence from lexicalized data:{evidence}")
                         if(args.remove_punctuations==True):
                             evidence=remove_punctuations(evidence_before_removing_punctuations)
                             evidence = remove_rrb_lsb_etc(evidence)
 
-                        print(f"value of evidence from lexicalized data:{evidence}")
-                        print(f"value of evidence from sstagged data:{sstagged_ev_words}")
+
                         l_ev_lexicalized=len(evidence.split(" "))
                         print(f"value of length of evidence from lexicalized data:{l_ev_lexicalized }")
                         print(f"value of length of evidence from sstagged data:{len(sstagged_ev_words) }")

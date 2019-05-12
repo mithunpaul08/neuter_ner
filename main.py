@@ -816,7 +816,7 @@ if __name__ == '__main__':
             #         claim_ann, ev_ann = annotate(c, e, API)
             #         assert (claim_ann is not None)
             #         assert (ev_ann is not None)
-
+                        LOG.error(f"total files skipped so far is {files_skipped}")
                         if(args.convert_prepositions==True):
                             claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
                         if (args.create_smart_NERs == True):

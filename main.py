@@ -2,6 +2,9 @@ from tqdm import tqdm
 import json,mmap,os,argparse,string,sys
 import processors
 from processors import *
+import unidecode
+from unidecode import unidecode
+from cleantext import clean
 
 def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                  unique_new_tokens, dict_newner_token):
@@ -507,39 +510,78 @@ def read_sstagged_data(filename,args):
     sstags = []
     words=[]
     puncts = set(string.punctuation)
+    line_counter=0
     with open(filename,"r") as f:
             line=f.readline()
             while(line):
+                line_counter=line_counter+1
                 split_line=line.split("\t")
-                #pick only the words/lemmas that are not punctutations. -this had to be done in a existential check way because we had already written a million sstag files by the time we coded up merging
-                # and didn't want to rewrite them all without punctuations in strings.
-                if(args.remove_punctuations == True):
-                    if not(split_line[1] in puncts):
-                        #if the 6th column has a dash, add it.
-                        # A dash in sstagger means, this word, with the word just before
-                        # it was collapsed into one entity. i.e it was I(inside) in BIO notation.
-                        lemma=split_line[1]
-                        sstag6=split_line[6]
-                        sstag7 = split_line[7]
-                        if(sstag6=="_"):
-                            sstag=sstag6
+
+                word = split_line[1]
+                word=remove_punctuations_word(word)
+                #if the word is empty now, it means it was a punctuation, and hence removed. Don't add the word or  its tag
+                if not(word == ""):
+                    if(line_counter>150):
+                        print("150")
+                    # if the word is lsb or lrb, just ignore. this was because the punctuation cleaner wasn't cleaning it
+                    if not (word.lower() in ["lsb","lrb","rsb","-lsb-","-LSB-","-RSB-","-rsb-"]):
+                        #pick only the words/lemmas that are not punctutations. -this had to be done in a existential check way because we had already written a million sstag files by the time we coded up merging
+                        # and didn't want to rewrite them all without punctuations in strings.
+                        if (args.remove_punctuations == True):
+                            if not(split_line[1] in puncts):
+                                #if the 6th column has a dash, add it.
+                                # A dash in sstagger means, this word, with the word just before
+                                # it was collapsed into one entity. i.e it was I(inside) in BIO notation.
+                                sstag6=split_line[6]
+                                sstag7 = split_line[7]
+                                if(sstag6=="_"):
+                                    sstag=sstag6
+                                else:
+                                    sstag=sstag7
+                                sstags.append(sstag)
+                                words.append(word)
                         else:
-                            sstag=sstag7
-                        sstags.append(sstag)
-                        words.append(lemma)
-                else:
-                    # if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
-                    sstag6 = split_line[6]
-                    sstag7 = split_line[7]
-                    if (sstag6 == "_"):
-                        sstag = sstag6
+                            # if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
+                            sstag6 = split_line[6]
+                            sstag7 = split_line[7]
+                            if (sstag6 == "_"):
+                                sstag = sstag6
+                            else:
+                                sstag = sstag7
+                            sstags.append(sstag)
+                            words.append(word)
+                            line = f.readline()
+
                     else:
-                        sstag = sstag7
-                    sstags.append(sstag)
-                    lemma = split_line[1]
-                    words.append(lemma)
-                line = f.readline()
+                        print("found word to be lrb")
+                        line = f.readline()
+                else:
+                    print("found word is a punctuation")
+                    line = f.readline()
     return sstags,words
+
+def remove_punctuations_word(word):
+    return clean(word,
+          fix_unicode=True,  # fix various unicode errors
+          to_ascii=True,  # transliterate to closest ASCII representation
+          lower=False,  # lowercase text
+          no_line_breaks=False,  # fully strip line breaks as opposed to only normalizing them
+          no_urls=False,  # replace all URLs with a special token
+          no_emails=False,  # replace all email addresses with a special token
+          no_phone_numbers=False,  # replace all phone numbers with a special token
+          no_numbers=False,  # replace all numbers with a special token
+          no_digits=False,  # replace all digits with a special token
+          no_currency_symbols=False,  # replace all currency symbols with a special token
+          no_punct=True,  # fully remove punctuation
+          replace_with_url="<URL>",
+          replace_with_email="<EMAIL>",
+          replace_with_phone_number="<PHONE>",
+          replace_with_number="<NUMBER>",
+          replace_with_digit="0",
+          replace_with_currency_symbol="<CUR>",
+          lang="en"  # set to 'de' for German special handling
+          )
+
 
 if __name__ == '__main__':
 
@@ -563,22 +605,61 @@ if __name__ == '__main__':
     if (args.merge_ner_ss):
         claims_sstags, sstagged_claim_words = read_sstagged_data(ssfilename_claims,args)
         ev_sstags, sstagged_ev_words = read_sstagged_data(ssfilename_ev,args)
+        assert(len(ev_sstags) is len(sstagged_ev_words))
 
         # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
         c = all_claims[8476]
         e = all_evidences[8476]
         l = all_labels[8476]
+
+        #c_decoded = unidecode(c)
+        #c=remove_punctuations(c_decoded.split(" "))
+
+        e=clean(e,
+              fix_unicode=True,  # fix various unicode errors
+              to_ascii=True,  # transliterate to closest ASCII representation
+              lower=False,  # lowercase text
+              no_line_breaks=False,  # fully strip line breaks as opposed to only normalizing them
+              no_urls=False,  # replace all URLs with a special token
+              no_emails=False,  # replace all email addresses with a special token
+              no_phone_numbers=False,  # replace all phone numbers with a special token
+              no_numbers=False,  # replace all numbers with a special token
+              no_digits=False,  # replace all digits with a special token
+              no_currency_symbols=False,  # replace all currency symbols with a special token
+              no_punct=True,  # fully remove punctuation
+              replace_with_url="<URL>",
+              replace_with_email="<EMAIL>",
+              replace_with_phone_number="<PHONE>",
+              replace_with_number="<NUMBER>",
+              replace_with_digit="0",
+              replace_with_currency_symbol="<CUR>",
+              lang="en"  # set to 'de' for German special handling
+              )
+
+        #sstagged_str=" ".join(sstagged_ev_words)
+
+
+
+        for x,y in zip(sstagged_ev_words, e.split(" ")):
+            print(x,y)
+            if not(x==y):
+                sys.exit(1)
+        #
+        #
+        # sstagged_claim_words=remove_punctuations(sstagged_claim_words_decoded.split(" "))
+        #
+        # sstagged_ev_words_decoded = unidecode(" ".join(sstagged_ev_words))
+        # sstagged_ev_words = remove_punctuations(sstagged_ev_words_decoded.split(" "))
+
         claim_ann, ev_ann = annotate(c, e, API)
         assert (claim_ann is not None)
         assert (ev_ann is not None)
         assert (len(claim_ann.tags) is len(claims_sstags))
-        for x,y in zip(ev_ann.words, sstagged_ev_words):
-            print(x,y)
-            if not(x==y):
-                sys.exit(1)
+        
+
         assert (len(ev_ann.tags) is len(ev_sstags))
-        assert(claim_ann.lemmas[0] is sstagged_claim_words[0])
-        assert (ev_ann.lemmas[0] is sstagged_ev_words[0])
+        assert(claim_ann.words[0] is sstagged_claim_words[0])
+        assert (ev_ann.words[0] is sstagged_ev_words[0])
         claim_ner_tags = claim_ann._entities
         ev_ner_tags= ev_ann._entities
 

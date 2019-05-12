@@ -2,8 +2,6 @@ from tqdm import tqdm
 import json,mmap,os,argparse,string,sys
 import processors
 from processors import *
-import unidecode
-from unidecode import unidecode
 from cleantext import clean
 from os import listdir
 from os.path import isfile,join

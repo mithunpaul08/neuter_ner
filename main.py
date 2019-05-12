@@ -5,6 +5,7 @@ from processors import *
 from cleantext import clean
 from os import listdir
 from os.path import isfile,join
+import traceback
 
 def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                  unique_new_tokens, dict_newner_token):
@@ -535,7 +536,7 @@ def read_sstagged_data(filename,args):
                 word = split_line[1]
                 if (args.remove_punctuations == True):
                     word=remove_punctuations(word)
-                    #remove punctuations twice, . this is done because words like "-lrb-" was first tripped, but the stripper was not removing lsb itself.
+                    #remove punctuations twice, . this is done because words like "-lrb-" was first stripped, but the stripper was not removing lsb itself.
                     word = remove_punctuations(word)
                 #if the word is empty now, it means it was a punctuation, and hence removed. Don't add the word or  its tag
                 if not(word == ""):
@@ -613,11 +614,9 @@ if __name__ == '__main__':
                     ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
                     ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
                     if not ss_claim_file_full_path:
-                        print("ss_claim_file_full_path is empty")
-                        assert(1 is 2)
+                        raise Exception("ss_claim_file_full_path is empty")
                     if not ssfilename_ev:
-                        print("ssfilename_ev is empty")
-                        assert (1 is 2)
+                        raise Exception("ssfilename_ev is empty")
 
                     print(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
                     print(f"value of ssfilename_ev is:{ssfilename_ev}")
@@ -625,12 +624,15 @@ if __name__ == '__main__':
                     if (args.merge_ner_ss):
                         claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
                         assert (len(claims_sstags) is len(sstagged_claim_words))
+                        print(f"done reading read_sstagged_data for ss_claim_file_full_path")
                         ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
                         assert(len(ev_sstags) is len(sstagged_ev_words))
+                        print(f"done reading read_sstagged_data for ss_evidence_file_full_path")
+
 
                         if not (dataPointId):
-                            print("dataPointId is empty")
-                            assert (1 is 2)
+                            raise Exception("dataPointId is empty")
+
                         dataPointId_int=int(dataPointId)
                         claim_before_removing_punctuations = all_claims[dataPointId_int]
                         evidence_before_removing_punctuations = all_evidences[dataPointId_int]
@@ -727,29 +729,35 @@ if __name__ == '__main__':
     except IOError:
         print('An error occured trying to read the file.')
         print(f"value of current datapoint is {dataPointId}")
+        traceback.print_exc()
 
 
     except ValueError:
         print('Non-numeric data found in the file.')
         print(f"value of current datapoint is {dataPointId}")
+        traceback.print_exc()
 
 
     except ImportError:
         print("NO module found")
         print(f"value of current datapoint is {dataPointId}")
+        traceback.print_exc()
 
     except EOFError:
         print('Why did you do an EOF on me?')
         print(f"value of current datapoint is {dataPointId}")
+        traceback.print_exc()
 
 
     except KeyboardInterrupt:
         print('You cancelled the operation.')
         print(f"value of current datapoint is {dataPointId}")
+        traceback.print_exc()
 
 
     except:
         print('An error which wasnt explicity caught occured.')
         print(f"value of current datapoint is {dataPointId}")
+        traceback.print_exc()
 
 

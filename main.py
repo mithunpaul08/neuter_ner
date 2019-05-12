@@ -543,8 +543,8 @@ def read_sstagged_data(filename,args):
                             line = f.readline()
                     else:
                         line = f.readline()
-                else:
-                    line = f.readline()
+                # else:
+                #     line = f.readline()
     return sstags,words
 
 def remove_punctuations(word):

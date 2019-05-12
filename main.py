@@ -653,10 +653,10 @@ if __name__ == '__main__':
                         print(f"value of length of evidence_from_lexicalized_data from lexicalized data:{l_ev_lexicalized }")
                         print(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
 
+                        le = len(evidence_from_lexicalized_data.split(" "))
                         print(f"value of len(evidence_from_lexicalized_data is :{le}")
                         print(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
                         if not (len(evidence_from_lexicalized_data.split(" ")) ==len(sstagged_ev_words)):
-                            le=len(evidence_from_lexicalized_data.split(" "))
                             raise Exception("value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
 
 
@@ -684,9 +684,25 @@ if __name__ == '__main__':
                         assert (claim_ann is not None)
                         assert (ev_ann is not None)
 
+                        lcat = len(claim_ann.tags)
+                        lcsst = len(claims_sstags)
+                        print(f"value of len(claim_ann.tags) is :{lcat}")
+                        print(f"value of len(claims_sstags) is :{lcsst}")
+                        if not (lcat == lcsst):
+                            raise Exception(
+                                "value of len(claim_ann.tags) and len(claims_sstags) don't match ")
 
-                        assert (len(claim_ann.tags) is len(claims_sstags))
-                        assert (len(ev_ann.tags) is len(ev_sstags))
+                        lcet = len(ev_ann.tags)
+                        lesst = len(ev_sstags)
+                        print(f"value of len(lcet.tags) is :{lcet}")
+                        print(f"value oflesst is :{lesst}")
+                        if not (lcet == lesst):
+                            raise Exception(
+                                "value of len(ev_ann.tags) and len(ev_sstags) don't match ")
+
+
+
+
                         if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
                             print(f"the first word is different between claim_ann.words and sstagged_claim_words.datapoint id is: {dataPointId}")
                         if not ((ev_ann.words[0])== (sstagged_ev_words[0])):

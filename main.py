@@ -653,12 +653,10 @@ if __name__ == '__main__':
                         print(f"value of length of evidence_from_lexicalized_data from lexicalized data:{l_ev_lexicalized }")
                         print(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
 
-
-
+                        print(f"value of len(evidence_from_lexicalized_data is :{le}")
+                        print(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
                         if not (len(evidence_from_lexicalized_data.split(" ")) ==len(sstagged_ev_words)):
                             le=len(evidence_from_lexicalized_data.split(" "))
-                            print(f"value of len(evidence_from_lexicalized_data is :{le}")
-                            print(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
                             raise Exception("value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
 
 
@@ -673,12 +671,20 @@ if __name__ == '__main__':
                         print(f"value of claim from sstagged data:{sstagged_claim_words}")
 
 
-                        assert (len(claim.split(" ")) is len(sstagged_claim_words))
 
+                        lc=len(claim.split(" "))
+                        ld=len(sstagged_claim_words)
+                        print(f"value of len(claim is :{lc}")
+                        print(f"value of len(sstagged_claim_words) is :{ld}")
+                        if not (lc == ld):
+                            raise Exception(
+                                "value of len(claim and len(sstagged_claim_words)) don't match ")
 
                         claim_ann, ev_ann = annotate(claim, evidence_from_lexicalized_data, API)
                         assert (claim_ann is not None)
                         assert (ev_ann is not None)
+
+
                         assert (len(claim_ann.tags) is len(claims_sstags))
                         assert (len(ev_ann.tags) is len(ev_sstags))
                         if not ((claim_ann.words[0])== (sstagged_claim_words[0])):

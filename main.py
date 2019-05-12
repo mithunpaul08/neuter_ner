@@ -602,7 +602,7 @@ if __name__ == '__main__':
     ssfilename_ev=""
     try:
         assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
-        for file in listdir(args.input_folder_for_smartnersstagging_merging):
+        for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
             file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
             if isfile(file_full_path):
                 if file.startswith("claim"):
@@ -769,6 +769,7 @@ if __name__ == '__main__':
     except:
         print('An error which wasnt explicity caught occured.')
         print(f"value of current datapoint is {dataPointId}")
+        print(f"value of index  is {index}")
         traceback.print_exc()
 
 

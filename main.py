@@ -600,6 +600,7 @@ if __name__ == '__main__':
     # go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence_from_lexicalized_data file with this id, and open it.
     ss_claim_file_full_path= ""
     ssfilename_ev=""
+    files_skipped=0
     try:
         assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
         for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
@@ -686,8 +687,83 @@ if __name__ == '__main__':
                         claim_ner_tags = claim_ann._entities
                         ev_ner_tags= ev_ann._entities
 
+                        le = len(evidence_from_lexicalized_data.split(" "))
+                        print(f"value of len(evidence_from_lexicalized_data is :{le}")
+                        print(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
+                        if not (len(evidence_from_lexicalized_data.split(" ")) == len(sstagged_ev_words)):
+                            print(
+                                "value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
+                            files_skipped=files_skipped+1
+                            print("total files skipped so far is {files_skipped}")
+                            continue
 
+                        lc = len(claim.split(" "))
+                        ld = len(sstagged_claim_words)
+                        print(f"value of len(claim is :{lc}")
+                        print(f"value of len(sstagged_claim_words) is :{ld}")
+                        if not (lc == ld):
+                            print(
+                                "value of len(claim and len(sstagged_claim_words)) don't match ")
+                            files_skipped = files_skipped + 1
+                            print("total files skipped so far is {files_skipped}")
+                            continue
 
+                        lcat = len(claim_ann.tags)
+                        lcsst = len(claims_sstags)
+                        print(f"value of len(claim_ann.tags) is :{lcat}")
+                        print(f"value of len(claims_sstags) is :{lcsst}")
+                        if not (lcat == lcsst):
+                            print(
+                                "value of len(claim_ann.tags) and len(claims_sstags) don't match ")
+                            files_skipped = files_skipped + 1
+                            print("total files skipped so far is {files_skipped}")
+                            continue
+
+                        lcet = len(ev_ann.tags)
+                        lesst = len(ev_sstags)
+                        print(f"value of len(lcet.tags) is :{lcet}")
+                        print(f"value oflesst is :{lesst}")
+                        if not (lcet == lesst):
+                            print(
+                                "value of len(ev_ann.tags) and len(ev_sstags) don't match ")
+                            files_skipped = files_skipped + 1
+                            print("total files skipped so far is {files_skipped}")
+                            continue
+
+                        if not ((claim_ann.words[0]) == (sstagged_claim_words[0])):
+                            print(
+                                f"the first word is different between claim_ann.words and sstagged_claim_words.datapoint id is: {dataPointId}")
+                            files_skipped = files_skipped + 1
+                            print("total files skipped so far is {files_skipped}")
+                            continue
+                        if not ((ev_ann.words[0]) == (sstagged_ev_words[0])):
+                            print(
+                                f"the first word is different between ev_ann.words and sstagged_ev_words.datapoint id is: {dataPointId}")
+                            files_skipped = files_skipped + 1
+                            print("total files skipped so far is {files_skipped}")
+                            continue
+
+                        lcet = len(claims_sstags)
+                        lesst = len(claim_ner_tags)
+                        print(f"value of len(claims_sstags) is :{lcet}")
+                        print(f"value claim_ner_tags is :{lesst}")
+                        if not (lcet == lesst):
+                            print(
+                                "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
+                            files_skipped = files_skipped + 1
+                            print("total files skipped so far is {files_skipped}")
+                            continue
+
+                        lcet = len(ev_sstags)
+                        lesst = len(ev_ner_tags)
+                        print(f"value of len(ev_sstags) is :{lcet}")
+                        print(f"value ev_ner_tags is :{lesst}")
+                        if not (lcet == lesst):
+                            print(
+                                "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+                            files_skipped = files_skipped + 1
+                            print("total files skipped so far is {files_skipped}")
+                            continue
 
 
                         claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
@@ -736,58 +812,7 @@ if __name__ == '__main__':
                         with open(merge_sstag_nertag_output_file, 'a+') as outfile:
                             write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
 
-                        le = len(evidence_from_lexicalized_data.split(" "))
-                        print(f"value of len(evidence_from_lexicalized_data is :{le}")
-                        print(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
-                        if not (len(evidence_from_lexicalized_data.split(" ")) == len(sstagged_ev_words)):
-                            print(
-                                "value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
 
-                        lc = len(claim.split(" "))
-                        ld = len(sstagged_claim_words)
-                        print(f"value of len(claim is :{lc}")
-                        print(f"value of len(sstagged_claim_words) is :{ld}")
-                        if not (lc == ld):
-                            print(
-                                "value of len(claim and len(sstagged_claim_words)) don't match ")
-
-                        lcat = len(claim_ann.tags)
-                        lcsst = len(claims_sstags)
-                        print(f"value of len(claim_ann.tags) is :{lcat}")
-                        print(f"value of len(claims_sstags) is :{lcsst}")
-                        if not (lcat == lcsst):
-                            print(
-                                "value of len(claim_ann.tags) and len(claims_sstags) don't match ")
-
-                        lcet = len(ev_ann.tags)
-                        lesst = len(ev_sstags)
-                        print(f"value of len(lcet.tags) is :{lcet}")
-                        print(f"value oflesst is :{lesst}")
-                        if not (lcet == lesst):
-                            print(
-                                "value of len(ev_ann.tags) and len(ev_sstags) don't match ")
-
-                        if not ((claim_ann.words[0]) == (sstagged_claim_words[0])):
-                            print(
-                                f"the first word is different between claim_ann.words and sstagged_claim_words.datapoint id is: {dataPointId}")
-                        if not ((ev_ann.words[0]) == (sstagged_ev_words[0])):
-                            print(f"the first word is different between ev_ann.words and sstagged_ev_words.datapoint id is: {dataPointId}")
-
-                        lcet = len(claims_sstags)
-                        lesst = len(claim_ner_tags)
-                        print(f"value of len(claims_sstags) is :{lcet}")
-                        print(f"value claim_ner_tags is :{lesst}")
-                        if not (lcet == lesst):
-                            print(
-                                "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
-
-                        lcet = len(ev_sstags)
-                        lesst = len(ev_ner_tags)
-                        print(f"value of len(ev_sstags) is :{lcet}")
-                        print(f"value ev_ner_tags is :{lesst}")
-                        if not (lcet == lesst):
-                            print(
-                                "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
 
     except IOError:
         print('An error occured trying to read the file.')

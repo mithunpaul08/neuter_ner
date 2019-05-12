@@ -258,6 +258,14 @@ This can be run using
         - make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
         - make sure input folder name is correct
         - make sure you are providing the same data/inputfile i.e plain text file
+        
+        ask mihai or becky:
+        - if lengths don't match, should i skip that entry or just let it continue writing
+        todo:
+        - add tqdm
+        - add logger from python logs
+        - next todo: at some point, get back to removing punctuations.
+        
                 
             
 - Commonly encountered errors

@@ -514,6 +514,14 @@ def mergeSSandNERTags(ss_tags, ner_tags ):
                     ner_tags[index] = sst
     return ner_tags
 
+def remove_rrb_lsb_etc(sent):
+    no_lrb_data=[]
+    words=sent.split(" ")
+    for word in words:
+        if not (word.lower() in ["lrb", "rrb", "lcb", "rcb", "lsb", "rsb"]):
+            no_lrb_data.append(word)
+    return " ".join(no_lrb_data)
+
 
 def read_sstagged_data(filename,args):
     sstags = []
@@ -635,6 +643,8 @@ if __name__ == '__main__':
                     print(f"value of length of evidence from lexicalized data:{l_ev_lexicalized }")
                     print(f"value of length of evidence from sstagged data:{len(sstagged_ev_words) }")
 
+                    evidence_after_removing_punctuations=remove_rrb_lsb_etc(evidence_after_removing_punctuations)
+
                     assert (len(evidence_after_removing_punctuations.split(" ")) is len(sstagged_ev_words))
                     for x,y in zip(sstagged_ev_words, evidence_after_removing_punctuations.split(" ")):
                         if not(x==y):
@@ -643,6 +653,8 @@ if __name__ == '__main__':
 
                     #remove punctuations and unicode from claims also and make sure its same size as
                     claim_after_removing_punctuations=remove_punctuations(claim_before_removing_punctuations)
+                    claim_after_removing_punctuations = remove_rrb_lsb_etc(claim_after_removing_punctuations)
+
                     print(f"value of claim from lexicalized data:{claim_after_removing_punctuations}")
                     print(f"value of claim from sstagged data:{sstagged_claim_words}")
 

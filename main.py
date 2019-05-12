@@ -668,11 +668,9 @@ if __name__ == '__main__':
                     assert (len(claim_ann.tags) is len(claims_sstags))
                     assert (len(ev_ann.tags) is len(ev_sstags))
                     if not ((claim_ann.words[0])== (sstagged_claim_words[0])):
-                        print("the first word is different between claim_ann.words and sstagged_claim_words")
-                        sys.exit(1)
+                        print(f"the first word is different between claim_ann.words and sstagged_claim_words.datapoint id is: {dataPointId_int}")
                     if not ((ev_ann.words[0])== (sstagged_ev_words[0])):
-                        print("the first word is different between ev_ann.words and sstagged_ev_words")
-                        sys.exit(1)
+                        print(f"the first word is different between ev_ann.words and sstagged_ev_words.datapoint id is: {dataPointId_int}")
 
                     claim_ner_tags = claim_ann._entities
                     ev_ner_tags= ev_ann._entities
@@ -687,8 +685,10 @@ if __name__ == '__main__':
                     claim_pos_tags = claim_ann.tags
                     ev_pos_tags = ev_ann.tags
 
-                    print(f"value of claim_pos_tags is:{claim_pos_tags}")
-                    print(f"value of ev_pos_tags is:{ev_pos_tags}")
+                    # print(f"value of claim_pos_tags is:{claim_pos_tags}")
+                    # print(f"value of ev_pos_tags is:{ev_pos_tags}")
+                    print(f"value of claim_ner_tags is:{claim_ner_tags}")
+                    print(f"value of ev_ner_tags is:{ev_ner_tags}")
                     print(f"value of claims_sstags is:{claims_sstags}")
                     print(f"value of ev_sstags is:{ev_sstags}")
                     print(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
@@ -696,13 +696,14 @@ if __name__ == '__main__':
 
                     for x,y in zip(sstagged_claim_words, claim.split(" ")):
                         if not(x==y):
-                            print("found mismatch between claim text read from sstags and text from data file. going to exit")
+                            print(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId_int}")
                             sys.exit(1)
-                            
+
+
                     for x,y in zip(sstagged_ev_words, evidence.split(" ")):
                         if not(x==y):
-                            print("found mismatch between evidence text read from sstags and text from data file. going to exit")
-                            sys.exit(1)
+                            print(f"found mismatch between evidence text read from sstags and text from data file. datapoint id is: {dataPointId_int}")
+
         # uncomment below portion if your claim and evidence are in separate files
         # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
         #

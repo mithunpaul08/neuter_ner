@@ -626,7 +626,7 @@ if __name__ == '__main__':
                     assert (len(claims_sstags) is len(sstagged_claim_words))
                     ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
                     assert(len(ev_sstags) is len(sstagged_ev_words))
-                    # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
+
                     if not (dataPointId):
                         print("dataPointId is empty")
                         assert (1 is 2)
@@ -634,38 +634,41 @@ if __name__ == '__main__':
                     claim_before_removing_punctuations = all_claims[dataPointId_int]
                     evidence_before_removing_punctuations = all_evidences[dataPointId_int]
                     l = all_labels[dataPointId_int]
+                    evidence=evidence_before_removing_punctuations
+                    if(args.remove_punctuations==True):
+                        evidence=remove_punctuations(evidence_before_removing_punctuations)
+                        evidence = remove_rrb_lsb_etc(evidence)
 
-                    evidence_after_removing_punctuations=remove_punctuations(evidence_before_removing_punctuations)
-
-                    print(f"value of evidence from lexicalized data:{evidence_after_removing_punctuations}")
+                    print(f"value of evidence from lexicalized data:{evidence}")
                     print(f"value of evidence from sstagged data:{sstagged_ev_words}")
-                    l_ev_lexicalized=len(evidence_after_removing_punctuations.split(" "))
+                    l_ev_lexicalized=len(evidence.split(" "))
                     print(f"value of length of evidence from lexicalized data:{l_ev_lexicalized }")
                     print(f"value of length of evidence from sstagged data:{len(sstagged_ev_words) }")
 
-                    evidence_after_removing_punctuations=remove_rrb_lsb_etc(evidence_after_removing_punctuations)
 
-                    assert (len(evidence_after_removing_punctuations.split(" ")) is len(sstagged_ev_words))
-                    for x,y in zip(sstagged_ev_words, evidence_after_removing_punctuations.split(" ")):
+
+                    assert (len(evidence.split(" ")) is len(sstagged_ev_words))
+                    for x,y in zip(sstagged_ev_words, evidence.split(" ")):
                         if not(x==y):
                             print("found mismatch between text read from sstags and text from data file. going to exit")
                             sys.exit(1)
-
+                    claim=claim_before_removing_punctuations
                     #remove punctuations and unicode from claims also and make sure its same size as
-                    claim_after_removing_punctuations=remove_punctuations(claim_before_removing_punctuations)
-                    claim_after_removing_punctuations = remove_rrb_lsb_etc(claim_after_removing_punctuations)
+                    if (args.remove_punctuations == True):
+                        claim=remove_punctuations(claim_before_removing_punctuations)
+                        claim = remove_rrb_lsb_etc(claim)
 
-                    print(f"value of claim from lexicalized data:{claim_after_removing_punctuations}")
+                    print(f"value of claim from lexicalized data:{claim}")
                     print(f"value of claim from sstagged data:{sstagged_claim_words}")
 
 
-                    assert (len(claim_after_removing_punctuations.split(" ")) is len(sstagged_claim_words))
-                    for x,y in zip(sstagged_claim_words, claim_after_removing_punctuations.split(" ")):
+                    assert (len(claim.split(" ")) is len(sstagged_claim_words))
+                    for x,y in zip(sstagged_claim_words, claim.split(" ")):
                         if not(x==y):
                             print("found mismatch between text read from sstags and text from data file. going to exit")
                             sys.exit(1)
 
-                    claim_ann, ev_ann = annotate(claim_after_removing_punctuations, evidence_after_removing_punctuations, API)
+                    claim_ann, ev_ann = annotate(claim, evidence, API)
                     assert (claim_ann is not None)
                     assert (ev_ann is not None)
                     assert (len(claim_ann.tags) is len(claims_sstags))

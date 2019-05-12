@@ -6,6 +6,10 @@ from cleantext import clean
 from os import listdir
 from os.path import isfile,join
 import traceback
+import logging
+
+logging.basicConfig(filename='merging_sstag_smartnertag.log',filemode='w+')
+LOG = logging.getLogger('main')
 
 def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                  unique_new_tokens, dict_newner_token):
@@ -430,6 +434,8 @@ def create_parser():
                         help='name of the folder to write output to')
     parser.add_argument('--input_folder_for_smartnersstagging_merging', type=str, default='sstagged_files',
                         help='name of the folder where sstagged files will be read from')
+    parser.add_argument('--log_level', type=str, default='INFO',
+                        help='name of the folder where sstagged files will be read from')
     print(parser.parse_args())
     return parser
 
@@ -583,6 +589,15 @@ def remove_punctuations(word):
 if __name__ == '__main__':
 
     args = parse_commandline_args()
+    if (args.log_level=="INFO"):
+        LOG.setLevel(logging.INFO)
+    else:
+        if (args.log_level=="DEBUG"):
+            LOG.setLevel(logging.DEBUG)
+        else:
+            if (args.log_level=="ERROR"):
+                LOG.setLevel(logging.ERROR)
+
     if(args.use_docker==True):
         API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
     else:
@@ -615,44 +630,45 @@ if __name__ == '__main__':
                     ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
                     ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
                     if not ss_claim_file_full_path:
-                        print("ss_claim_file_full_path is empty")
+                        LOG.error("ss_claim_file_full_path is empty")
                     if not ssfilename_ev:
-                        print("ssfilename_ev is empty")
+                        LOG.error("ssfilename_ev is empty")
 
-                    print(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
-                    print(f"value of ssfilename_ev is:{ssfilename_ev}")
+                    LOG.error(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
+                    LOG.error(f"value of ssfilename_ev is:{ssfilename_ev}")
+                    LOG.error(f"value of index  is {index}")
 
                     if (args.merge_ner_ss):
                         claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
                         assert (len(claims_sstags) is len(sstagged_claim_words))
-                        print(f"done reading read_sstagged_data for ss_claim_file_full_path")
+                        LOG.debug(f"done reading read_sstagged_data for ss_claim_file_full_path")
                         ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
-                        print(f"done reading read_sstagged_data for ss_evidence_file_full_path")
-                        print(f"value of evidence_from_lexicalized_data from sstagged data:{sstagged_ev_words}")
-                        print(f"value of ev_sstags:{ev_sstags}")
+                        LOG.debug(f"done reading read_sstagged_data for ss_evidence_file_full_path")
+                        LOG.debug(f"value of evidence_from_lexicalized_data from sstagged data:{sstagged_ev_words}")
+                        LOG.debug(f"value of ev_sstags:{ev_sstags}")
 
                         if not (len(ev_sstags)== len(sstagged_ev_words)):
-                            print(f"value of len(ev_sstags):{len(ev_sstags)}")
-                            print(f"value of len(sstagged_ev_words) :{len(sstagged_ev_words)}")
-                            print("value of len(ev_sstags) and len(sstagged_ev_words) don't match ")
+                            LOG.debug(f"value of len(ev_sstags):{len(ev_sstags)}")
+                            LOG.debug(f"value of len(sstagged_ev_words) :{len(sstagged_ev_words)}")
+                            LOG.error("value of len(ev_sstags) and len(sstagged_ev_words) don't match ")
 
 
                         if not (dataPointId):
-                            print("dataPointId is empty")
+                            LOG.error("dataPointId is empty")
 
                         dataPointId_int=int(dataPointId)
                         claim_before_removing_punctuations = all_claims[dataPointId_int]
                         evidence_from_lexicalized_data = all_evidences[dataPointId_int]
                         l = all_labels[dataPointId_int]
-                        print(f"value of evidence_from_lexicalized_data from lexicalized data:{evidence_from_lexicalized_data}")
+                        LOG.debug(f"value of evidence_from_lexicalized_data from lexicalized data:{evidence_from_lexicalized_data}")
                         if(args.remove_punctuations==True):
                             evidence_from_lexicalized_data=remove_punctuations(evidence_from_lexicalized_data)
                             evidence_from_lexicalized_data = remove_rrb_lsb_etc(evidence_from_lexicalized_data)
 
 
                         l_ev_lexicalized=len(evidence_from_lexicalized_data.split(" "))
-                        print(f"value of length of evidence_from_lexicalized_data from lexicalized data:{l_ev_lexicalized }")
-                        print(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
+                        LOG.debug(f"value of length of evidence_from_lexicalized_data from lexicalized data:{l_ev_lexicalized }")
+                        LOG.debug(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
 
 
 
@@ -664,8 +680,8 @@ if __name__ == '__main__':
                             claim=remove_punctuations(claim_before_removing_punctuations)
                             claim = remove_rrb_lsb_etc(claim)
 
-                        print(f"value of claim from lexicalized data:{claim}")
-                        print(f"value of claim from sstagged data:{sstagged_claim_words}")
+                        LOG.debug(f"value of claim from lexicalized data:{claim}")
+                        LOG.debug(f"value of claim from sstagged data:{sstagged_claim_words}")
 
 
 
@@ -688,81 +704,81 @@ if __name__ == '__main__':
                         ev_ner_tags= ev_ann._entities
 
                         le = len(evidence_from_lexicalized_data.split(" "))
-                        print(f"value of len(evidence_from_lexicalized_data is :{le}")
-                        print(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
+                        LOG.debug(f"value of len(evidence_from_lexicalized_data is :{le}")
+                        LOG.debug(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
                         if not (len(evidence_from_lexicalized_data.split(" ")) == len(sstagged_ev_words)):
-                            print(
+                            LOG.debug(
                                 "value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
                             files_skipped=files_skipped+1
-                            print("total files skipped so far is {files_skipped}")
+                            LOG.error("total files skipped so far is {files_skipped}")
                             continue
 
                         lc = len(claim.split(" "))
                         ld = len(sstagged_claim_words)
-                        print(f"value of len(claim is :{lc}")
-                        print(f"value of len(sstagged_claim_words) is :{ld}")
+                        LOG.debug(f"value of len(claim is :{lc}")
+                        LOG.debug(f"value of len(sstagged_claim_words) is :{ld}")
                         if not (lc == ld):
-                            print(
+                            LOG.error(
                                 "value of len(claim and len(sstagged_claim_words)) don't match ")
                             files_skipped = files_skipped + 1
-                            print("total files skipped so far is {files_skipped}")
+                            LOG.error("total files skipped so far is {files_skipped}")
                             continue
 
                         lcat = len(claim_ann.tags)
                         lcsst = len(claims_sstags)
-                        print(f"value of len(claim_ann.tags) is :{lcat}")
-                        print(f"value of len(claims_sstags) is :{lcsst}")
+                        LOG.debug(f"value of len(claim_ann.tags) is :{lcat}")
+                        LOG.debug(f"value of len(claims_sstags) is :{lcsst}")
                         if not (lcat == lcsst):
-                            print(
+                            LOG.error(
                                 "value of len(claim_ann.tags) and len(claims_sstags) don't match ")
                             files_skipped = files_skipped + 1
-                            print("total files skipped so far is {files_skipped}")
+                            LOG.error("total files skipped so far is {files_skipped}")
                             continue
 
                         lcet = len(ev_ann.tags)
                         lesst = len(ev_sstags)
-                        print(f"value of len(lcet.tags) is :{lcet}")
-                        print(f"value oflesst is :{lesst}")
+                        LOG.debug(f"value of len(lcet.tags) is :{lcet}")
+                        LOG.debug(f"value oflesst is :{lesst}")
                         if not (lcet == lesst):
-                            print(
+                            LOG.error(
                                 "value of len(ev_ann.tags) and len(ev_sstags) don't match ")
                             files_skipped = files_skipped + 1
-                            print("total files skipped so far is {files_skipped}")
+                            LOG.error("total files skipped so far is {files_skipped}")
                             continue
 
                         if not ((claim_ann.words[0]) == (sstagged_claim_words[0])):
-                            print(
+                            LOG.error(
                                 f"the first word is different between claim_ann.words and sstagged_claim_words.datapoint id is: {dataPointId}")
                             files_skipped = files_skipped + 1
-                            print("total files skipped so far is {files_skipped}")
+                            LOG.error("total files skipped so far is {files_skipped}")
                             continue
                         if not ((ev_ann.words[0]) == (sstagged_ev_words[0])):
-                            print(
+                            LOG.error(
                                 f"the first word is different between ev_ann.words and sstagged_ev_words.datapoint id is: {dataPointId}")
                             files_skipped = files_skipped + 1
-                            print("total files skipped so far is {files_skipped}")
+                            LOG.error("total files skipped so far is {files_skipped}")
                             continue
 
                         lcet = len(claims_sstags)
                         lesst = len(claim_ner_tags)
-                        print(f"value of len(claims_sstags) is :{lcet}")
-                        print(f"value claim_ner_tags is :{lesst}")
+                        LOG.debug(f"value of len(claims_sstags) is :{lcet}")
+                        LOG.debug(f"value claim_ner_tags is :{lesst}")
                         if not (lcet == lesst):
-                            print(
+                            LOG.error(
                                 "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
                             files_skipped = files_skipped + 1
-                            print("total files skipped so far is {files_skipped}")
+                            LOG.error("total files skipped so far is {files_skipped}")
                             continue
 
                         lcet = len(ev_sstags)
                         lesst = len(ev_ner_tags)
-                        print(f"value of len(ev_sstags) is :{lcet}")
-                        print(f"value ev_ner_tags is :{lesst}")
+                        LOG.debug(f"value of len(ev_sstags) is :{lcet}")
+                        LOG.debug(f"value ev_ner_tags is :{lesst}")
                         if not (lcet == lesst):
-                            print(
+                            LOG.error(
                                 "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
                             files_skipped = files_skipped + 1
-                            print("total files skipped so far is {files_skipped}")
+                            LOG.error("total files skipped so far is {files_skipped}")
                             continue
 
 
@@ -773,25 +789,25 @@ if __name__ == '__main__':
                         claim_pos_tags = claim_ann.tags
                         ev_pos_tags = ev_ann.tags
 
-                        # print(f"value of claim_pos_tags is:{claim_pos_tags}")
-                        # print(f"value of ev_pos_tags is:{ev_pos_tags}")
-                        print(f"value of claim_ner_tags is:{claim_ner_tags}")
-                        print(f"value of ev_ner_tags is:{ev_ner_tags}")
-                        print(f"value of claims_sstags is:{claims_sstags}")
-                        print(f"value of ev_sstags is:{ev_sstags}")
-                        print(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
-                        print(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
+                        # LOG.debug(f"value of claim_pos_tags is:{claim_pos_tags}")
+                        # LOG.debug(f"value of ev_pos_tags is:{ev_pos_tags}")
+                        LOG.debug(f"value of claim_ner_tags is:{claim_ner_tags}")
+                        LOG.debug(f"value of ev_ner_tags is:{ev_ner_tags}")
+                        LOG.debug(f"value of claims_sstags is:{claims_sstags}")
+                        LOG.debug(f"value of ev_sstags is:{ev_sstags}")
+                        LOG.debug(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
+                        LOG.debug(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
 
                         for x,y in zip(sstagged_claim_words, claim.split(" ")):
                             if not(x==y):
-                                print(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId}")
+                                LOG.error(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId}")
                                 break;
 
 
 
                         for x,y in zip(sstagged_ev_words, evidence_from_lexicalized_data.split(" ")):
                             if not(x==y):
-                                print(f"found mismatch between evidence_from_lexicalized_data text read from sstags and text from data file. datapoint id is: {dataPointId}")
+                                LOG.error(f"found mismatch between evidence_from_lexicalized_data text read from sstags and text from data file. datapoint id is: {dataPointId}")
                                 break;
 
             # uncomment below portion if your claim and evidence_from_lexicalized_data are in separate files
@@ -815,38 +831,38 @@ if __name__ == '__main__':
 
 
     except IOError:
-        print('An error occured trying to read the file.')
-        print(f"value of current datapoint is {dataPointId}")
+        LOG.error('An error occured trying to read the file.')
+        LOG.error(f"value of current datapoint is {dataPointId}")
         traceback.print_exc()
 
 
     except ValueError:
-        print('Non-numeric data found in the file.')
-        print(f"value of current datapoint is {dataPointId}")
+        LOG.error('Non-numeric data found in the file.')
+        LOG.error(f"value of current datapoint is {dataPointId}")
         traceback.print_exc()
 
 
     except ImportError:
-        print("NO module found")
-        print(f"value of current datapoint is {dataPointId}")
+        LOG.error("NO module found")
+        LOG.error(f"value of current datapoint is {dataPointId}")
         traceback.print_exc()
 
     except EOFError:
-        print('Why did you do an EOF on me?')
-        print(f"value of current datapoint is {dataPointId}")
+        LOG.error('Why did you do an EOF on me?')
+        LOG.error(f"value of current datapoint is {dataPointId}")
         traceback.print_exc()
 
 
     except KeyboardInterrupt:
-        print('You cancelled the operation.')
-        print(f"value of current datapoint is {dataPointId}")
+        LOG.error('You cancelled the operation.')
+        LOG.error(f"value of current datapoint is {dataPointId}")
         traceback.print_exc()
 
 
     except:
-        print('An error which wasnt explicity caught occured.')
-        print(f"value of current datapoint is {dataPointId}")
-        print(f"value of index  is {index}")
+        LOG.error('An error which wasnt explicity caught occured.')
+        LOG.error(f"value of current datapoint is {dataPointId}")
+        LOG.error(f"value of index  is {index}")
         traceback.print_exc()
 
 

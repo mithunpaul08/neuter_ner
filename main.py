@@ -629,9 +629,11 @@ if __name__ == '__main__':
                         print(f"done reading read_sstagged_data for ss_evidence_file_full_path")
                         print(f"value of evidence from sstagged data:{sstagged_ev_words}")
                         print(f"value of ev_sstags:{ev_sstags}")
-                        print(f"value of len(ev_sstags):{len(ev_sstags)}")
-                        print(f"value of len(sstagged_ev_words) :{len(sstagged_ev_words)}")
-                        assert (len(ev_sstags) is len(sstagged_ev_words))
+
+                        if not (len(ev_sstags)== len(sstagged_ev_words)):
+                            print(f"value of len(ev_sstags):{len(ev_sstags)}")
+                            print(f"value of len(sstagged_ev_words) :{len(sstagged_ev_words)}")
+                            raise Exception("value of len(ev_sstags) and len(sstagged_ev_words) don't match ")
 
 
                         if not (dataPointId):

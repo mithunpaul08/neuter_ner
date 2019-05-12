@@ -420,7 +420,7 @@ def create_parser():
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
     parser.add_argument('--run_on_dummy_data', default=False, type=str2bool,
-                        help='once you have output from sstagger, merge them both.',
+                        help='to test merging on one or two output files. once you have output from sstagger, turn this to false.',
                         metavar='BOOL')
     parser.add_argument('--remove_punctuations', default=True, type=str2bool,
                         help='once you have output from sstagger, merge them both.',

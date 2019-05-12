@@ -213,70 +213,29 @@ combined:	'He 	stativee1 	a 	seven-time 	MISCc1 	Numberc2  	MISCc1 			and 	is 	w
 ```
 This can be run using
 
-`python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True`
+`python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/`
+                
 
 
 
 # notes to self/delete later
 
   
- - status of sstagging for each dataset:status as of may 9th 2pm: restarted whole pos tagging and sstagging after becky found the /n solution in data files
-- per folder status is here `https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing`
+ - status of **merging sstagging and ner**
+ :status as of may 11th 10pm:
+ -tested merging on some files. looks ok. going to run huge list of sstagged files
+  per folder status is here `https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing`
  
-    - although one thing i can do is move out the input files corresponding to the ones where outputs were generated
-    - when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
+- when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
     or google: ```xargs site:*.edu```
-    
-   - have started on tmux0 on clara and watching from tmux5 on amy
-   - ideas from becky
-        - add an empty line after every sentence in evidence.
-        - try time out, i.e if the djikstra doesn't time out after say 10 mins, move onto next file.
-
-   - **fever-train**:
-   yu can check status using
-        `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
-        - latest status:count  is 178670/238,394 files done
-        -update: its written 10636 files more of which 10407 have size more than zero bytes. So hopefully there is some stuff there.
-        - for fever-train: moved all the already written .pred.tags files to :`net/kate/storage/work/mithunpaul/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger$`
-        - also deleted the corresponding files from `/net/kate/storage/work/mithunpaul/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger`
-       - will try to run the xargs based command again to make it convert the rest of the files.
-       - update: the plain xargs is getting stuck at huge evidence files. So i am going to run pairs of claims and evidences
-       `./input_to_sstagger_output_from_pos_tagger/ -iname "*1*" -print0 | xargs -0 -n 1 -I{} -t -P 30 ./sst.sh {}`
-       
+   - **fever-train merging process status**:
+   0/238,394 files done
+      
     - **fever-dev**: 
-    status as of 2pm may 9th: restarted sstagging after postagging with fresh data points. run on tmux 4.
-    wrote 1 file in 1 minute. Might have to do parallel processing on this. its printing stuff on screen though 
-    checklist
-        - move the output of pos tagging to input folder of ss tagging.
-        - source deactivate current
-        - source activate  py2
+   0/52504 file
+   **fnc-train** 
+        0/81808
         
-        -  you can check outputs using
-         `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
-         - latest status: count is 51,676/52504 files
-        -update: have moved already tagged files to :
-        `:~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/already_tagged`
-        -will try the python based parallelization thing now- update: didn't work still
-        - remove all input files corresponding to the 51k files that were already tagged.
-        - so now the input file directory must be left with 52504-51676=828 input files. a good number to check if the cython parallel processing code is workig
-        - the actual set of input files are kept here: `~/neuter_ner_fever_dev/outputs`
-        - update: as of 2pm on wednesday may 8th. its done 171 files of 828
-        - had started using xargs, but even after 12+ hours it did only 173 files. 
-        - killed tmux10
-        - might as well try out becky's separate line idea 
-        - keep only this file in input folder `evidence_words_pos_datapointid_26246`
-        - run without new lines: started at 339pm- 3.58 pm no luck
-        - with newlines as spaces:started at 359pm- good lord. finished in less than 1 minute.
-        - yep, that was the issue...will have to rewrite all data with spaces after 1 line
-        
-         
-    - **fnc-train** (this is the only thing running.)
-        - have started a run on **started amy** from **tmux 0** 
-        - status can be checked using
-        `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
-        - latest status:count is 1456/81808
-        update: mihai, wants me to stop using jenny so that robert can use it. i'll move to amy if its easy.
-        update: started again on amy. tmux 0. also uncommented code that will ignore already written files, hopefully. at 7pm wednesday
     - **fnc-dev** all runs are dead   
         - status can be checked using 
         ` ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`

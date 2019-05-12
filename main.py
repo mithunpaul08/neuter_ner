@@ -711,8 +711,23 @@ if __name__ == '__main__':
                         claim_ner_tags = claim_ann._entities
                         ev_ner_tags= ev_ann._entities
 
-                        assert (len(claims_sstags) is len(claim_ner_tags))
-                        assert (len(ev_sstags) is len(ev_ner_tags))
+                        lcet = len(claims_sstags)
+                        lesst = len(claim_ner_tags)
+                        print(f"value of len(claims_sstags) is :{lcet}")
+                        print(f"value claim_ner_tags is :{lesst}")
+                        if not (lcet == lesst):
+                            raise Exception(
+                                "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
+
+                        lcet = len(ev_sstags)
+                        lesst = len(ev_ner_tags)
+                        print(f"value of len(ev_sstags) is :{lcet}")
+                        print(f"value ev_ner_tags is :{lesst}")
+                        if not (lcet == lesst):
+                            raise Exception(
+                                "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+
+
 
                         claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
                         ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)

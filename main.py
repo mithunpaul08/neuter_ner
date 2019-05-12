@@ -723,7 +723,33 @@ if __name__ == '__main__':
                             with open(merge_sstag_nertag_output_file, 'a+') as outfile:
                                 write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
 
+
+    except IOError:
+        print('An error occured trying to read the file.')
+        print(f"value of current datapoint is {dataPointId}")
+
+
+    except ValueError:
+        print('Non-numeric data found in the file.')
+        print(f"value of current datapoint is {dataPointId}")
+
+
+    except ImportError:
+        print("NO module found")
+        print(f"value of current datapoint is {dataPointId}")
+
+    except EOFError:
+        print('Why did you do an EOF on me?')
+        print(f"value of current datapoint is {dataPointId}")
+
+
+    except KeyboardInterrupt:
+        print('You cancelled the operation.')
+        print(f"value of current datapoint is {dataPointId}")
+
+
     except:
-        print(f"error occured. value of current datapoint is {dataPointId}")
+        print('An error which wasnt explicity caught occured.')
+        print(f"value of current datapoint is {dataPointId}")
 
 

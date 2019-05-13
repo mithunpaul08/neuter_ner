@@ -219,50 +219,41 @@ This can be run using
 
 `python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging sstagged_files/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR`                
  on server:
-`python main.py --use_docker false  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR`
+`python main.py --use_docker false  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR --pyproc_port 8887`
 
 
 # notes to self/delete later
-
-  
- - status of **merging sstagging and ner**
- :status as of may 11th 10pm:
- -tested merging on some files. looks ok. going to run huge list of sstagged files
-  per folder status is here `https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing`
+ - status of **sstagging** as of 6pm on may 12th
+        - everything done (and started merging also, refer below) except  fnc-train
  
+  
 - when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
     or google: ```xargs site:*.edu```
-   - **fever-train merging process status**:
-   0/238,394 files done
-      
-    - **fever-dev**: 
-   0/52504 file
-   **fnc-train** 
-        0/81808
+
+
+ - status of **merging sstagging and ner**
+ :status as of may 12th 6pm:
+ - per folder status is [here](https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing)
+ 
+checklist for merging runs
         
-    - **fnc-dev** all runs are dead   
-        - status can be checked using 
-        ` ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
-  
-       - latest status: 845/18136 files are done.
-        - update: moved tagged files to
-        `/net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/already_tagged`
-- merging sstags+nertags with collapsing: status as of may 11th 2019.9pm
-  
-        - write logic for merging based on file id:9 to 9.30pm
-        
-        - start runs (inshah allah) 9.30pm
-        checklist
-        - make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
-        - make sure input folder name is correct
-        - make sure you are providing the same data/inputfile i.e plain text file
-        
-        ask mihai or becky:
+    - git pull
+    - source activate meanteacher
+    - make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
+    - make sure input folder name is correct (eg:--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//)..
+    - make sure there are no .pred.tags.pred.tags file in the input_folder()
+    - make sure you are providing the same data/inputfile i.e plain text file (Eg:-inputFile data/fever_dev_split_fourlabels.jsonl)
+    - create output folder if that doesn't exist : `mkdir sstag_ner_merged_files`
+    - give a new pyproc port for every run
+    
+
+ask mihai or becky:
+        - (with or without punctuations)
         - if lengths don't match, should i skip that entry or just let it continue writing
+        -update: skipped 159/36k were skipped.
         todo:
         - add tqdm
-        - add logger from python logs
-        - next todo: at some point, get back to removing punctuations.
+        - at some point, get back to removing punctuations.
         
                 
             
@@ -273,6 +264,7 @@ This can be run using
     or hit a error which says cannot find compiled *.so files, do this:`rm ~/.pyxbld/lib.linux-x86_64-2.7/*.so`
     - if it says package x not found, that means you haven't turned on conda. do `source activate py2`
     - if nonoe of this works, i.e tmux window is not responding, get out of the tmux window and do `tmux kill-session -t 4`
+    - if you just want to check if a kind of file exists and if `ls *.tags` gives you error of `argument too long` you can try :` find amalgram/pysupersensetagger-2.0/outputs_sstagged/ -iname "one*"`
     
     
 

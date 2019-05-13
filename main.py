@@ -616,12 +616,14 @@ if __name__ == '__main__':
     ss_claim_file_full_path= ""
     ssfilename_ev=""
     files_skipped=0
+    files_read=0
     try:
         assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
         for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
             file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
             if isfile(file_full_path):
                 if file.startswith("claim"):
+                    files_read=files_read+1
                     split_file_name=file.split("_")
                     datapoint_id_pred_tags=split_file_name[4]
                     dataPointId_split=datapoint_id_pred_tags.split(".")
@@ -636,7 +638,7 @@ if __name__ == '__main__':
 
                     LOG.error(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
                     LOG.error(f"value of ssfilename_ev is:{ssfilename_ev}")
-                    LOG.error(f"value of index  is {index}")
+                    LOG.error(f"value of files_read  is {files_read}")
 
                     if (args.merge_ner_ss):
                         claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
@@ -710,7 +712,7 @@ if __name__ == '__main__':
                             LOG.debug(
                                 "value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
                             files_skipped=files_skipped+1
-                            LOG.error("total files skipped so far is {files_skipped}")
+                            LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
 
                         lc = len(claim.split(" "))
@@ -718,10 +720,9 @@ if __name__ == '__main__':
                         LOG.debug(f"value of len(claim is :{lc}")
                         LOG.debug(f"value of len(sstagged_claim_words) is :{ld}")
                         if not (lc == ld):
-                            LOG.error(
-                                "value of len(claim and len(sstagged_claim_words)) don't match ")
+                            LOG.error(f"value of len(claim and len(sstagged_claim_words)) don't match ")
                             files_skipped = files_skipped + 1
-                            LOG.error("total files skipped so far is {files_skipped}")
+                            LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
 
                         lcat = len(claim_ann.tags)
@@ -732,7 +733,7 @@ if __name__ == '__main__':
                             LOG.error(
                                 "value of len(claim_ann.tags) and len(claims_sstags) don't match ")
                             files_skipped = files_skipped + 1
-                            LOG.error("total files skipped so far is {files_skipped}")
+                            LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
 
                         lcet = len(ev_ann.tags)
@@ -743,7 +744,7 @@ if __name__ == '__main__':
                             LOG.error(
                                 "value of len(ev_ann.tags) and len(ev_sstags) don't match ")
                             files_skipped = files_skipped + 1
-                            LOG.error("total files skipped so far is {files_skipped}")
+                            LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
 
                         if not ((claim_ann.words[0]) == (sstagged_claim_words[0])):
@@ -756,7 +757,7 @@ if __name__ == '__main__':
                             LOG.error(
                                 f"the first word is different between ev_ann.words and sstagged_ev_words.datapoint id is: {dataPointId}")
                             files_skipped = files_skipped + 1
-                            LOG.error("total files skipped so far is {files_skipped}")
+                            LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
 
                         lcet = len(claims_sstags)
@@ -767,7 +768,7 @@ if __name__ == '__main__':
                             LOG.error(
                                 "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
                             files_skipped = files_skipped + 1
-                            LOG.error("total files skipped so far is {files_skipped}")
+                            LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
 
                         lcet = len(ev_sstags)
@@ -778,7 +779,7 @@ if __name__ == '__main__':
                             LOG.error(
                                 "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
                             files_skipped = files_skipped + 1
-                            LOG.error("total files skipped so far is {files_skipped}")
+                            LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
 
 

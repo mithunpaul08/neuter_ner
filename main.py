@@ -636,10 +636,10 @@ if __name__ == '__main__':
                     if not ssfilename_ev:
                         LOG.error("ssfilename_ev is empty")
 
-                    LOG.error(f"*************************")
-                    LOG.error(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
-                    LOG.error(f"value of ssfilename_ev is:{ssfilename_ev}")
-                    LOG.error(f" number of claim files_read so far: {files_read}")
+                    LOG.info(f"*************************")
+                    LOG.info(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
+                    LOG.info(f"value of ssfilename_ev is:{ssfilename_ev}")
+                    LOG.info(f" number of claim files_read so far: {files_read}")
 
                     if (args.merge_ner_ss):
                         claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
@@ -699,7 +699,8 @@ if __name__ == '__main__':
                                 "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
                             files_skipped = files_skipped + 1
                             LOG.error(f"total files skipped so far is {files_skipped}")
-                            continue
+                            for x,y in zip(claims_sstags, claim_ner_tags):
+                                print(x,y)
 
 
                         lcet = len(ev_sstags)
@@ -711,7 +712,8 @@ if __name__ == '__main__':
                                 "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
                             files_skipped = files_skipped + 1
                             LOG.error(f"total files skipped so far is {files_skipped}")
-                            continue
+                            for x,y in zip(ev_sstags, ev_ner_tags):
+                                print(x, y)
 
 
 
@@ -761,9 +763,12 @@ if __name__ == '__main__':
                             if not (lcet == lesst):
                                 LOG.error(
                                     "value of len(claim_ann.words) and value len(claim_ner_ss_tags_merged) don't match ")
+                                for x,y in zip(claim_ann.words, claim_ner_ss_tags_merged):
+                                    print(x,y)
+
                                 files_skipped = files_skipped + 1
                                 LOG.error(f"total files skipped so far is {files_skipped}")
-                                continue
+
 
 
                             lcet = len(ev_ann.words)
@@ -773,9 +778,12 @@ if __name__ == '__main__':
                             if not (lcet == lesst):
                                 LOG.error(
                                     "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+                                for x,y in zip(ev_ann.words, ev_ner_ss_tags_merged):
+                                    print(x,y)
+                                    
                                 files_skipped = files_skipped + 1
                                 LOG.error(f"total files skipped so far is {files_skipped}")
-                                continue
+
 
                             claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 

@@ -619,9 +619,11 @@ if __name__ == '__main__':
     files_read=0
     assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
     for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
-            try:
-                file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
-                if isfile(file_full_path):
+        LOG.info(f" number of claim files_read so far: {files_read}")
+        if(index>36582):
+                try:
+                    file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
+                    if isfile(file_full_path):
                         if file.startswith("claim"):
                             files_read=files_read+1
                             split_file_name=file.split("_")
@@ -639,7 +641,7 @@ if __name__ == '__main__':
                             LOG.info(f"*************************")
                             LOG.info(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
                             LOG.info(f"value of ssfilename_ev is:{ssfilename_ev}")
-                            LOG.info(f" number of claim files_read so far: {files_read}")
+
 
                             if (args.merge_ner_ss):
                                 claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
@@ -785,45 +787,45 @@ if __name__ == '__main__':
 
 
 
-            except IOError:
-                LOG.error('An error occured trying to read the file.')
-                LOG.error(f"value of current datapoint is {dataPointId}")
-                traceback.print_exc()
-                continue
+                except IOError:
+                    LOG.error('An error occured trying to read the file.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
 
 
-            except ValueError:
-                LOG.error('Non-numeric data found in the file.')
-                LOG.error(f"value of current datapoint is {dataPointId}")
-                traceback.print_exc()
-                continue
+                except ValueError:
+                    LOG.error('Non-numeric data found in the file.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
 
 
-            except ImportError:
-                LOG.error("NO module found")
-                LOG.error(f"value of current datapoint is {dataPointId}")
-                traceback.print_exc()
-                continue
+                except ImportError:
+                    LOG.error("NO module found")
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
 
-            except EOFError:
-                LOG.error('Why did you do an EOF on me?')
-                LOG.error(f"value of current datapoint is {dataPointId}")
-                traceback.print_exc()
-                continue
-
-
-            except KeyboardInterrupt:
-                LOG.error('You cancelled the operation.')
-                LOG.error(f"value of current datapoint is {dataPointId}")
-                traceback.print_exc()
-                continue
+                except EOFError:
+                    LOG.error('Why did you do an EOF on me?')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
 
 
-            except:
-                LOG.error('An error which wasnt explicity caught occured.')
-                LOG.error(f"value of current datapoint is {dataPointId}")
-                LOG.error(f"value of index  is {index}")
-                traceback.print_exc()
-                continue
+                except KeyboardInterrupt:
+                    LOG.error('You cancelled the operation.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
+
+
+                except:
+                    LOG.error('An error which wasnt explicity caught occured.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    LOG.error(f"value of index  is {index}")
+                    traceback.print_exc()
+                    continue
 
 

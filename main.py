@@ -700,7 +700,7 @@ if __name__ == '__main__':
                             files_skipped = files_skipped + 1
                             LOG.error(f"total files skipped so far is {files_skipped}")
                             for x,y in zip(claims_sstags, claim_ner_tags):
-                                print(x,y)
+                                LOG.error(x,y)
 
 
                         lcet = len(ev_sstags)
@@ -713,7 +713,7 @@ if __name__ == '__main__':
                             files_skipped = files_skipped + 1
                             LOG.error(f"total files skipped so far is {files_skipped}")
                             for x,y in zip(ev_sstags, ev_ner_tags):
-                                print(x, y)
+                                LOG.error(x, y)
 
 
 
@@ -764,7 +764,7 @@ if __name__ == '__main__':
                                 LOG.error(
                                     "value of len(claim_ann.words) and value len(claim_ner_ss_tags_merged) don't match ")
                                 for x,y in zip(claim_ann.words, claim_ner_ss_tags_merged):
-                                    print(x,y)
+                                    LOG.error(x,y)
 
                                 files_skipped = files_skipped + 1
                                 LOG.error(f"total files skipped so far is {files_skipped}")
@@ -779,8 +779,8 @@ if __name__ == '__main__':
                                 LOG.error(
                                     "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
                                 for x,y in zip(ev_ann.words, ev_ner_ss_tags_merged):
-                                    print(x,y)
-                                    
+                                    LOG.error(x,y)
+
                                 files_skipped = files_skipped + 1
                                 LOG.error(f"total files skipped so far is {files_skipped}")
 

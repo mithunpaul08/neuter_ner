@@ -617,207 +617,213 @@ if __name__ == '__main__':
     ssfilename_ev=""
     files_skipped=0
     files_read=0
-    try:
-        assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
-        for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
-            file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
-            if isfile(file_full_path):
-                if file.startswith("claim"):
-                    files_read=files_read+1
-                    split_file_name=file.split("_")
-                    datapoint_id_pred_tags=split_file_name[4]
-                    dataPointId_split=datapoint_id_pred_tags.split(".")
-                    dataPointId=dataPointId_split[0]
-                    ss_claim_file_full_path=file_full_path
-                    ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
-                    ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
-                    if not ss_claim_file_full_path:
-                        LOG.error("ss_claim_file_full_path is empty")
-                    if not ssfilename_ev:
-                        LOG.error("ssfilename_ev is empty")
+    assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
+    for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
+            try:
+                file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
+                if isfile(file_full_path):
+                        if file.startswith("claim"):
+                            files_read=files_read+1
+                            split_file_name=file.split("_")
+                            datapoint_id_pred_tags=split_file_name[4]
+                            dataPointId_split=datapoint_id_pred_tags.split(".")
+                            dataPointId=dataPointId_split[0]
+                            ss_claim_file_full_path=file_full_path
+                            ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
+                            ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
+                            if not ss_claim_file_full_path:
+                                LOG.error("ss_claim_file_full_path is empty")
+                            if not ssfilename_ev:
+                                LOG.error("ssfilename_ev is empty")
 
-                    LOG.info(f"*************************")
-                    LOG.info(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
-                    LOG.info(f"value of ssfilename_ev is:{ssfilename_ev}")
-                    LOG.info(f" number of claim files_read so far: {files_read}")
+                            LOG.info(f"*************************")
+                            LOG.info(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
+                            LOG.info(f"value of ssfilename_ev is:{ssfilename_ev}")
+                            LOG.info(f" number of claim files_read so far: {files_read}")
 
-                    if (args.merge_ner_ss):
-                        claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
-                        assert (len(claims_sstags) is len(sstagged_claim_words))
-                        LOG.debug(f"done reading read_sstagged_data for ss_claim_file_full_path")
-                        ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
-                        LOG.debug(f"done reading read_sstagged_data for ss_evidence_file_full_path")
-                        LOG.debug(f"value of evidence_from_lexicalized_data from sstagged data:{sstagged_ev_words}")
-                        LOG.debug(f"value of ev_sstags:{ev_sstags}")
+                            if (args.merge_ner_ss):
+                                claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
+                                assert (len(claims_sstags) is len(sstagged_claim_words))
+                                LOG.debug(f"done reading read_sstagged_data for ss_claim_file_full_path")
+                                ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
+                                LOG.debug(f"done reading read_sstagged_data for ss_evidence_file_full_path")
+                                LOG.debug(f"value of evidence_from_lexicalized_data from sstagged data:{sstagged_ev_words}")
+                                LOG.debug(f"value of ev_sstags:{ev_sstags}")
 
-                        if not (len(ev_sstags)== len(sstagged_ev_words)):
-                            LOG.debug(f"value of len(ev_sstags):{len(ev_sstags)}")
-                            LOG.debug(f"value of len(sstagged_ev_words) :{len(sstagged_ev_words)}")
-                            LOG.error("value of len(ev_sstags) and len(sstagged_ev_words) don't match ")
-
-
-                        if not (dataPointId):
-                            LOG.error("dataPointId is empty")
-
-                        dataPointId_int=int(dataPointId)
-                        claim_before_removing_punctuations = all_claims[dataPointId_int]
-                        evidence_from_lexicalized_data = all_evidences[dataPointId_int]
-                        l = all_labels[dataPointId_int]
-                        LOG.debug(f"value of evidence_from_lexicalized_data from lexicalized data:{evidence_from_lexicalized_data}")
-                        if(args.remove_punctuations==True):
-                            evidence_from_lexicalized_data=remove_punctuations(evidence_from_lexicalized_data)
-                            evidence_from_lexicalized_data = remove_rrb_lsb_etc(evidence_from_lexicalized_data)
+                                if not (len(ev_sstags)== len(sstagged_ev_words)):
+                                    LOG.debug(f"value of len(ev_sstags):{len(ev_sstags)}")
+                                    LOG.debug(f"value of len(sstagged_ev_words) :{len(sstagged_ev_words)}")
+                                    LOG.error("value of len(ev_sstags) and len(sstagged_ev_words) don't match ")
 
 
-                        l_ev_lexicalized=len(evidence_from_lexicalized_data.split(" "))
-                        LOG.debug(f"value of length of evidence_from_lexicalized_data from lexicalized data:{l_ev_lexicalized }")
-                        LOG.debug(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
+                                if not (dataPointId):
+                                    LOG.error("dataPointId is empty")
+
+                                dataPointId_int=int(dataPointId)
+                                claim_before_removing_punctuations = all_claims[dataPointId_int]
+                                evidence_from_lexicalized_data = all_evidences[dataPointId_int]
+                                l = all_labels[dataPointId_int]
+                                LOG.debug(f"value of evidence_from_lexicalized_data from lexicalized data:{evidence_from_lexicalized_data}")
+                                if(args.remove_punctuations==True):
+                                    evidence_from_lexicalized_data=remove_punctuations(evidence_from_lexicalized_data)
+                                    evidence_from_lexicalized_data = remove_rrb_lsb_etc(evidence_from_lexicalized_data)
 
 
-                        claim=claim_before_removing_punctuations
-                        #remove punctuations and unicode from claims also and make sure its same size as
-                        if (args.remove_punctuations == True):
-                            claim=remove_punctuations(claim_before_removing_punctuations)
-                            claim = remove_rrb_lsb_etc(claim)
-
-                        LOG.debug(f"value of claim from lexicalized data:{claim}")
-                        LOG.debug(f"value of claim from sstagged data:{sstagged_claim_words}")
-
-                        claim_ann, ev_ann = annotate(claim, evidence_from_lexicalized_data, API)
-                        assert (claim_ann is not None)
-                        assert (ev_ann is not None)
-
-                        claim_ner_tags = claim_ann._entities
-                        ev_ner_tags= ev_ann._entities
-
-                        lcet = len(claims_sstags)
-                        lesst = len(claim_ner_tags)
-                        LOG.debug(f"value of len(claims_sstags) is :{lcet}")
-                        LOG.debug(f"value claim_ner_tags is :{lesst}")
-                        if not (lcet == lesst):
-                            LOG.error(
-                                "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
-                            files_skipped = files_skipped + 1
-                            LOG.error(f"total files skipped so far is {files_skipped}")
-                            for x,y,z in zip(claims_sstags, claim_ner_tags,sstagged_claim_words):
-                                LOG.error(f"{x},{y},{z}")
-                            continue
+                                l_ev_lexicalized=len(evidence_from_lexicalized_data.split(" "))
+                                LOG.debug(f"value of length of evidence_from_lexicalized_data from lexicalized data:{l_ev_lexicalized }")
+                                LOG.debug(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
 
 
-                        lcet = len(ev_sstags)
-                        lesst = len(ev_ner_tags)
-                        LOG.debug(f"value of len(ev_sstags) is :{lcet}")
-                        LOG.debug(f"value ev_ner_tags is :{lesst}")
-                        if not (lcet == lesst):
-                            LOG.error(
-                                "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
-                            files_skipped = files_skipped + 1
-                            LOG.error(f"total files skipped so far is {files_skipped}")
-                            for x,y,z in zip(ev_sstags, ev_ner_tags,sstagged_ev_words):
-                                LOG.error(f"{x},{y},{z}")
-                            continue
+                                claim=claim_before_removing_punctuations
+                                #remove punctuations and unicode from claims also and make sure its same size as
+                                if (args.remove_punctuations == True):
+                                    claim=remove_punctuations(claim_before_removing_punctuations)
+                                    claim = remove_rrb_lsb_etc(claim)
+
+                                LOG.debug(f"value of claim from lexicalized data:{claim}")
+                                LOG.debug(f"value of claim from sstagged data:{sstagged_claim_words}")
+
+                                claim_ann, ev_ann = annotate(claim, evidence_from_lexicalized_data, API)
+                                assert (claim_ann is not None)
+                                assert (ev_ann is not None)
+
+                                claim_ner_tags = claim_ann._entities
+                                ev_ner_tags= ev_ann._entities
+
+                                lcet = len(claims_sstags)
+                                lesst = len(claim_ner_tags)
+                                LOG.debug(f"value of len(claims_sstags) is :{lcet}")
+                                LOG.debug(f"value claim_ner_tags is :{lesst}")
+                                if not (lcet == lesst):
+                                    LOG.error(
+                                        "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
+                                    files_skipped = files_skipped + 1
+                                    LOG.error(f"total files skipped so far is {files_skipped}")
+                                    for x,y,z in zip(claims_sstags, claim_ner_tags,sstagged_claim_words):
+                                        LOG.error(f"{x},{y},{z}")
+                                    continue
 
 
-
-                        claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
-                        ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
-
-
-                        claim_pos_tags = claim_ann.tags
-                        ev_pos_tags = ev_ann.tags
-
-                        # LOG.debug(f"value of claim_pos_tags is:{claim_pos_tags}")
-                        # LOG.debug(f"value of ev_pos_tags is:{ev_pos_tags}")
-                        LOG.debug(f"value of claim_ner_tags is:{claim_ner_tags}")
-                        LOG.debug(f"value of ev_ner_tags is:{ev_ner_tags}")
-                        LOG.debug(f"value of claims_sstags is:{claims_sstags}")
-                        LOG.debug(f"value of ev_sstags is:{ev_sstags}")
-                        LOG.debug(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
-                        LOG.debug(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
-
-                        LOG.error(f"total files skipped so far is {files_skipped}")
-                        if(args.convert_prepositions==True):
-                            claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
-
-                        if (args.create_smart_NERs == True):
-
-                            claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+                                lcet = len(ev_sstags)
+                                lesst = len(ev_ner_tags)
+                                LOG.debug(f"value of len(ev_sstags) is :{lcet}")
+                                LOG.debug(f"value ev_ner_tags is :{lesst}")
+                                if not (lcet == lesst):
+                                    LOG.error(
+                                        "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+                                    files_skipped = files_skipped + 1
+                                    LOG.error(f"total files skipped so far is {files_skipped}")
+                                    for x,y,z in zip(ev_sstags, ev_ner_tags,sstagged_ev_words):
+                                        LOG.error(f"{x},{y},{z}")
+                                    continue
 
 
 
-                        if (args.merge_ner_ss == True):
-                            lcet = len(claim_ann.words)
-                            lesst = len(claim_ner_ss_tags_merged)
-                            LOG.debug(f"value of len(claim_ann.words) is :{lcet}")
-                            LOG.debug(f"value len(claim_ner_ss_tags_merged) :{lesst}")
-                            if not (lcet == lesst):
-                                LOG.error(
-                                    "value of len(claim_ann.words) and value len(claim_ner_ss_tags_merged) don't match ")
+                                claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
+                                ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
 
 
-                                files_skipped = files_skipped + 1
+                                claim_pos_tags = claim_ann.tags
+                                ev_pos_tags = ev_ann.tags
+
+                                # LOG.debug(f"value of claim_pos_tags is:{claim_pos_tags}")
+                                # LOG.debug(f"value of ev_pos_tags is:{ev_pos_tags}")
+                                LOG.debug(f"value of claim_ner_tags is:{claim_ner_tags}")
+                                LOG.debug(f"value of ev_ner_tags is:{ev_ner_tags}")
+                                LOG.debug(f"value of claims_sstags is:{claims_sstags}")
+                                LOG.debug(f"value of ev_sstags is:{ev_sstags}")
+                                LOG.debug(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
+                                LOG.debug(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
+
                                 LOG.error(f"total files skipped so far is {files_skipped}")
-                                for x, y in zip(claim_ann.words, claim_ner_ss_tags_merged):
-                                    LOG.error(f"{x},{y}")
-                                continue
+                                if(args.convert_prepositions==True):
+                                    claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
 
-                            lcet = len(ev_ann.words)
-                            lesst = len(ev_ner_ss_tags_merged)
-                            LOG.debug(f"value of len(ev_ann.words) is :{lcet}")
-                            LOG.debug(f"value len(ev_ner_ss_tags_merged) is :{lesst}")
-                            if not (lcet == lesst):
-                                LOG.error(
-                                    "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+                                if (args.create_smart_NERs == True):
 
-                                files_skipped = files_skipped + 1
-                                LOG.error(f"total files skipped so far is {files_skipped}")
-                                for x,y in zip(ev_ann.words, ev_ner_ss_tags_merged):
-                                    LOG.error(f"{x},{y}")
-                                continue
+                                    claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 
 
 
-                            claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+                                if (args.merge_ner_ss == True):
+                                    lcet = len(claim_ann.words)
+                                    lesst = len(claim_ner_ss_tags_merged)
+                                    LOG.debug(f"value of len(claim_ann.words) is :{lcet}")
+                                    LOG.debug(f"value len(claim_ner_ss_tags_merged) :{lesst}")
+                                    if not (lcet == lesst):
+                                        LOG.error(
+                                            "value of len(claim_ann.words) and value len(claim_ner_ss_tags_merged) don't match ")
 
 
-                        with open(merge_sstag_nertag_output_file, 'a+') as outfile:
-                            write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
+                                        files_skipped = files_skipped + 1
+                                        LOG.error(f"total files skipped so far is {files_skipped}")
+                                        for x, y in zip(claim_ann.words, claim_ner_ss_tags_merged):
+                                            LOG.error(f"{x},{y}")
+                                        continue
+
+                                    lcet = len(ev_ann.words)
+                                    lesst = len(ev_ner_ss_tags_merged)
+                                    LOG.debug(f"value of len(ev_ann.words) is :{lcet}")
+                                    LOG.debug(f"value len(ev_ner_ss_tags_merged) is :{lesst}")
+                                    if not (lcet == lesst):
+                                        LOG.error(
+                                            "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+
+                                        files_skipped = files_skipped + 1
+                                        LOG.error(f"total files skipped so far is {files_skipped}")
+                                        for x,y in zip(ev_ann.words, ev_ner_ss_tags_merged):
+                                            LOG.error(f"{x},{y}")
+                                        continue
 
 
 
-    except IOError:
-        LOG.error('An error occured trying to read the file.')
-        LOG.error(f"value of current datapoint is {dataPointId}")
-        traceback.print_exc()
+                                    claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 
 
-    except ValueError:
-        LOG.error('Non-numeric data found in the file.')
-        LOG.error(f"value of current datapoint is {dataPointId}")
-        traceback.print_exc()
+                                with open(merge_sstag_nertag_output_file, 'a+') as outfile:
+                                    write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
 
 
-    except ImportError:
-        LOG.error("NO module found")
-        LOG.error(f"value of current datapoint is {dataPointId}")
-        traceback.print_exc()
 
-    except EOFError:
-        LOG.error('Why did you do an EOF on me?')
-        LOG.error(f"value of current datapoint is {dataPointId}")
-        traceback.print_exc()
+            except IOError:
+                LOG.error('An error occured trying to read the file.')
+                LOG.error(f"value of current datapoint is {dataPointId}")
+                traceback.print_exc()
+                continue
 
 
-    except KeyboardInterrupt:
-        LOG.error('You cancelled the operation.')
-        LOG.error(f"value of current datapoint is {dataPointId}")
-        traceback.print_exc()
+            except ValueError:
+                LOG.error('Non-numeric data found in the file.')
+                LOG.error(f"value of current datapoint is {dataPointId}")
+                traceback.print_exc()
+                continue
 
 
-    except:
-        LOG.error('An error which wasnt explicity caught occured.')
-        LOG.error(f"value of current datapoint is {dataPointId}")
-        LOG.error(f"value of index  is {index}")
-        traceback.print_exc()
+            except ImportError:
+                LOG.error("NO module found")
+                LOG.error(f"value of current datapoint is {dataPointId}")
+                traceback.print_exc()
+                continue
+
+            except EOFError:
+                LOG.error('Why did you do an EOF on me?')
+                LOG.error(f"value of current datapoint is {dataPointId}")
+                traceback.print_exc()
+                continue
+
+
+            except KeyboardInterrupt:
+                LOG.error('You cancelled the operation.')
+                LOG.error(f"value of current datapoint is {dataPointId}")
+                traceback.print_exc()
+                continue
+
+
+            except:
+                LOG.error('An error which wasnt explicity caught occured.')
+                LOG.error(f"value of current datapoint is {dataPointId}")
+                LOG.error(f"value of index  is {index}")
+                traceback.print_exc()
+                continue
 
 

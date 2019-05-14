@@ -254,6 +254,7 @@ ask mihai or becky:
         todo:
         - add tqdm
         - at some point, get back to removing punctuations.
+        - comment this line or move it inside if punctuations:`if not (word.lower() in ["lrb","rrb","lcb","rcb","lsb","rsb"]):`
         
                 
             

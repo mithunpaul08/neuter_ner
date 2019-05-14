@@ -638,7 +638,7 @@ if __name__ == '__main__':
 
                     LOG.error(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
                     LOG.error(f"value of ssfilename_ev is:{ssfilename_ev}")
-                    LOG.error(f"value of files_read  is {files_read}")
+                    LOG.error(f" number of claim files_read so far: {files_read}")
 
                     if (args.merge_ner_ss):
                         claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
@@ -673,9 +673,6 @@ if __name__ == '__main__':
                         LOG.debug(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
 
 
-
-
-
                         claim=claim_before_removing_punctuations
                         #remove punctuations and unicode from claims also and make sure its same size as
                         if (args.remove_punctuations == True):
@@ -685,80 +682,12 @@ if __name__ == '__main__':
                         LOG.debug(f"value of claim from lexicalized data:{claim}")
                         LOG.debug(f"value of claim from sstagged data:{sstagged_claim_words}")
 
-
-
-
-
                         claim_ann, ev_ann = annotate(claim, evidence_from_lexicalized_data, API)
                         assert (claim_ann is not None)
                         assert (ev_ann is not None)
 
-
-
-
-
-
-
-
-
-
                         claim_ner_tags = claim_ann._entities
                         ev_ner_tags= ev_ann._entities
-
-                        le = len(evidence_from_lexicalized_data.split(" "))
-                        LOG.debug(f"value of len(evidence_from_lexicalized_data is :{le}")
-                        LOG.debug(f"value of len(sstagged_ev_words) is :{len(sstagged_ev_words)}")
-                        if not (len(evidence_from_lexicalized_data.split(" ")) == len(sstagged_ev_words)):
-                            LOG.debug(
-                                "value of len(evidence_from_lexicalized_data.split(" ") and len(sstagged_ev_words) don't match ")
-                            files_skipped=files_skipped+1
-                            LOG.error(f"total files skipped so far is {files_skipped}")
-                            continue
-
-                        lc = len(claim.split(" "))
-                        ld = len(sstagged_claim_words)
-                        LOG.debug(f"value of len(claim is :{lc}")
-                        LOG.debug(f"value of len(sstagged_claim_words) is :{ld}")
-                        if not (lc == ld):
-                            LOG.error(f"value of len(claim and len(sstagged_claim_words)) don't match ")
-                            files_skipped = files_skipped + 1
-                            LOG.error(f"total files skipped so far is {files_skipped}")
-                            continue
-
-                        lcat = len(claim_ann.tags)
-                        lcsst = len(claims_sstags)
-                        LOG.debug(f"value of len(claim_ann.tags) is :{lcat}")
-                        LOG.debug(f"value of len(claims_sstags) is :{lcsst}")
-                        if not (lcat == lcsst):
-                            LOG.error(
-                                "value of len(claim_ann.tags) and len(claims_sstags) don't match ")
-                            files_skipped = files_skipped + 1
-                            LOG.error(f"total files skipped so far is {files_skipped}")
-                            continue
-
-                        lcet = len(ev_ann.tags)
-                        lesst = len(ev_sstags)
-                        LOG.debug(f"value of len(lcet.tags) is :{lcet}")
-                        LOG.debug(f"value oflesst is :{lesst}")
-                        if not (lcet == lesst):
-                            LOG.error(
-                                "value of len(ev_ann.tags) and len(ev_sstags) don't match ")
-                            files_skipped = files_skipped + 1
-                            LOG.error(f"total files skipped so far is {files_skipped}")
-                            continue
-
-                        if not ((claim_ann.words[0]) == (sstagged_claim_words[0])):
-                            LOG.error(
-                                f"the first word is different between claim_ann.words and sstagged_claim_words.datapoint id is: {dataPointId}")
-                            files_skipped = files_skipped + 1
-                            LOG.error("total files skipped so far is {files_skipped}")
-                            continue
-                        if not ((ev_ann.words[0]) == (sstagged_ev_words[0])):
-                            LOG.error(
-                                f"the first word is different between ev_ann.words and sstagged_ev_words.datapoint id is: {dataPointId}")
-                            files_skipped = files_skipped + 1
-                            LOG.error(f"total files skipped so far is {files_skipped}")
-                            continue
 
                         lcet = len(claims_sstags)
                         lesst = len(claim_ner_tags)
@@ -771,6 +700,7 @@ if __name__ == '__main__':
                             LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
 
+
                         lcet = len(ev_sstags)
                         lesst = len(ev_ner_tags)
                         LOG.debug(f"value of len(ev_sstags) is :{lcet}")
@@ -781,6 +711,7 @@ if __name__ == '__main__':
                             files_skipped = files_skipped + 1
                             LOG.error(f"total files skipped so far is {files_skipped}")
                             continue
+
 
 
                         claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
@@ -799,30 +730,52 @@ if __name__ == '__main__':
                         LOG.debug(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
                         LOG.debug(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
 
-                        for x,y in zip(sstagged_claim_words, claim.split(" ")):
-                            if not(x==y):
-                                LOG.error(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId}")
-                                break;
+                        # for x,y in zip(sstagged_claim_words, claim.split(" ")):
+                        #     if not(x==y):
+                        #         LOG.error(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId}")
+                        #         break;
+                        #
+                        #
+                        #
+                        # for x,y in zip(sstagged_ev_words, evidence_from_lexicalized_data.split(" ")):
+                        #     if not(x==y):
+                        #         LOG.error(f"found mismatch between evidence_from_lexicalized_data text read from sstags and text from data file. datapoint id is: {dataPointId}")
+                        #         break;
 
-
-
-                        for x,y in zip(sstagged_ev_words, evidence_from_lexicalized_data.split(" ")):
-                            if not(x==y):
-                                LOG.error(f"found mismatch between evidence_from_lexicalized_data text read from sstags and text from data file. datapoint id is: {dataPointId}")
-                                break;
-
-            # uncomment below portion if your claim and evidence_from_lexicalized_data are in separate files
-            # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
-            #
-            #         claim_ann, ev_ann = annotate(c, e, API)
-            #         assert (claim_ann is not None)
-            #         assert (ev_ann is not None)
                         LOG.error(f"total files skipped so far is {files_skipped}")
                         if(args.convert_prepositions==True):
                             claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
+
                         if (args.create_smart_NERs == True):
+
                             claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+
+
+
                         if (args.merge_ner_ss == True):
+                            lcet = len(claim_ann.words)
+                            lesst = len(claim_ner_ss_tags_merged)
+                            LOG.debug(f"value of len(claim_ann.words) is :{lcet}")
+                            LOG.debug(f"value len(claim_ner_ss_tags_merged) :{lesst}")
+                            if not (lcet == lesst):
+                                LOG.error(
+                                    "value of len(claim_ann.words) and value len(claim_ner_ss_tags_merged) don't match ")
+                                files_skipped = files_skipped + 1
+                                LOG.error(f"total files skipped so far is {files_skipped}")
+                                continue
+
+
+                            lcet = len(ev_ann.words)
+                            lesst = len(ev_ner_ss_tags_merged)
+                            LOG.debug(f"value of len(ev_ann.words) is :{lcet}")
+                            LOG.debug(f"value len(ev_ner_ss_tags_merged) is :{lesst}")
+                            if not (lcet == lesst):
+                                LOG.error(
+                                    "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+                                files_skipped = files_skipped + 1
+                                LOG.error(f"total files skipped so far is {files_skipped}")
+                                continue
+
                             claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 
 

@@ -699,8 +699,9 @@ if __name__ == '__main__':
                                 "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
                             files_skipped = files_skipped + 1
                             LOG.error(f"total files skipped so far is {files_skipped}")
-                            for x,y in zip(claims_sstags, claim_ner_tags):
-                                LOG.error(x,y)
+                            for x,y,z in zip(claims_sstags, claim_ner_tags,sstagged_claim_words):
+                                LOG.error(f"{x},{y},{z}")
+                            continue
 
 
                         lcet = len(ev_sstags)
@@ -712,8 +713,9 @@ if __name__ == '__main__':
                                 "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
                             files_skipped = files_skipped + 1
                             LOG.error(f"total files skipped so far is {files_skipped}")
-                            for x,y in zip(ev_sstags, ev_ner_tags):
-                                LOG.error(x, y)
+                            for x,y,z in zip(ev_sstags, ev_ner_tags,sstagged_ev_words):
+                                LOG.error(f"{x},{y},{z}")
+                            continue
 
 
 
@@ -733,18 +735,6 @@ if __name__ == '__main__':
                         LOG.debug(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
                         LOG.debug(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
 
-                        # for x,y in zip(sstagged_claim_words, claim.split(" ")):
-                        #     if not(x==y):
-                        #         LOG.error(f"found mismatch between claim text read from sstags and text from data file. datapoint id is: {dataPointId}")
-                        #         break;
-                        #
-                        #
-                        #
-                        # for x,y in zip(sstagged_ev_words, evidence_from_lexicalized_data.split(" ")):
-                        #     if not(x==y):
-                        #         LOG.error(f"found mismatch between evidence_from_lexicalized_data text read from sstags and text from data file. datapoint id is: {dataPointId}")
-                        #         break;
-
                         LOG.error(f"total files skipped so far is {files_skipped}")
                         if(args.convert_prepositions==True):
                             claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
@@ -763,13 +753,13 @@ if __name__ == '__main__':
                             if not (lcet == lesst):
                                 LOG.error(
                                     "value of len(claim_ann.words) and value len(claim_ner_ss_tags_merged) don't match ")
-                                for x,y in zip(claim_ann.words, claim_ner_ss_tags_merged):
-                                    LOG.error(x,y)
+
 
                                 files_skipped = files_skipped + 1
                                 LOG.error(f"total files skipped so far is {files_skipped}")
-
-
+                                for x, y in zip(claim_ann.words, claim_ner_ss_tags_merged):
+                                    LOG.error(f"{x},{y}")
+                                continue
 
                             lcet = len(ev_ann.words)
                             lesst = len(ev_ner_ss_tags_merged)
@@ -778,11 +768,13 @@ if __name__ == '__main__':
                             if not (lcet == lesst):
                                 LOG.error(
                                     "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
-                                for x,y in zip(ev_ann.words, ev_ner_ss_tags_merged):
-                                    LOG.error(x,y)
 
                                 files_skipped = files_skipped + 1
                                 LOG.error(f"total files skipped so far is {files_skipped}")
+                                for x,y in zip(ev_ann.words, ev_ner_ss_tags_merged):
+                                    LOG.error(f"{x},{y}")
+                                continue
+
 
 
                             claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)

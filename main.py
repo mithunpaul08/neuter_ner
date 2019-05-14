@@ -636,6 +636,7 @@ if __name__ == '__main__':
                     if not ssfilename_ev:
                         LOG.error("ssfilename_ev is empty")
 
+                    LOG.error(f"*************************")
                     LOG.error(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
                     LOG.error(f"value of ssfilename_ev is:{ssfilename_ev}")
                     LOG.error(f" number of claim files_read so far: {files_read}")

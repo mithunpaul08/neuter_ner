@@ -619,8 +619,8 @@ if __name__ == '__main__':
     files_read=0
     assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
     for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
-        LOG.info(f" number of claim files_read so far: {files_read}")
-        if(index>36582):
+        LOG.info(f" index: {index}")
+        if(index > 36582):
                 try:
                     file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
                     if isfile(file_full_path):

@@ -54,7 +54,7 @@ def read_rte_data(filename):
             multiple_ev = False
             x = json.loads(line)
             claim = x["claim"]
-            evidences = x["evidence_from_lexicalized_data"]
+            evidences = x["evidence"]
             label = x["label"]
 
             all_claims.append(claim)

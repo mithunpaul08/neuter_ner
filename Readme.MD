@@ -74,7 +74,7 @@ For more details on SS taggging refer Noah Schnieder's github [page](https://git
 
 I have a folder `amalgram/` in this repo where the code and trained models are replicated
 
-#### Step 1:
+#### Step 1: creating POS tags
  
 The SStagger needs as input the POS tag and the tokens of a given sentence, in a particular one line format.
 
@@ -98,14 +98,11 @@ This code base of mine, which you are looking at, I am using to generate these t
 Notes to self
 - on laptop and clara use conda environment `meanteacher` 
 steps
-    
-- status of ss tagging as of 12 midnight may 9th 2019
-    - had to do it again after becky suggested adding new line after every sentence in evidence.
-    - steps for self verification
-        - go to a new folder check
-         -remove outputs if exists check
-         -create outputs folder check
-        - git pull check
+    - check list before running pos tagging on server
+        - go to a new folder 
+         -remove outputs if exists 
+         -create outputs folder 
+        - git pull 
         - verify the log -1
         - start meanteacher conda env
         - change port
@@ -113,33 +110,7 @@ steps
         - change docker false
         - verify claim written
         - verify new line written after evidences    
-    - fnc train
-        - server:clara
-        - tmux: 3
-        - folder: neuter_ner_fnc_train
-        - port:8887
-        - status: 57% done
-    - fnc dev
-        - server:clara
-        - tmux: 4
-        - folder: neuter_ner_fnc_dev
-        - port:8888
-        - status:**all done**. 9068 data points=18136 files
-    - fever-train
-        - server:clara
-        - tmux: 5
-        - folder: neuter_ner_fever_training
-        - port:    8889
-        - status: **all done**238394 files
-    - fever-dev
-        - server:clara
-        - tmux: 6
-        - folder: neuter_ner_fever_dev
-        - port:    8886
-        - status: **all done**52504 files
-         
-    
-    
+            
 Notes
 - classic fever data has only 3 classes/labels,. viz.,SUPPORTS, REFUTES, NOT ENOUGH INFO. Here we have already converted into 4 classes after that of [fnc](http://www.fakenewschallenge.org/), viz., AGREE, DISAGREE, DISCUSS, UNRELATED 
 - this command will create a huge number of files, one per each claim-evidence pair.

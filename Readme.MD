@@ -108,8 +108,9 @@ steps
         - change port
         - change input file
         - change docker false
-        - verify claim written
-        - verify new line written after evidences    
+        - verify atleast one claim file is written
+        - verify atleast one evidence file is written
+        - sort evidence files by size and pick the biggest one so far+ verify that a new line written after evidences    
             
 Notes
 - classic fever data has only 3 classes/labels,. viz.,SUPPORTS, REFUTES, NOT ENOUGH INFO. Here we have already converted into 4 classes after that of [fnc](http://www.fakenewschallenge.org/), viz., AGREE, DISAGREE, DISCUSS, UNRELATED 
@@ -202,9 +203,7 @@ This can be run using
     or google: ```xargs site:*.edu```
 
 
- - status of **merging sstagging and ner**
- :status as of may 12th 6pm:
- - per folder status is [here](https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing)
+ 
  
 checklist for merging runs
         
@@ -218,18 +217,25 @@ checklist for merging runs
     - give a new pyproc port for every run
     
 
-ask mihai or becky:
-        - (with or without punctuations)
-        - if lengths don't match, should i skip that entry or just let it continue writing
-        -update: skipped 159/36k were skipped.
-        todo:
-        - add tqdm
-        - at some point, get back to removing punctuations.
-        - comment this line or move it inside if punctuations:`if not (word.lower() in ["lrb","rrb","lcb","rcb","lsb","rsb"]):`
+### for emnlp 2019-abstract submission on may 15th 2019 below corners were cut
+        - punctuations were left in.
+        - there was length mismatch between claim and evidence found while doing merging of super sense and ner tags. I 
+        told the code to skip those files and move on. Almost 1% of files were thus skipped in all 4 runs. Should ideally go back and figure out why there is a length mismatch
+        
+ ### todo for this project (as of today:may 15th 2019- before the actual paper deadline):
+ - generate pos tags for fnc-test
+ - generate ss tags for fnc-test
+ - merge ss and pos tags for fnc-test
+ - generate pos tags for fever-test
+ - generate ss tags for fever-test
+ - merge ss and pos tags for fever-test
+ - add tqdm
+ - at some point, get back to removing punctuations.
+ - comment this line or move it inside if punctuations:`if not (word.lower() in ["lrb","rrb","lcb","rcb","lsb","rsb"]):`
         
                 
             
-- Commonly encountered errors
+### Commonly encountered errors
     - if you hit compile time error with text as
     `ImportError: Building module discriminativeTagger failed: ["CompileError: command 'gcc' failed with exit status 1\n"]` it means you have a compilation error. Kill the command and scroll up to find the compilation error.
     - if your code is not responding/hangs for more than a minute after you hit `./sst.sh logs` 
@@ -239,5 +245,10 @@ ask mihai or becky:
     - if you just want to check if a kind of file exists and if `ls *.tags` gives you error of `argument too long` you can try :` find amalgram/pysupersensetagger-2.0/outputs_sstagged/ -iname "one*"`
     
     
-
+### daily work log/diary
+- may 15th 2019:
+    - submitted abstract to emnlp2019
+    - still waiting on sandeep to do fnc-train-fever test using features from acl submission, plainlex, smartner etc
+    - have generated sstagged files also for all 4 partitions (fnc-fever-train-test). have uploaded them to gdrive [folder](https://drive.google.com/open?id=1QqbMDyGaao1fUIG3rbgS1xqlxwx8d-o4). sandeep still needs to run the same tests on them
+    - have started 2 runs for generating pos tags for fnc-test and fever-test. Details can be found [here](https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing)
  

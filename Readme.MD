@@ -150,11 +150,16 @@ steps
  ``mkdir outputs_sstagged/input_to_sstagger_output_from_pos_tagger``
 
 - Check two things. *.tags doesn't exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
+- open up predict.ssh and make sure the values of` --input_folder` points to where you generated the POS tagged
+   files from step1. and `--output_folder` exists. 
 - now run the below command from the place where the file `sst.sh` exists.
 
-`find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}`
+`./sst.sh example`
+- example is a dummy input file left over for vestigial reasons,which will never be used
+- the logs and print statements will be written inside example.log.
 
-also here is a version of the same command that i desinged which will ask the user permission
+also here is a version of the same command that will run the above as multiple processses. i suggest avoiding it though.
+
 `find ./input_to_sstagger_output_from_pos_tagger/ -print0 | xargs -0 -n 1 -I{} -t -p ./sst.sh {}`
  
 Notes:
@@ -184,20 +189,19 @@ evidence: 'He 	is 		a 	seven-time 	Formula 	One 		World Champion 	and 	is 	widel
 combined:	'He 	stativee1 	a 	seven-time 	MISCc1 	Numberc2  	MISCc1 			and 	is 	widely      sociale1 	as NUMBERe2 of the greatest Foodc1 Numberc2 PERSONe1 of all time .'
 ```
 
-- for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
 This can be run using
 
 `source activate meanteacher`
 
 `python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging sstagged_files/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR`                
  on server:
-`python main.py --use_docker false  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR --pyproc_port 8887`
+`python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_partition.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files_fever_test --remove_punctuations False --log_level ERROR --pyproc_port 8886`
+
+## extra info 
+- for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
 
 
-# notes to self/delete later
- - status of **sstagging** as of 6pm on may 12th
-        - everything done (and started merging also, refer below) except  fnc-train
- 
+# notes to self/delete later 
   
 - when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
     or google: ```xargs site:*.edu```

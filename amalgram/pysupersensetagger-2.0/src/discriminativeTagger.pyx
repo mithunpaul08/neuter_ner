@@ -1111,7 +1111,7 @@ def main():
     '''
     Parse the given command line arguments, then act accordingly.
     '''
-    run_with_parallelization=True
+    run_with_parallelization=False
     split_based_on_xargs(run_with_parallelization)
 
 
@@ -1120,7 +1120,6 @@ if __name__=='__main__':
     #import cProfile
     #cProfile.run('main()')
     try:
-        #print("inside main of discriminative tagger")
         main()
     except KeyboardInterrupt:
         raise

@@ -74,7 +74,7 @@ For more details on SS taggging refer Noah Schnieder's github [page](https://git
 
 I have a folder `amalgram/` in this repo where the code and trained models are replicated
 
-#### Step 1:
+#### Step 1: creating POS tags
  
 The SStagger needs as input the POS tag and the tokens of a given sentence, in a particular one line format.
 
@@ -95,6 +95,23 @@ This code base of mine, which you are looking at, I am using to generate these t
 `
 
 
+Notes to self
+- on laptop and clara use conda environment `meanteacher` 
+steps
+    - check list before running pos tagging on server
+        - go to a new folder 
+         -remove outputs if exists 
+         -create outputs folder 
+        - git pull 
+        - verify the log -1
+        - start meanteacher conda env
+        - change port
+        - change input file
+        - change docker false
+        - verify atleast one claim file is written
+        - verify atleast one evidence file is written
+        - sort evidence files by size and pick the biggest one so far+ verify that a new line written after evidences    
+            
 Notes
 - classic fever data has only 3 classes/labels,. viz.,SUPPORTS, REFUTES, NOT ENOUGH INFO. Here we have already converted into 4 classes after that of [fnc](http://www.fakenewschallenge.org/), viz., AGREE, DISAGREE, DISCUSS, UNRELATED 
 - this command will create a huge number of files, one per each claim-evidence pair.
@@ -107,8 +124,7 @@ Notes
 
 the above came these are the commands i used to combine multiple claim files to one
 
-steps to create a conda environment and run the sst tagger for my input file
-
+steps 
 - move the output of pos tagging to input folder of ss tagging.
     - note: dont do plain `mv * ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/`. Linux will tell you argument list too long. Instead create a shell script like this:
     ```for each in ./*;
@@ -134,11 +150,16 @@ steps to create a conda environment and run the sst tagger for my input file
  ``mkdir outputs_sstagged/input_to_sstagger_output_from_pos_tagger``
 
 - Check two things. *.tags doesn't exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
+- open up predict.ssh and make sure the values of` --input_folder` points to where you generated the POS tagged
+   files from step1. and `--output_folder` exists. 
 - now run the below command from the place where the file `sst.sh` exists.
 
-`find input_to_sstagger_output_from_pos_tagger -print0 | xargs -0 -n 1 -P 72 -I{} ./sst.sh {}`
+`./sst.sh example`
+- example is a dummy input file left over for vestigial reasons,which will never be used
+- the logs and print statements will be written inside example.log.
 
-also here is a version of the same command that i desinged which will ask the user permission
+also here is a version of the same command that will run the above as multiple processses. i suggest avoiding it though.
+
 `find ./input_to_sstagger_output_from_pos_tagger/ -print0 | xargs -0 -n 1 -I{} -t -p ./sst.sh {}`
  
 Notes:
@@ -167,84 +188,71 @@ combined: '	A 	NUMBERc1 	TIMEc1 		Foodc1 		Numberc2 	MISCc1 			stativec1 	PERSON
 evidence: 'He 	is 		a 	seven-time 	Formula 	One 		World Champion 	and 	is 	widely 	regarded 	as one of the greatest Formula One drivers of all time .'
 combined:	'He 	stativee1 	a 	seven-time 	MISCc1 	Numberc2  	MISCc1 			and 	is 	widely      sociale1 	as NUMBERe2 of the greatest Foodc1 Numberc2 PERSONe1 of all time .'
 ```
+
 This can be run using
 
-`python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True`
+`source activate meanteacher`
+
+`python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging sstagged_files/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR`                
+ on server:
+`python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_partition.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files_fever_test --remove_punctuations False --log_level ERROR --pyproc_port 8886`
+
+## extra info 
+- for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
 
 
-
-# notes to self/delete later
-
- 
- 
- - status of sstagging for each dataset:status as of may 7th 2019.5pm
-    - although one thing i can do is move out the input files corresponding to the ones where outputs were generated
-    - when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
-    or google: ```xargs site:*.edu```
-    
-   - i am running out of ideas. if i run using xargs, its getting stuck at the djikstra calculation for huge evidence files. plus not to mention loading lexicons.
-   if i run using python parallelization, it doesn't even write a file..wtf..
-   - have started on tmux0 on clara and watching from tmux5 on amy
-   - ideas from becky
-        - add an empty line after every sentence in evidence.
-        - try time out, i.e if the djikstra doesn't time out after say 10 mins, move onto next file.
-
-   - **fever-train**: 
-        - you can check status using
-        `ls ~/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
-        - latest status:count  is 178670/238,394 files done
-        -update: its written 10636 files more of which 10407 have size more than zero bytes. So hopefully there is some stuff there.
-        - for fever-train: moved all the already written .pred.tags files to :`net/kate/storage/work/mithunpaul/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger$`
-        - also deleted the corresponding files from `/net/kate/storage/work/mithunpaul/neuter_ner_fever_training/amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger`
-       - will try to run the xargs based command again to make it convert the rest of the files.
-       - update: the plain xargs is getting stuck at huge evidence files. So i am going to run pairs of claims and evidences
-       `./input_to_sstagger_output_from_pos_tagger/ -iname "*1*" -print0 | xargs -0 -n 1 -I{} -t -P 30 ./sst.sh {}`
-       
-    - **fever-dev**: 
-        -  you can check outputs using
-         `ls ~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger | wc -l`
-         - latest status: count is 51,676/52504 files
-        -update: have moved already tagged files to :
-        `:~/neuter_ner_fever_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/already_tagged`
-        -will try the python based parallelization thing now- update: didn't work still
-        - remove all input files corresponding to the 51k files that were already tagged.
-        - so now the input file directory must be left with 52504-51676=828 input files. a good number to check if the cython parallel processing code is workig
-        - the actual set of input files are kept here: `~/neuter_ner_fever_dev/outputs`
-        - update: as of 2pm on wednesday may 8th. its done 171 files of 828
-        - had started using xargs, but even after 12+ hours it did only 173 files. 
-        - killed tmux10
-        - might as well try out becky's separate line idea 
-        - keep only this file in input folder `evidence_words_pos_datapointid_26246`
-        - run without new lines: started at 339pm- 3.58 pm no luck
-        - with newlines as spaces:started at 359pm- good lord. finished in less than 1 minute.
-        - yep, that was the issue...will have to rewrite all data with spaces after 1 line
-        
-         
-    - **fnc-train** (this is the only thing running.)
-        - have started a run on **started amy** from **tmux 0** 
-        - status can be checked using
-        `ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_train/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
-        - latest status:count is 1456/81808
-        update: mihai, wants me to stop using jenny so that robert can use it. i'll move to amy if its easy.
-        update: started again on amy. tmux 0. also uncommented code that will ignore already written files, hopefully. at 7pm wednesday
-    - **fnc-dev** all runs are dead   
-        - status can be checked using 
-        ` ls /net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/input_to_sstagger_output_from_pos_tagger/ | wc -l`
+# notes to self/delete later 
   
-       - latest status: 845/18136 files are done.
-        - update: moved tagged files to
-        `/net/kate/storage/work/mithunpaul/neuter_ner_fnc_dev/amalgram/pysupersensetagger-2.0/outputs_sstagged/already_tagged`
-- merging sstags+nertags with collapsing: status as of may 7th 2019.5pm
-        - done with both merging and collapsing. have to test with couple of different examples though.        
+- when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
+    or google: ```xargs site:*.edu```
+
+
+ 
+ 
+checklist for merging runs
+        
+    - git pull
+    - source activate meanteacher
+    - make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
+    - make sure input folder name is correct (eg:--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//)..
+    - make sure there are no .pred.tags.pred.tags file in the input_folder()
+    - make sure you are providing the same data/inputfile i.e plain text file (Eg:-inputFile data/fever_dev_split_fourlabels.jsonl)
+    - create output folder if that doesn't exist : `mkdir sstag_ner_merged_files`
+    - give a new pyproc port for every run
+    
+
+### for emnlp 2019-abstract submission on may 15th 2019 below corners were cut
+        - punctuations were left in.
+        - there was length mismatch between claim and evidence found while doing merging of super sense and ner tags. I 
+        told the code to skip those files and move on. Almost 1% of files were thus skipped in all 4 runs. Should ideally go back and figure out why there is a length mismatch
+        
+ ### todo for this project (as of today:may 15th 2019- before the actual paper deadline):
+ - generate pos tags for fnc-test
+ - generate ss tags for fnc-test
+ - merge ss and pos tags for fnc-test
+ - generate pos tags for fever-test
+ - generate ss tags for fever-test
+ - merge ss and pos tags for fever-test
+ - add tqdm
+ - at some point, get back to removing punctuations.
+ - comment this line or move it inside if punctuations:`if not (word.lower() in ["lrb","rrb","lcb","rcb","lsb","rsb"]):`
+        
+                
             
-- Commonly encountered errors
+### Commonly encountered errors
     - if you hit compile time error with text as
     `ImportError: Building module discriminativeTagger failed: ["CompileError: command 'gcc' failed with exit status 1\n"]` it means you have a compilation error. Kill the command and scroll up to find the compilation error.
     - if your code is not responding/hangs for more than a minute after you hit `./sst.sh logs` 
     or hit a error which says cannot find compiled *.so files, do this:`rm ~/.pyxbld/lib.linux-x86_64-2.7/*.so`
     - if it says package x not found, that means you haven't turned on conda. do `source activate py2`
     - if nonoe of this works, i.e tmux window is not responding, get out of the tmux window and do `tmux kill-session -t 4`
+    - if you just want to check if a kind of file exists and if `ls *.tags` gives you error of `argument too long` you can try :` find amalgram/pysupersensetagger-2.0/outputs_sstagged/ -iname "one*"`
     
     
-
+### daily work log/diary
+- may 15th 2019:
+    - submitted abstract to emnlp2019
+    - still waiting on sandeep to do fnc-train-fever test using features from acl submission, plainlex, smartner etc
+    - have generated sstagged files also for all 4 partitions (fnc-fever-train-test). have uploaded them to gdrive [folder](https://drive.google.com/open?id=1QqbMDyGaao1fUIG3rbgS1xqlxwx8d-o4). sandeep still needs to run the same tests on them
+    - have started 2 runs for generating pos tags for fnc-test and fever-test. Details can be found [here](https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing)
  

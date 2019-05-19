@@ -755,17 +755,15 @@ class DiscriminativeTagger(object):
         decoder = self.decode(nLabels, self._weights,
                               useBIO=useBIO, includeLossTerm=includeLossTerm, costAugVal=costAugVal)
         decoder.next()
-        
-        for sent,o0Feats in dataset:
-            sent,derivation = decoder.send((sent,o0Feats))
-            if print_predictions:
-                #print predictions
-                print(sent)
-                #print("22 value of outputfileis")
-                #print(output_file)
-                f=open(output_file,"w",0)
-                f.write(sent.__str__())
-                f.close()
+        with open(output_file,"w+",0) as f:
+            for sent,o0Feats in dataset:
+                sent,derivation = decoder.send((sent,o0Feats))
+                if print_predictions:
+                    #print predictions
+                    print(sent)
+                    print(f"value of output file inside decode_dataset {output_file}")
+                    f.write(sent.__str__())
+                f.write("\n")
         decoder.next()  # show summary statistics
         decoder.close() # a formality
 
@@ -1050,10 +1048,13 @@ def split_based_on_xargs(run_parallely):
     evalData = setup(args)
     if(run_parallely==True):
         if (args.use_xargs):
+            print("inside args.use_xargs=true ")
             run_with_xargs(args,evalData)
         else:
+            print("inside run_with_python_parallelization ")
             run_with_python_parallelization(args,evalData)
     else:
+        print("inside run_without_python_parallelization ")
         run_without_python_parallelization(args,evalData)
 
 
@@ -1062,12 +1063,17 @@ def run_without_python_parallelization(args,evalData):
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
     for index,inputFile in enumerate(files):
+                print(f"input file is{inputFile}")
                 fullpath_inputFile=os.path.join(cwd,args.input_folder,inputFile)
                 args.predict=fullpath_inputFile
+                #print(f"fullpath_inputFile file is{fullpath_inputFile}")
                 outputFileName=inputFile+".pred.tags"
                 outputFileFullPath=os.path.join(cwd,args.output_folder,outputFileName)
+                #print(f"outputFileFullPath file is{outputFileFullPath}")
                 if not (os.path.isfile(outputFileFullPath)):
-                        output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
+                    output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
+
+
 
 
 def run_with_python_parallelization(args,evalData):
@@ -1105,7 +1111,7 @@ def main():
     '''
     Parse the given command line arguments, then act accordingly.
     '''
-    run_with_parallelization=False
+    run_with_parallelization=True
     split_based_on_xargs(run_with_parallelization)
 
 

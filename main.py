@@ -1,7 +1,15 @@
 from tqdm import tqdm
-import json,mmap,os,argparse,string
+import json,mmap,os,argparse,string,sys
 import processors
 from processors import *
+from cleantext import clean
+from os import listdir
+from os.path import isfile,join
+import traceback
+import logging
+
+logging.basicConfig(filename='merging_sstag_smartnertag.log',filemode='w+')
+LOG = logging.getLogger('main')
 
 def get_new_name( prev, unique_new_ners, curr_ner, dict_tokenner_newner, curr_word, new_sent, ev_claim, full_name,
                  unique_new_tokens, dict_newner_token):
@@ -120,9 +128,14 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
     #this full_name is used to store multiple parts of same name.Eg:Michael Schumacher
     full_name = []
 
-
+    list_of_indices_to_collapse=[]
+    total_string_length=len(ner_list)
     #in this code, triggers happen only when a continuous bunch of nER tags end. Eg: PERSON , PERSON, O.
     for index, (curr_ner, curr_word) in enumerate(zip(ner_list, words_list)):
+        # skip as many indices as we have already collapsed. This is because say if NEW YORK POST is collapsed into one entity, we don't want it to add post again to any of dictionaries or
+        # new sentence words
+        if index in (list_of_indices_to_collapse):
+            continue;
         if (curr_ner == "O"):
                 # if there were no tags just before this O, it means, its the end of a combined name. just add that O and move on
                 new_sent.append(curr_word)
@@ -142,6 +155,8 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
                                                new_sent, ev_claim,
                                                dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
                 prev_ner = curr_ner
+
+
             else:
                 #if the curr_ner is _ and the previous one was O or _, it is an anomaly
                 # , it really doesn't make sense/doesn't need collapsing. Just add the word as is
@@ -152,15 +167,11 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
                     #if you reach here, it means, the current_ner is none of O,_ with O before it, or _ with a proper tag before it. So this must be a proper tag, like FOOD, NUMBER etc
                     prev_ner=curr_ner
                     #look ahead, if the next NER value is a dash, don't add to dictionary. else add.
-                    if not (ner_list[index + 1] == "_"):
-                        dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma\
-                            = append_count_to_ner_tags(dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
+                    if((index+1) < total_string_length):
+                            if not (ner_list[index + 1] == "_"):
+                                dict_token_ner_newner, new_sent, dict_newNerBasedName_freq, dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma= append_count_to_ner_tags(dict_newNerBasedName_freq, curr_ner, dict_token_ner_newner, curr_word,
                                                      new_sent, ev_claim,
                                                      dict_lemmas_newNerBasedName, dict_newNerBasedName_lemma)
-
-
-
-
 
     return new_sent, dict_token_ner_newner, dict_newNerBasedName_lemma
 
@@ -312,7 +323,7 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
 
 
 
-        #for every token (irrespective of NER or not) in evidence
+        #for every token (irrespective of NER or not) in evidence_from_lexicalized_data
         for ev_new_ner_value in new_ev_sent_after_collapse:
 
             found_intersection=False
@@ -332,12 +343,12 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
                     name_cl_split = set(name_cl.split(" "))
 
 
-                    #check if any of the names/tokens in claim have an intersection with what you just got from evidence ev_new_ner_value. Eg: tolkein
+                    #check if any of the names/tokens in claim have an intersection with what you just got from evidence_from_lexicalized_data ev_new_ner_value. Eg: tolkein
                     if (token_split.issubset(name_cl_split) or name_cl_split.issubset(token_split)):
                         found_intersection = True
 
 
-                        # also confirm that NER value of the thing you found just now in evidence also matches the corresponding NER value in claim. This is to avoid john amsterdam PER overlapping with AMSTERDAM LOC
+                        # also confirm that NER value of the thing you found just now in evidence_from_lexicalized_data also matches the corresponding NER value in claim. This is to avoid john amsterdam PER overlapping with AMSTERDAM LOC
                         actual_ner_tag=""
                         for k, v in dict_tokenner_newner_evidence.items():
 
@@ -346,7 +357,7 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
 
                                 break
 
-                        #now check if this NER tag in evidence also matches with that in claims
+                        #now check if this NER tag in evidence_from_lexicalized_data also matches with that in claims
                         if(actual_ner_tag==ner_cl):
                             val_claim = dict_tokenner_newner_claims[tup]
                             combined_sent.append(val_claim)
@@ -355,7 +366,7 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
                             combined_sent.append(token)
 
 
-                        #now that you found that there is an overlap between your evidence token and the claim token, no need to go through the claims dictionary which maps tokens to ner
+                        #now that you found that there is an overlap between your evidence_from_lexicalized_data token and the claim token, no need to go through the claims dictionary which maps tokens to ner
                         break;
 
 
@@ -364,7 +375,7 @@ def check_exists_in_claim(new_ev_sent_after_collapse, dict_tokenner_newner_evide
                     new_ner=""
 
 
-                    #get the evidence's PER-E1 like value
+                    #get the evidence_from_lexicalized_data's PER-E1 like value
                     for k,v in dict_tokenner_newner_evidence.items():
                         #print(k,v)
                         if(ev_new_ner_value==v):
@@ -412,11 +423,19 @@ def create_parser():
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
     parser.add_argument('--run_on_dummy_data', default=False, type=str2bool,
+                        help='to test merging on one or two output files. once you have output from sstagger, turn this to false.',
+                        metavar='BOOL')
+    parser.add_argument('--remove_punctuations', default=True, type=str2bool,
                         help='once you have output from sstagger, merge them both.',
                         metavar='BOOL')
-    parser.add_argument('--remove_punctuations', default=False, type=str2bool,
-                        help='once you have output from sstagger, merge them both.',
-                        metavar='BOOL')
+    parser.add_argument('--outputFolder', type=str, default='outputs',
+                        help='name of the folder to write output to')
+    parser.add_argument('--smart_ner_sstags_output_file_name', type=str, default='smartner_sstags_merged.jsonl',
+                        help='name of the folder to write output to')
+    parser.add_argument('--input_folder_for_smartnersstagging_merging', type=str, default='sstagged_files',
+                        help='name of the folder where sstagged files will be read from')
+    parser.add_argument('--log_level', type=str, default='INFO',
+                        help='name of the folder where sstagged files will be read from')
     print(parser.parse_args())
     return parser
 
@@ -502,32 +521,83 @@ def mergeSSandNERTags(ss_tags, ner_tags ):
                     ner_tags[index] = sst
     return ner_tags
 
+def remove_rrb_lsb_etc(sent):
+    no_lrb_data=[]
+    words=sent.split(" ")
+    for word in words:
+        if not (word.lower() in ["lrb", "rrb", "lcb", "rcb", "lsb", "rsb"]):
+            no_lrb_data.append(word)
+    return " ".join(no_lrb_data)
+
 
 def read_sstagged_data(filename,args):
     sstags = []
-    puncts = set(string.punctuation)
+    words=[]
+    line_counter=0
     with open(filename,"r") as f:
             line=f.readline()
             while(line):
+                line_counter=line_counter+1
                 split_line=line.split("\t")
-                #pick only the words/lemmas that are not punctutations. -this had to be done in a existential check way because we had already written a million sstag files by the time we coded up merging
-                # and didn't want to rewrite them all without punctuations in strings.
-                if not(split_line[1] in puncts) and (args.remove_punctuations == True):
-                    #if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
-                    sstag6=split_line[6]
-                    sstag7 = split_line[7]
-                    if(sstag6=="_"):
-                        sstag=sstag6
+                word = split_line[1]
+                if (args.remove_punctuations == True):
+                    word=remove_punctuations(word)
+                    #remove punctuations twice, . this is done because words like "-lrb-" was first stripped, but the stripper was not removing lsb itself.
+                    word = remove_punctuations(word)
+                #if the word is empty now, it means it was a punctuation, and hence removed. Don't add the word or  its tag
+                if not(word == ""):
+                    if not (word.lower() in ["lrb","rrb","lcb","rcb","lsb","rsb"]):
+                            # if the 6th column has a dash, add it. A dash in sstagger means, this word, with the word just before it was collapsed into one entity. i.e it was I(inside) in BIO notation.
+                            sstag6 = split_line[6]
+                            sstag7 = split_line[7]
+                            if (sstag6 == "_"):
+                                sstag = sstag6
+                            else:
+                                sstag = sstag7
+                            sstags.append(sstag)
+                            words.append(word)
+                            line = f.readline()
                     else:
-                        sstag=sstag7
-                    sstags.append(sstag)
-                line = f.readline()
+                        line = f.readline()
+                else:
+                    line = f.readline()
+    return sstags,words
 
-    return sstags
+def remove_punctuations(word):
+    return clean(word,
+          fix_unicode=True,  # fix various unicode errors
+          to_ascii=True,  # transliterate to closest ASCII representation
+          lower=False,  # lowercase text
+          no_line_breaks=False,  # fully strip line breaks as opposed to only normalizing them
+          no_urls=False,  # replace all URLs with a special token
+          no_emails=False,  # replace all email addresses with a special token
+          no_phone_numbers=False,  # replace all phone numbers with a special token
+          no_numbers=False,  # replace all numbers with a special token
+          no_digits=False,  # replace all digits with a special token
+          no_currency_symbols=False,  # replace all currency symbols with a special token
+          no_punct=True,  # fully remove punctuation
+          replace_with_url="<URL>",
+          replace_with_email="<EMAIL>",
+          replace_with_phone_number="<PHONE>",
+          replace_with_number="<NUMBER>",
+          replace_with_digit="0",
+          replace_with_currency_symbol="<CUR>",
+          lang="en"  # set to 'de' for German special handling
+          )
+
 
 if __name__ == '__main__':
 
     args = parse_commandline_args()
+    if (args.log_level=="INFO"):
+        LOG.setLevel(logging.INFO)
+    else:
+        if (args.log_level=="DEBUG"):
+            LOG.setLevel(logging.DEBUG)
+        else:
+            if (args.log_level=="ERROR"):
+                LOG.setLevel(logging.ERROR)
+
     if(args.use_docker==True):
         API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
     else:
@@ -538,55 +608,231 @@ if __name__ == '__main__':
     all_claims, all_evidences, all_labels=read_rte_data(filename,args)
     all_claims_neutered=[]
     all_evidences_neutered = []
-    with open('output.jsonl', 'w') as outfile:
+
+    merge_sstag_nertag_output_file = os.path.join(args.outputFolder, args.smart_ner_sstags_output_file_name)
+    with open(merge_sstag_nertag_output_file, 'w') as outfile:
         outfile.write('')
+    # go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence_from_lexicalized_data file with this id, and open it.
+    ss_claim_file_full_path= ""
+    ssfilename_ev=""
+    files_skipped=0
+    files_read=0
+    assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
+    for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
+                LOG.info(f" index: {index}")
+                try:
+                    file_full_path=join(args.input_folder_for_smartnersstagging_merging,file)
+                    if isfile(file_full_path):
+                        if file.startswith("claim"):
+                            files_read=files_read+1
+                            split_file_name=file.split("_")
+                            datapoint_id_pred_tags=split_file_name[4]
+                            dataPointId_split=datapoint_id_pred_tags.split(".")
+                            dataPointId=dataPointId_split[0]
+                            ss_claim_file_full_path=file_full_path
+                            ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
+                            ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
+                            if not ss_claim_file_full_path:
+                                LOG.error("ss_claim_file_full_path is empty.skipping this datapoint")
+                                files_skipped = files_skipped + 1
+                                continue;
+                            if not ssfilename_ev:
+                                LOG.error("ssfilename_ev is empty. skipping this datapoint")
+                                files_skipped = files_skipped + 1
+                                continue;
+                            if not isfile(ss_evidence_file_full_path):
+                                LOG.error(f"ss_evidence_file_full_path is not found:{ss_evidence_file_full_path}")
+                                files_skipped = files_skipped + 1
+                                continue;
+
+                            LOG.info(f"*************************")
+                            LOG.info(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
+                            LOG.info(f"value of ssfilename_ev is:{ssfilename_ev}")
 
 
-    ssfilename_claims = "sstagged_sample_files/claim_words_pos_datapointid_91034.pred.tags"
-    ssfilename_ev = "sstagged_sample_files/evidence_words_pos_datapointid_91034.pred.tags"
-    if (args.merge_ner_ss):
-        claims_sstags = read_sstagged_data(ssfilename_claims,args)
-        ev_sstags = read_sstagged_data(ssfilename_ev,args)
+                            if (args.merge_ner_ss):
+                                claims_sstags, sstagged_claim_words = read_sstagged_data(ss_claim_file_full_path, args)
+                                assert (len(claims_sstags) is len(sstagged_claim_words))
+                                LOG.debug(f"done reading read_sstagged_data for ss_claim_file_full_path")
+                                ev_sstags, sstagged_ev_words = read_sstagged_data(ss_evidence_file_full_path,args)
+                                LOG.debug(f"done reading read_sstagged_data for ss_evidence_file_full_path")
+                                LOG.debug(f"value of evidence_from_lexicalized_data from sstagged data:{sstagged_ev_words}")
+                                LOG.debug(f"value of ev_sstags:{ev_sstags}")
 
-        # hardcoding claim, evidence and label for debugging purposes of merging NER and SStagging
-        c = all_claims[91034]
-        e = all_evidences[91034]
-        l = all_labels[91034]
-        claim_ann, ev_ann = annotate(c, e, API)
-        assert (claim_ann is not None)
-        assert (ev_ann is not None)
-        assert (len(claim_ann.tags) is len(claims_sstags))
-        assert (len(ev_ann.tags) is len(ev_sstags))
-        claim_ner_tags = claim_ann._entities
-        ev_ner_tags= ev_ann._entities
-
-        claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
-        ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
-    #uncomment below portion for running over all claims and evidences. Commented out for debugging on just one data point
-    # for (index, (c, e ,l)) in enumerate(zip(all_claims, all_evidences,all_labels)):
-    #
-    #         claim_ann, ev_ann = annotate(c, e, API)
-    #         assert (claim_ann is not None)
-    #         assert (ev_ann is not None)
-
-    claim_pos_tags = claim_ann.tags
-    ev_pos_tags = ev_ann.tags
+                                if not (len(ev_sstags)== len(sstagged_ev_words)):
+                                    LOG.debug(f"value of len(ev_sstags):{len(ev_sstags)}")
+                                    LOG.debug(f"value of len(sstagged_ev_words) :{len(sstagged_ev_words)}")
+                                    LOG.error("value of len(ev_sstags) and len(sstagged_ev_words) don't match ")
 
 
-    if(args.convert_prepositions==True):
-        claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
-    if (args.create_smart_NERs == True):
-        claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
-    if (args.merge_ner_ss == True):
-        claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+                                if not (dataPointId):
+                                    LOG.error("dataPointId is empty")
+
+                                dataPointId_int=int(dataPointId)
+                                claim_before_removing_punctuations = all_claims[dataPointId_int]
+                                evidence_from_lexicalized_data = all_evidences[dataPointId_int]
+                                l = all_labels[dataPointId_int]
+                                LOG.debug(f"value of evidence_from_lexicalized_data from lexicalized data:{evidence_from_lexicalized_data}")
+                                if(args.remove_punctuations==True):
+                                    evidence_from_lexicalized_data=remove_punctuations(evidence_from_lexicalized_data)
+                                    evidence_from_lexicalized_data = remove_rrb_lsb_etc(evidence_from_lexicalized_data)
 
 
-        with open('output.jsonl', 'a+') as outfile:
-            write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
+                                l_ev_lexicalized=len(evidence_from_lexicalized_data.split(" "))
+                                LOG.debug(f"value of length of evidence_from_lexicalized_data from lexicalized data:{l_ev_lexicalized }")
+                                LOG.debug(f"value of length of evidence_from_lexicalized_data from sstagged data:{len(sstagged_ev_words) }")
 
 
-#            print(index)
+                                claim=claim_before_removing_punctuations
+                                #remove punctuations and unicode from claims also and make sure its same size as
+                                if (args.remove_punctuations == True):
+                                    claim=remove_punctuations(claim_before_removing_punctuations)
+                                    claim = remove_rrb_lsb_etc(claim)
+
+                                LOG.debug(f"value of claim from lexicalized data:{claim}")
+                                LOG.debug(f"value of claim from sstagged data:{sstagged_claim_words}")
+
+                                claim_ann, ev_ann = annotate(claim, evidence_from_lexicalized_data, API)
+                                assert (claim_ann is not None)
+                                assert (ev_ann is not None)
+
+                                claim_ner_tags = claim_ann._entities
+                                ev_ner_tags= ev_ann._entities
+
+                                lcet = len(claims_sstags)
+                                lesst = len(claim_ner_tags)
+                                LOG.debug(f"value of len(claims_sstags) is :{lcet}")
+                                LOG.debug(f"value claim_ner_tags is :{lesst}")
+                                if not (lcet == lesst):
+                                    LOG.error(
+                                        "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
+                                    files_skipped = files_skipped + 1
+                                    LOG.error(f"total files skipped so far is {files_skipped}")
+                                    for x,y,z in zip(claims_sstags, claim_ner_tags,sstagged_claim_words):
+                                        LOG.error(f"{x},{y},{z}")
+                                    continue
 
 
+                                lcet = len(ev_sstags)
+                                lesst = len(ev_ner_tags)
+                                LOG.debug(f"value of len(ev_sstags) is :{lcet}")
+                                LOG.debug(f"value ev_ner_tags is :{lesst}")
+                                if not (lcet == lesst):
+                                    LOG.error(
+                                        "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+                                    files_skipped = files_skipped + 1
+                                    LOG.error(f"total files skipped so far is {files_skipped}")
+                                    for x,y,z in zip(ev_sstags, ev_ner_tags,sstagged_ev_words):
+                                        LOG.error(f"{x},{y},{z}")
+                                    continue
+
+
+
+                                claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
+                                ev_ner_ss_tags_merged = mergeSSandNERTags(ev_sstags, ev_ner_tags)
+
+
+                                claim_pos_tags = claim_ann.tags
+                                ev_pos_tags = ev_ann.tags
+
+                                # LOG.debug(f"value of claim_pos_tags is:{claim_pos_tags}")
+                                # LOG.debug(f"value of ev_pos_tags is:{ev_pos_tags}")
+                                LOG.debug(f"value of claim_ner_tags is:{claim_ner_tags}")
+                                LOG.debug(f"value of ev_ner_tags is:{ev_ner_tags}")
+                                LOG.debug(f"value of claims_sstags is:{claims_sstags}")
+                                LOG.debug(f"value of ev_sstags is:{ev_sstags}")
+                                LOG.debug(f"value of claim_ner_ss_tags_merged is:{claim_ner_ss_tags_merged}")
+                                LOG.debug(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
+
+                                LOG.error(f"total files skipped so far is {files_skipped}")
+                                if(args.convert_prepositions==True):
+                                    claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
+
+                                if (args.create_smart_NERs == True):
+
+                                    claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+
+
+
+                                if (args.merge_ner_ss == True):
+                                    lcet = len(claim_ann.words)
+                                    lesst = len(claim_ner_ss_tags_merged)
+                                    LOG.debug(f"value of len(claim_ann.words) is :{lcet}")
+                                    LOG.debug(f"value len(claim_ner_ss_tags_merged) :{lesst}")
+                                    if not (lcet == lesst):
+                                        LOG.error(
+                                            "value of len(claim_ann.words) and value len(claim_ner_ss_tags_merged) don't match ")
+
+
+                                        files_skipped = files_skipped + 1
+                                        LOG.error(f"total files skipped so far is {files_skipped}")
+                                        for x, y in zip(claim_ann.words, claim_ner_ss_tags_merged):
+                                            LOG.error(f"{x},{y}")
+                                        continue
+
+                                    lcet = len(ev_ann.words)
+                                    lesst = len(ev_ner_ss_tags_merged)
+                                    LOG.debug(f"value of len(ev_ann.words) is :{lcet}")
+                                    LOG.debug(f"value len(ev_ner_ss_tags_merged) is :{lesst}")
+                                    if not (lcet == lesst):
+                                        LOG.error(
+                                            "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
+
+                                        files_skipped = files_skipped + 1
+                                        LOG.error(f"total files skipped so far is {files_skipped}")
+                                        for x,y in zip(ev_ann.words, ev_ner_ss_tags_merged):
+                                            LOG.error(f"{x},{y}")
+                                        continue
+
+
+
+                                    claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
+
+
+                                with open(merge_sstag_nertag_output_file, 'a+') as outfile:
+                                    write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
+
+
+
+                except IOError:
+                    LOG.error('An error occured trying to read the file.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
+
+
+                except ValueError:
+                    LOG.error('Non-numeric data found in the file.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
+
+
+                except ImportError:
+                    LOG.error("NO module found")
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
+
+                except EOFError:
+                    LOG.error('Why did you do an EOF on me?')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
+
+
+                except KeyboardInterrupt:
+                    LOG.error('You cancelled the operation.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
+
+
+                except:
+                    LOG.error('An error which wasnt explicity caught occured.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    LOG.error(f"value of index  is {index}")
+                    traceback.print_exc()
+                    continue
 
 

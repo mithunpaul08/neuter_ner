@@ -95,7 +95,7 @@ def replacePrepositionsWithPOSTags(claim_ann, evidence_ann):
 
 def write_json_to_disk(claim, evidence,label,outfile):
     total = {'claim': claim,
-             'evidence':evidence,
+             'evidence_from_lexicalized_data':evidence,
              "label":label}
     json.dump(total, outfile)
     outfile.write('\n')

@@ -633,9 +633,17 @@ if __name__ == '__main__':
                             ssfilename_ev="evidence_words_pos_datapointid_"+str(datapoint_id_pred_tags)
                             ss_evidence_file_full_path=join(args.input_folder_for_smartnersstagging_merging, ssfilename_ev)
                             if not ss_claim_file_full_path:
-                                LOG.error("ss_claim_file_full_path is empty")
+                                LOG.error("ss_claim_file_full_path is empty.skipping this datapoint")
+                                files_skipped = files_skipped + 1
+                                continue;
                             if not ssfilename_ev:
-                                LOG.error("ssfilename_ev is empty")
+                                LOG.error("ssfilename_ev is empty. skipping this datapoint")
+                                files_skipped = files_skipped + 1
+                                continue;
+                            if not isfile(ss_evidence_file_full_path):
+                                LOG.error(f"ss_evidence_file_full_path is not found:{ss_evidence_file_full_path}")
+                                files_skipped = files_skipped + 1
+                                continue;
 
                             LOG.info(f"*************************")
                             LOG.info(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")

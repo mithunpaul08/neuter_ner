@@ -660,7 +660,7 @@ if __name__ == '__main__':
                             LOG.info(f"*************************")
                             LOG.info(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
                             LOG.info(f"value of ssfilename_ev is:{ssfilename_ev}")
-                            for k, v in gold_labels_of_data_points_skipped:
+                            for k,v in gold_labels_of_data_points_skipped:
                                 print(k, v)
 
 

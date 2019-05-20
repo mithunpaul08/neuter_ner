@@ -656,6 +656,8 @@ if __name__ == '__main__':
                             LOG.info(f"*************************")
                             LOG.info(f"value of ss_claim_file_full_path is:{ss_claim_file_full_path}")
                             LOG.info(f"value of ssfilename_ev is:{ssfilename_ev}")
+                            for k, v in gold_labels_of_data_points_skipped:
+                                print(k, v)
 
 
                             if (args.merge_ner_ss):
@@ -796,8 +798,7 @@ if __name__ == '__main__':
                                             LOG.error(f"{x},{y}")
                                         continue
 
-                                    for k,v in gold_labels_of_data_points_skipped:
-                                        print(k,v)
+
 
                                     claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 

@@ -17,7 +17,7 @@ from labeledSentence import LabeledSentence
 import morph, tags2sst
 import os
 from pyutil.ds import features 
-
+import time
 import supersenseFeatureExtractor
 featureExtractor = None
 
@@ -1070,8 +1070,12 @@ def run_without_python_parallelization(args,evalData):
                 outputFileName=inputFile+".pred.tags"
                 outputFileFullPath=os.path.join(cwd,args.output_folder,outputFileName)
                 #print(f"outputFileFullPath file is{outputFileFullPath}")
+                start = time.time()
                 if not (os.path.isfile(outputFileFullPath)):
                     output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
+                    end = time.time()
+                    if(end-start>100):
+                        continue;
 
 
 

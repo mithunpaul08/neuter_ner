@@ -584,6 +584,13 @@ def remove_punctuations(word):
           replace_with_currency_symbol="<CUR>",
           lang="en"  # set to 'de' for German special handling
           )
+def add_to_dict(key,dict):
+    if key in dict.keys():
+        old_value=dict[key]
+        new_value=old_value+1
+        dict[key]=new_value
+    else:
+        dict[key]=1
 
 
 if __name__ == '__main__':
@@ -617,6 +624,7 @@ if __name__ == '__main__':
     ssfilename_ev=""
     files_skipped=0
     files_read=0
+    gold_labels_of_data_points_skipped={}
     assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
     for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
                 LOG.info(f" index: {index}")
@@ -671,7 +679,7 @@ if __name__ == '__main__':
                                 dataPointId_int=int(dataPointId)
                                 claim_before_removing_punctuations = all_claims[dataPointId_int]
                                 evidence_from_lexicalized_data = all_evidences[dataPointId_int]
-                                l = all_labels[dataPointId_int]
+                                gold_label = all_labels[dataPointId_int]
                                 LOG.debug(f"value of evidence_from_lexicalized_data from lexicalized data:{evidence_from_lexicalized_data}")
                                 if(args.remove_punctuations==True):
                                     evidence_from_lexicalized_data=remove_punctuations(evidence_from_lexicalized_data)
@@ -705,7 +713,8 @@ if __name__ == '__main__':
                                 LOG.debug(f"value claim_ner_tags is :{lesst}")
                                 if not (lcet == lesst):
                                     LOG.error(
-                                        "value of len(claims_sstags) and len(claim_ner_tags) don't match ")
+                                        f"value of len(claims_sstags) and len(claim_ner_tags) don't match and the gold label is:{gold_label} ")
+                                    add_to_dict(gold_label,gold_labels_of_data_points_skipped)
                                     files_skipped = files_skipped + 1
                                     LOG.error(f"total files skipped so far is {files_skipped}")
                                     for x,y,z in zip(claims_sstags, claim_ner_tags,sstagged_claim_words):
@@ -722,6 +731,7 @@ if __name__ == '__main__':
                                         "value of len(ev_sstags) and len(ev_ner_tags) don't match ")
                                     files_skipped = files_skipped + 1
                                     LOG.error(f"total files skipped so far is {files_skipped}")
+                                    add_to_dict(gold_label, gold_labels_of_data_points_skipped)
                                     for x,y,z in zip(ev_sstags, ev_ner_tags,sstagged_ev_words):
                                         LOG.error(f"{x},{y},{z}")
                                     continue
@@ -766,6 +776,7 @@ if __name__ == '__main__':
 
                                         files_skipped = files_skipped + 1
                                         LOG.error(f"total files skipped so far is {files_skipped}")
+                                        add_to_dict(gold_label, gold_labels_of_data_points_skipped)
                                         for x, y in zip(claim_ann.words, claim_ner_ss_tags_merged):
                                             LOG.error(f"{x},{y}")
                                         continue
@@ -780,17 +791,19 @@ if __name__ == '__main__':
 
                                         files_skipped = files_skipped + 1
                                         LOG.error(f"total files skipped so far is {files_skipped}")
+                                        add_to_dict(gold_label, gold_labels_of_data_points_skipped)
                                         for x,y in zip(ev_ann.words, ev_ner_ss_tags_merged):
                                             LOG.error(f"{x},{y}")
                                         continue
 
-
+                                    for k,v in gold_labels_of_data_points_skipped:
+                                        print(k,v)
 
                                     claim_neutered, ev_neutered =collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ner_ss_tags_merged, ev_ann.words, ev_ner_ss_tags_merged)
 
 
                                 with open(merge_sstag_nertag_output_file, 'a+') as outfile:
-                                    write_json_to_disk(claim_neutered, ev_neutered,l.upper(),outfile)
+                                    write_json_to_disk(claim_neutered, ev_neutered, gold_label.upper(), outfile)
 
 
 

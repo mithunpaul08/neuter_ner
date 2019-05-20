@@ -624,7 +624,11 @@ if __name__ == '__main__':
     ssfilename_ev=""
     files_skipped=0
     files_read=0
-    gold_labels_of_data_points_skipped={}
+    gold_labels_of_data_points_skipped={"discuss":1,
+                                        "agree": 1,
+                                        "disagree": 1,
+                                        "unrelated": 1
+                                        }
     assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
     for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
                 LOG.info(f" index: {index}")

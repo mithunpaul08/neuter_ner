@@ -58,6 +58,7 @@ premise_ann: BREAKING : ORGANIZATION-e1 , in video , beheads MISC-e1 journalist 
 
 # Super Sense Tagger
 
+step 2 given [here](#Step_2:_running_sstagger)
 Super sense tagging is when you can take a sentence and assign the abstract super sense to it. like NER but more abstract.
 Eg:
 
@@ -120,7 +121,8 @@ Notes
     - `docker start procserv`
     - open `localhost:8886` and confirm that the `pyprocessor` server is running
 
-#### Step 2: running sstagger
+#Step_2:_running_sstagger
+#### Step_2: running_sstagger
 
 the above came these are the commands i used to combine multiple claim files to one
 

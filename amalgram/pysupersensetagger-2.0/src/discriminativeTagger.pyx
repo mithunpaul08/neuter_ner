@@ -1115,7 +1115,7 @@ def main():
     '''
     Parse the given command line arguments, then act accordingly.
     '''
-    run_with_parallelization=False
+    run_with_parallelization=True
     split_based_on_xargs(run_with_parallelization)
 
 

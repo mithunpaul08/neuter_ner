@@ -1104,10 +1104,11 @@ def run_with_python_parallelization(args,evalData):
 
 def run_with_xargs(args,evalData):
         inputFile=args.predict
+        print("name of input file is:")
+        print(inputFile)
         outputFileName=args.output_folder+"/"+inputFile+".pred.tags"
         print("name of output file is:")
         print(outputFileName)
-        sys.exit(1)
         if not (os.path.isfile(outputFileName)):
             predict(args, _tagger_model,outputFileName,evalData)    
 

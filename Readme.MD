@@ -124,16 +124,7 @@ Notes
 #Step_2:_running_sstagger
 #### Step_2: running_sstagger
 
-the above came these are the commands i used to combine multiple claim files to one
 
-steps 
-- move the output of pos tagging to input folder of ss tagging.
-    - note: dont do plain `mv * ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/`. Linux will tell you argument list too long. Instead create a shell script like this:
-    ```for each in ./*;
-    do
-    mv $eachfile ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/
-    done
-    ```
 - commands for create a conda run environment for running the actual sstagger    
 ```
  conda create -name py2_decompattn_nonallennlp python=2.7
@@ -144,33 +135,44 @@ steps
  nltk.download('wordnet')
  exit
 ```
-- remember to create a folder inside outputs dir if using xargs, and the output (the sstagged files)
- will be written there.
  
- Example:
  
- ``mkdir outputs_sstagged/input_to_sstagger_output_from_pos_tagger``
-
-- Check two things. *.tags doesn't exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
-- open up predict.ssh and make sure the values of` --input_folder` points to where you generated the POS tagged
+- Check list:
+    - make sure *.tags doesn't exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
+    - open up predict.ssh and make sure the values of` --input_folder` points to where you generated the POS tagged
    files from step1. and `--output_folder` exists. 
-- now run the below command from the place where the file `sst.sh` exists.
+    - input_folder is where  your pos tagged files are
+    - now run the below command from the place where the file `sst.sh` exists.
 
 `./sst.sh example`
 - example is a dummy input file left over for vestigial reasons,which will never be used
 - the logs and print statements will be written inside example.log.
 
-also here is a version of the same command that will run the above as multiple processses. i suggest avoiding it though.
+###### xargs
+also here is a version of the same command that will run the above as multiple processses. 
+i suggest avoiding it if you have enough time to run it serially.
 
-`find ./input_to_sstagger_output_from_pos_tagger/ -print0 | xargs -0 -n 1 -I{} -t -p ./sst.sh {}`
  
-Notes:
-- the xargs command will run the sst.sh on each input file from the folder: input_to_sstagger_output_from_pos_tagger
-- i have modified the python code to create output file with $inputfilename.pred.tags in the output folder mentioned above
-- P is the number of cores you can spare in your machine. 
-- this command will create the output (*.pred.tags) at exactly the same location as the input file. Which means, you must do `rm *.tags` before every run else it will
-start creating files like `*.pred.tags.pred.tags`
+- Check list:
+    - create a new folder (pos_tagged_files_fnc_test) at the same location as sst.sh
+    - copy all the pos tags generated in step2 to this input folder
+    - open up predict.ssh remove the value of` --input_folder`. This is because the find command
+    above takes care of it. 
+    - create an output folder (eg: `mkdir fnc_test_outputs_sstagged`)
+    - open up predict.ssh and make sure `--output_folder` exists and points to the path above. 
+    - open predict.ssh and add `--use_xargs` at the end of python command
+    - make sure no file with name `*.tags` exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
+    - open up src/discriminativeTagger.pyx , and make `run_with_parallelization=True` in the main() function. 
+    - now run the below command from the folder where the file `sst.sh` exists.    
+    - once you start the command : got to folder fnc_test_outputs_sstagged and keep an eye on the number of files created. also open up some of the output files created and make sure no surprise sentences are added.
 
+    
+`find ./pos_tagged_files_fnc_test/ -print0 | xargs -0 -n 1 -I{} -t -P 72 ./sst.sh {}`
+
+
+Notes:
+- the xargs command will run the sst.sh on each input file from the folder you provide, which in this case is `pos_tagged_files_fnc_test`. Change accordingly
+- P is the number of cores you can spare in your machine. Change accordingly. Don't change anything else.
 #### Step 3: merging NER tags and ss tags
 
 In this phase, we need to do the smartner tagging plus ss tagging. Eg:

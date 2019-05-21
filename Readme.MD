@@ -170,6 +170,9 @@ i suggest avoiding it if you have enough time to run it serially.
     - open up predict.ssh remove the value of` --input_folder`. This is because the find command
     above takes care of it. 
     - create an output folder (eg: `mkdir fnc_test_outputs_sstagged`)
+    - inside the output folder create another folder which has exactly the same name as the input folder
+    (Eg:`mkdir fnc_test_outputs_sstagged/pos_tagged_files_fnc_test`). This has to be done because xargs passes the entire path of the input file , including the folder name. so then the code tries to create an output file with the same name, which includes the path.
+    
     - open up predict.ssh and make sure `--output_folder` exists and points to the path above. 
     - open predict.ssh and add `--use_xargs` at the end of python command
     - make sure no file with name `*.tags` exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
@@ -188,15 +191,24 @@ i suggest avoiding it if you have enough time to run it serially.
     - before you start the run with xargs, try running bare minimum command tomake sure there are no compile timer errors
     Eg: `./sst.sh dummy_input_file`
     - now run the below command from the folder where the file `sst.sh` exists.    
-    - once you start the command and if you see SS tags being printed on screen, you should be fine. nevertheless: got to folder fnc_test_outputs_sstagged and keep an eye on the number of files created. also open up some of the output files created and make sure no surprise sentences are added.
-
     
-`find ./pos_tagged_files_fnc_test/ -print0 | xargs -0 -n 1 -I{} -t -P 72 ./sst.sh {}`
+    
+`find pos_tagged_files_fnc_test/ -print0 | xargs -0 -n 1 -I{} -t -P 72 ./sst.sh {}`
 
 
+   - once you start the command and if you see SS tags being printed on screen, you should be fine. nevertheless: got to folder fnc_test_outputs_sstagged and keep an eye on the number of files created. also open up some of the output files created and make sure no surprise sentences are added.
+  
+```
+    ls /work/mithunpaul/neuter_ner_fnc_test/amalgram/pysupersensetagger-2.0/fnc_test_outputs_sstagged/pos_tagged_files_fnc_test
+```
+   
 Notes:
 - the xargs command will run the sst.sh on each input file from the folder you provide, which in this case is `pos_tagged_files_fnc_test`. Change accordingly
 - P is the number of cores you can spare in your machine. Change accordingly. Don't change anything else.
+- some files will take really long time to get SSTagged. This is because it most probably contains way too many sentences. Be patient. That is why we are running it over xargs because
+even if one process is stuck the rest 71 will keep moving forward.
+- the code should stop by itself when the total number of output files are the same as input files (in this case 50826 )- 50k files should take around 500 minutes=8 hours
+
 #### Step 3: merging NER tags and ss tags
 
 In this phase, we need to do the smartner tagging plus ss tagging. Eg:

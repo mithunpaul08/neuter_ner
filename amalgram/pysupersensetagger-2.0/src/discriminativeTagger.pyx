@@ -1087,16 +1087,16 @@ def run_with_python_parallelization(args,evalData):
     jobs = []
     cwd=os.getcwd()
     files=os.listdir(args.input_folder)
-   # print("inside run_with_python_parallization")
+    print("inside run_with_python_parallization")
     for index,inputFile in enumerate(files):
                 fullpath_inputFile=os.path.join(cwd,args.input_folder,inputFile)
                 args.predict=fullpath_inputFile
                 outputFileName=inputFile+".pred.tags"
                 outputFileFullPath=os.path.join(cwd,args.output_folder,outputFileName)
-    #            print(fullpath_inputFile)
-     #           print(outputFileFullPath)
+                print(fullpath_inputFile)
+                print(outputFileFullPath)
                 if not (os.path.isfile(outputFileFullPath)):
-                #output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
+                    output=predict(args, _tagger_model,outputFileFullPath,featurized_dataset=evalData)
                     jobs.append(pool.apply_async(predict, (args, _tagger_model,outputFileFullPath,evalData)))
                 for job in jobs:
                     job.get()

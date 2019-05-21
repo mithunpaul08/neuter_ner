@@ -127,8 +127,8 @@ Notes
 
 - commands for create a conda run environment for running the actual sstagger    
 ```
- conda create -name py2_decompattn_nonallennlp python=2.7
- source activate py2_decompattn_nonallennlp
+ conda create -name py2 python=2.7
+ source activate py2
  pip install cython
  pip install nltk
  python
@@ -138,6 +138,7 @@ Notes
  
  
 - Check list:
+    - source activate py2
     - make sure *.tags doesn't exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
     - open up predict.ssh and make sure the values of` --input_folder` points to where you generated the POS tagged
    files from step1. and `--output_folder` exists. 
@@ -153,9 +154,19 @@ also here is a version of the same command that will run the above as multiple p
 i suggest avoiding it if you have enough time to run it serially.
 
  
-- Check list:
+- CheckList/steps:
+    - create conda environment as above
     - create a new folder (pos_tagged_files_fnc_test) at the same location as sst.sh
     - copy all the pos tags generated in step2 to this input folder
+    - do an `ls -al` in this input folder and make sure this is 
+    double the number you get when you do an `wc -l` on the lexicalized data file
+    eg:
+    ```
+    ls /work/mithunpaul/neuter_ner_fnc_test/amalgram/pysupersensetagger-2.0/pos_tagged_files_fnc_test | wc -l
+    50826
+    wc -l /work/mithunpaul/neuter_ner_fnc_test/data/fn_test_split_fourlabels.jsonl`
+    25413
+    ```
     - open up predict.ssh remove the value of` --input_folder`. This is because the find command
     above takes care of it. 
     - create an output folder (eg: `mkdir fnc_test_outputs_sstagged`)
@@ -163,8 +174,21 @@ i suggest avoiding it if you have enough time to run it serially.
     - open predict.ssh and add `--use_xargs` at the end of python command
     - make sure no file with name `*.tags` exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
     - open up src/discriminativeTagger.pyx , and make `run_with_parallelization=True` in the main() function. 
+    - source activate py2
+    - open up sst.sh and make sure the input file is not written from linux shell scripot also
+    i.e it should look like this:
+    ```
+    ./predict_sst.sh $input 
+    ```
+ 
+    and not
+    ```
+    ./predict_sst.sh $input > $input.pred.tags
+    ```
+    - before you start the run with xargs, try running bare minimum command tomake sure there are no compile timer errors
+    Eg: `./sst.sh dummy_input_file`
     - now run the below command from the folder where the file `sst.sh` exists.    
-    - once you start the command : got to folder fnc_test_outputs_sstagged and keep an eye on the number of files created. also open up some of the output files created and make sure no surprise sentences are added.
+    - once you start the command and if you see SS tags being printed on screen, you should be fine. nevertheless: got to folder fnc_test_outputs_sstagged and keep an eye on the number of files created. also open up some of the output files created and make sure no surprise sentences are added.
 
     
 `find ./pos_tagged_files_fnc_test/ -print0 | xargs -0 -n 1 -I{} -t -P 72 ./sst.sh {}`

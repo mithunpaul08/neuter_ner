@@ -750,7 +750,10 @@ if __name__ == '__main__':
                                         LOG.error(f"{x},{y},{z}")
                                     found_length_mismatch = True
 
-
+                        else:
+                            continue
+                    else:
+                        continue
 
                     if(found_length_mismatch==False):
                                     claim_ner_ss_tags_merged = mergeSSandNERTags(claims_sstags, claim_ner_tags)
@@ -763,17 +766,15 @@ if __name__ == '__main__':
                                     LOG.debug(f"value of ev_ner_ss_tags_merged is:{ev_ner_ss_tags_merged}")
 
                     else:
-                        if found_length_mismatch==True and args.back_off_to_ner == True:
-                            args.create_smart_NERs = True
-                            args.merge_ner_ss = False
-                        else:
-                            if found_length_mismatch == True:
-                                continue
+                                if found_length_mismatch==True and args.back_off_to_ner == True:
+                                    args.create_smart_NERs = True
+                                    args.merge_ner_ss = False
+                                else:
+                                    if found_length_mismatch == True:
+                                        continue
 
                     claim_pos_tags = claim_ann.tags
                     ev_pos_tags = ev_ann.tags
-
-
 
                     LOG.error(f"total files skipped so far is {files_skipped}")
 
@@ -784,10 +785,9 @@ if __name__ == '__main__':
                     if (args.create_smart_NERs == True):
 
                         claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags, ev_ann.words, ev_ner_tags)
-                    
-
 
                     if (args.merge_ner_ss == True):
+                        continue
                         lcet = len(claim_ann.words)
                         lesst = len(claim_ner_ss_tags_merged)
                         LOG.debug(f"value of len(claim_ann.words) is :{lcet}")
@@ -826,11 +826,19 @@ if __name__ == '__main__':
 
                     with open(merge_sstag_nertag_output_file, 'a+') as outfile:
                         write_json_to_disk(claim_neutered, ev_neutered, gold_label.upper(), outfile)
+                        args.create_smart_NERs = False
+                        args.merge_ner_ss = True
 
 
 
                 except IOError:
                     LOG.error('An error occured trying to read the file.')
+                    LOG.error(f"value of current datapoint is {dataPointId}")
+                    traceback.print_exc()
+                    continue
+
+                except IndexError:
+                    LOG.error('An index was out of range.')
                     LOG.error(f"value of current datapoint is {dataPointId}")
                     traceback.print_exc()
                     continue

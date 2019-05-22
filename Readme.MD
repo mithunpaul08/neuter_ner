@@ -143,12 +143,17 @@ Notes
     - open up predict.ssh and make sure the values of` --input_folder` points to where you generated the POS tagged
    files from step1. and `--output_folder` exists. 
     - input_folder is where  your pos tagged files are
+    - open up src/discriminativeTagger.pyx , and make `run_with_parallelization=False` in the main() function.
     - now run the below command from the place where the file `sst.sh` exists.
 
 `./sst.sh example`
 - example is a dummy input file left over for vestigial reasons,which will never be used
 - the logs and print statements will be written inside example.log.
-
+- once you start the command and if you see SS tags being printed on screen, you should be fine. nevertheless: got to folder fnc_test_outputs_sstagged and keep an eye on the number of files created. also open up some of the output files created and make sure no surprise sentences are added.
+  
+```
+    ls /work/mithunpaul/neuter_ner_fnc_test/amalgram/pysupersensetagger-2.0/fnc_test_outputs_sstagged/pos_tagged_files_fnc_test
+```
 ###### xargs
 also here is a version of the same command that will run the above as multiple processses. 
 i suggest avoiding it if you have enough time to run it serially.
@@ -173,7 +178,7 @@ i suggest avoiding it if you have enough time to run it serially.
     - inside the output folder create another folder which has exactly the same name as the input folder
     (Eg:`mkdir fnc_test_outputs_sstagged/pos_tagged_files_fnc_test`). This has to be done because xargs passes the entire path of the input file , including the folder name. so then the code tries to create an output file with the same name, which includes the path.
     
-    - open up predict.ssh and make sure `--output_folder` exists and points to the path above. 
+    - open up predict.ssh and make sure `--output_folder` exists and points to the path above- only the outer folder. 
     - open predict.ssh and add `--use_xargs` at the end of python command
     - make sure no file with name `*.tags` exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
     - open up src/discriminativeTagger.pyx , and make `run_with_parallelization=True` in the main() function. 
@@ -193,14 +198,9 @@ i suggest avoiding it if you have enough time to run it serially.
     - now run the below command from the folder where the file `sst.sh` exists.    
     
     
-`find pos_tagged_files_fnc_test/ -print0 | xargs -0 -n 1 -I{} -t -P 72 ./sst.sh {}`
+`find pos_tagged_files_fnc_test_5k/ -print0 | xargs -0 -n 1 -I{} -t -P 72 ./sst.sh {}`
 
 
-   - once you start the command and if you see SS tags being printed on screen, you should be fine. nevertheless: got to folder fnc_test_outputs_sstagged and keep an eye on the number of files created. also open up some of the output files created and make sure no surprise sentences are added.
-  
-```
-    ls /work/mithunpaul/neuter_ner_fnc_test/amalgram/pysupersensetagger-2.0/fnc_test_outputs_sstagged/pos_tagged_files_fnc_test
-```
    
 Notes:
 - the xargs command will run the sst.sh on each input file from the folder you provide, which in this case is `pos_tagged_files_fnc_test`. Change accordingly
@@ -234,15 +234,18 @@ This can be run using
 `source activate meanteacher`
 
 `python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging sstagged_files/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR`                
+ 
  on server:
-`python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_partition.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files_fever_test --remove_punctuations False --log_level ERROR --pyproc_port 8886`
+```
+python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_partition.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files_fever_test --remove_punctuations False --log_level ERROR --pyproc_port 8886 --back_off_to_ner True
+```
 
 ## checklist to check before starting merging 
         
 - git pull
 - source activate meanteacher
 - make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
-- make sure input folder name is correct (eg:--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//)..
+- make sure input folder name is correct (eg:`--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//`)..
 - make sure there are no .pred.tags.pred.tags file in the input_folder()
 - make sure you are providing the same data/inputfile i.e plain text file (Eg:-inputFile data/fever_dev_split_fourlabels.jsonl)
 - create output folder if that doesn't exist : `mkdir sstag_ner_merged_files`

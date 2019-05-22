@@ -787,7 +787,6 @@ if __name__ == '__main__':
                         claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags, ev_ann.words, ev_ner_tags)
 
                     if (args.merge_ner_ss == True):
-                        continue
                         lcet = len(claim_ann.words)
                         lesst = len(claim_ner_ss_tags_merged)
                         LOG.debug(f"value of len(claim_ann.words) is :{lcet}")

@@ -32,7 +32,7 @@ or
 
 If not using docker, run this command below (it should start the pyprocessors as a java server as mentioned [here](https://py-processors.readthedocs.io/en/latest/example.html) under `Option 1`):
 `
-python main.py --pyproc_port 8887 --use_docker False --convert_prepositions False --convert_NERs True --inputFile data/dev_fourlabels_new.jsonl
+python main.py --pyproc_port 8887 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/dev_fourlabels_new.jsonl
 `
 #### optional command line arguments"
 

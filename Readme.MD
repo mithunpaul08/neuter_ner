@@ -7,7 +7,7 @@ This is being done to show the NN model that there is overlap between claim and 
 
 ```
 conda create --name meanteacher python=3
-source activate conda
+source activate meanteacher
 pip install tqdm
 pip install git+https://github.com/myedibleenso/py-processors.git
 ```

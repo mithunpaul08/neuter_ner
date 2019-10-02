@@ -608,14 +608,19 @@ if __name__ == '__main__':
             if (args.log_level=="ERROR"):
                 LOG.setLevel(logging.ERROR)
 
+    filename = args.inputFile
+    cwd = os.getcwd()
+    input_file_full_path= os.path.join(cwd, filename)
+    assert (os.path.exists(input_file_full_path)is True)
+    all_claims, all_evidences, all_labels = read_rte_data(input_file_full_path, args)
+
+
     if(args.use_docker==True):
         API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
     else:
         API = ProcessorsAPI(port=args.pyproc_port)
 
-    filename=args.inputFile
-    #if not (args.run_on_dummy_data):
-    all_claims, all_evidences, all_labels=read_rte_data(filename,args)
+
     all_claims_neutered=[]
     all_evidences_neutered = []
 

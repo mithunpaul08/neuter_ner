@@ -16,7 +16,7 @@ pip install git+https://github.com/myedibleenso/py-processors.git
 We are using the jar option mentioned in the file to run pyprocessors server. However if you are adventurous enough to go the docker route, below are the commands you must use.
 **
 
-commands to run:
+#### commands to run if you are using docker route:
 
 `source activate meanteacher`
 
@@ -30,7 +30,13 @@ or
 ```docker start procserv``` (if you are using docker)
 
 `
-python main.py --pyproc_port 8887 --use_docker False --convert_prepositions False --convert_NERs True --inputFile data/dev_fourlabels_new.jsonl
+python main.py --pyproc_port 8887 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
+`
+
+#### commands to run if you are using java server for pyprocessors:
+
+`
+python main.py --pyproc_port 8887 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/dev_fourlabels_new.jsonl
 `
 #### optional command line arguments"
 

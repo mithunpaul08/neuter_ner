@@ -1,24 +1,40 @@
-# This code base has two pre-processing codes. Mostly to do with POS tagging, NER, Super sense tagging etc
+# This code base is the first phase/data pre-processing step. Here we use multiple kinds of pre processing step as mentioned in the emnlp 2019 paper
 
-## smart ner convertor
+## overlap aware ner convertor
 
 This code takes a claim and evidence pairs, finds where all NER tags exist and replace them smartly. refer examples below. 
 This is being done to show the NN model that there is overlap between claim and evidence.
 
 ```
-conda create --name meanteacher python=3
-source activate conda
+conda create --name delex python=3
+source activate delex
 pip install tqdm
+pip install clean-text
 pip install git+https://github.com/myedibleenso/py-processors.git
+mkdir outputs
+mkdir sstagged_files
+chmod 700 prereq.sh
+./prereq.sh
 ```
 
-**note: we are using `pyprocessors` to do annotation/NER/POS tagging etc. The documentation for the same can be found [here](https://py-processors.readthedocs.io/en/latest/)
-We are using the jar option mentioned in the file to run pyprocessors server. However if you are adventurous enough to go the docker route, below are the commands you must use.
-**
+**note**: we are using an in house tool 
+called [pyprocessors]((https://py-processors.readthedocs.io/en/latest/)) (which inturn uses taggers like Stanford's CoreNLP)
+to do annotation/NER/POS tagging etc. 
+We are using the jar option mentioned 
+in the link above.
+ However if you want 
+  to use docker instead for pyprocessors 
+  we are mentioning below the commands for that too.
 
-#### commands to run if you are using docker route:
 
-`source activate meanteacher`
+#### commands to run if you are using java server for pyprocessors:
+
+`
+python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
+`
+#### commands to run if you are using docker for pyprocessors:
+
+`source activate delex`
 
 `docker pull myedibleenso/processors-server:latest`
 ` docker run myedibleenso/processors-server`
@@ -27,18 +43,13 @@ We are using the jar option mentioned in the file to run pyprocessors server. Ho
 or
 
 
-```docker start procserv``` (if you are using docker)
+```docker start procserv``` (if you already created a docker container)
 
 `
-python main.py --pyproc_port 8887 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
+python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
 
-#### commands to run if you are using java server for pyprocessors:
-
-`
-python main.py --pyproc_port 8887 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/dev_fourlabels_new.jsonl
-`
-#### optional command line arguments"
+#### Explanation of command line arguments"
 
 `--pyproc_port 8886` By default pyprocessors , the java version runs off port 8888. If you intend to change it/want to run it over another port, you can pass it as
 a command line argument like this.
@@ -103,7 +114,7 @@ This code base of mine, which you are looking at, I am using to generate these t
 
 
 Notes to self
-- on laptop and clara use conda environment `meanteacher` 
+- on laptop and clara use conda environment `delex` 
 steps
     - check list before running pos tagging on server
         - go to a new folder 
@@ -111,7 +122,7 @@ steps
          -create outputs folder 
         - git pull 
         - verify the log -1
-        - start meanteacher conda env
+        - start delex conda env
         - change port
         - change input file
         - change docker false
@@ -237,7 +248,7 @@ combined:	'He 	stativee1 	a 	seven-time 	MISCc1 	Numberc2  	MISCc1 			and 	is 	w
 
 This can be run using
 
-`source activate meanteacher`
+`source activate delex`
 
 `python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging sstagged_files/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR`                
  
@@ -249,7 +260,7 @@ python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_
 ## checklist to check before starting merging 
         
 - git pull
-- source activate meanteacher
+- source activate delex
 - make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
 - make sure input folder name is correct (eg:`--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//`)..
 - make sure there are no .pred.tags.pred.tags file in the input_folder()
@@ -262,50 +273,3 @@ python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_
 
 ## extra info 
 - for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
-
-
-# notes to self/delete later 
-  
-- when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
-    or google: ```xargs site:*.edu```
-
-
- 
- 
-    
-
-### for emnlp 2019-abstract submission on may 15th 2019 below corners were cut
-        - punctuations were left in.
-        - there was length mismatch between claim and evidence found while doing merging of super sense and ner tags. I 
-        told the code to skip those files and move on. Almost 1% of files were thus skipped in all 4 runs. Should ideally go back and figure out why there is a length mismatch
-        
- ### todo for this project (as of today:may 15th 2019- before the actual paper deadline):
- - generate pos tags for fnc-test
- - generate ss tags for fnc-test
- - merge ss and pos tags for fnc-test
- - generate pos tags for fever-test
- - generate ss tags for fever-test
- - merge ss and pos tags for fever-test
- - add tqdm
- - at some point, get back to removing punctuations.
- - comment this line or move it inside if punctuations:`if not (word.lower() in ["lrb","rrb","lcb","rcb","lsb","rsb"]):`
-        
-                
-            
-### Commonly encountered errors
-    - if you hit compile time error with text as
-    `ImportError: Building module discriminativeTagger failed: ["CompileError: command 'gcc' failed with exit status 1\n"]` it means you have a compilation error. Kill the command and scroll up to find the compilation error.
-    - if your code is not responding/hangs for more than a minute after you hit `./sst.sh logs` 
-    or hit a error which says cannot find compiled *.so files, do this:`rm ~/.pyxbld/lib.linux-x86_64-2.7/*.so`
-    - if it says package x not found, that means you haven't turned on conda. do `source activate py2`
-    - if nonoe of this works, i.e tmux window is not responding, get out of the tmux window and do `tmux kill-session -t 4`
-    - if you just want to check if a kind of file exists and if `ls *.tags` gives you error of `argument too long` you can try :` find amalgram/pysupersensetagger-2.0/outputs_sstagged/ -iname "one*"`
-    
-    
-### daily work log/diary
-- may 15th 2019:
-    - submitted abstract to emnlp2019
-    - still waiting on sandeep to do fnc-train-fever test using features from acl submission, plainlex, smartner etc
-    - have generated sstagged files also for all 4 partitions (fnc-fever-train-test). have uploaded them to gdrive [folder](https://drive.google.com/open?id=1QqbMDyGaao1fUIG3rbgS1xqlxwx8d-o4). sandeep still needs to run the same tests on them
-    - have started 2 runs for generating pos tags for fnc-test and fever-test. Details can be found [here](https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing)
- 

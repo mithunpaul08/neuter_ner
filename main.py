@@ -432,6 +432,8 @@ def create_parser():
                         help='name of the folder to write output to')
     parser.add_argument('--smart_ner_sstags_output_file_name', type=str, default='smartner_sstags_merged.jsonl',
                         help='name of the folder to write output to')
+    parser.add_argument('--smart_ner_output_file_name', type=str, default='smart_ner_output_file_name.jsonl',
+                        help='name of the folder to write output of overlap aware ner creation process to')
     parser.add_argument('--input_folder_for_smartnersstagging_merging', type=str, default='sstagged_files',
                         help='name of the folder where sstagged files will be read from')
     parser.add_argument('--log_level', type=str, default='INFO',
@@ -614,20 +616,40 @@ if __name__ == '__main__':
     assert (os.path.exists(input_file_full_path)is True)
     all_claims, all_evidences, all_labels = read_rte_data(input_file_full_path, args)
 
-
     if(args.use_docker==True):
         API = ProcessorsBaseAPI(hostname="127.0.0.1", port=8886, keep_alive=True)
     else:
-        API = ProcessorsAPI(port=args.pyproc_port)
+        API = ProcessorsAPI(hostname="127.0.0.1", keep_alive=True,port=args.pyproc_port)
 
 
     all_claims_neutered=[]
     all_evidences_neutered = []
 
+    if (args.create_smart_NERs == True):
+        for claim,evidence in zip(all_claims, all_evidences):
+            claim_ann, ev_ann = annotate(claim, evidence, API)
+            assert(claim_ann) is not None
+            assert (ev_ann) is not None
+            claim_neutered, ev_neutered = collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ann._entities, ev_ann.words,
+                                                                           ev_ann._entities)
+            all_claims_neutered.append(claim_neutered)
+            all_evidences_neutered.append(ev_neutered)
+
+    smart_ner_output_file_name = os.path.join(args.outputFolder, args.smart_ner_output_file_name)
+    # with open(smart_ner_output_file_name, 'w') as outfile:
+    #     outfile.write('')
+    with open(smart_ner_output_file_name, 'a+') as outfile:
+        write_json_to_disk(all_claims_neutered, all_evidences_neutered, outfile)
+        args.create_smart_NERs = False
+        args.merge_ner_ss = True
+
+
     merge_sstag_nertag_output_file = os.path.join(args.outputFolder, args.smart_ner_sstags_output_file_name)
     with open(merge_sstag_nertag_output_file, 'w') as outfile:
         outfile.write('')
-    # go through all the files that start with the word claim., split its name, find its unique id, create the name of the evidence_from_lexicalized_data file with this id, and open it.
+
+
+
     ss_claim_file_full_path= ""
     ssfilename_ev=""
     files_skipped=0
@@ -639,7 +661,14 @@ if __name__ == '__main__':
                                         }
     assert (os.path.isdir(args.input_folder_for_smartnersstagging_merging)is True)
 
+    '''
+            # This part is for merging smartner and ss tags.
+            # After SS tagging we had the converted files with name like claim_uniqueid
+            # go through all the files that start with the word claim., split its name, 
+            # find its unique id, create the name of the evidence_from_lexicalized_data file with this id, and open it.
+            '''
     for index,file in enumerate(listdir(args.input_folder_for_smartnersstagging_merging)):
+
                 LOG.info(f" index: {index}")
                 try:
                     found_length_mismatch = False
@@ -787,9 +816,6 @@ if __name__ == '__main__':
                     if(args.convert_prepositions==True):
                         claim_ner_ss_tags_merged, ev_ner_ss_tags_merged=replacePrepositionsWithPOSTags(claim_pos_tags, ev_pos_tags, claim_ner_ss_tags_merged, ev_ner_ss_tags_merged)
 
-                    if (args.create_smart_NERs == True):
-
-                        claim_neutered, ev_neutered =collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ner_tags, ev_ann.words, ev_ner_tags)
 
                     if (args.merge_ner_ss == True):
                         lcet = len(claim_ann.words)

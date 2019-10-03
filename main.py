@@ -131,7 +131,7 @@ def collapse_continuous_names_with_dashes(words_list, ner_list, ev_claim):
     list_of_indices_to_collapse=[]
     total_string_length=len(ner_list)
     #in this code, triggers happen only when a continuous bunch of nER tags end. Eg: PERSON , PERSON, O.
-    for index, (curr_ner, curr_word) in enumerate(zip(ner_list, words_list)):
+    for index, (curr_ner, curr_word) in enumerate((zip(ner_list, words_list))):
         # skip as many indices as we have already collapsed. This is because say if NEW YORK POST is collapsed into one entity, we don't want it to add post again to any of dictionaries or
         # new sentence words
         if index in (list_of_indices_to_collapse):
@@ -467,24 +467,6 @@ def collapseAndCreateSmartTagsSSNer(claim_words, claim_ner_tags, evidence_words,
 
 
 
-def collapseAndReplaceWithNerSmartly(claim_words,claim_ner_tags, evidence_words, evidence_ner_tags):
-        ev_claim="c"
-        neutered_claim, dict_token_ner_newner_claims, dict_newNerBasedName_lemma = collapse_continuous_names(claim_words,
-                                                                                                      claim_ner_tags,
-                                                                                                      ev_claim)
-
-        ev_claim = "e"
-        new_sent_after_collapse, dict_tokenner_newner_evidence, dict_newner_token_ev = collapse_continuous_names(evidence_words, evidence_ner_tags, ev_claim)
-
-        neutered_evidence, found_intersection = check_exists_in_claim(new_sent_after_collapse,
-                                                                       dict_tokenner_newner_evidence, dict_newner_token_ev,
-                                                                      dict_token_ner_newner_claims)
-
-
-        claimn = " ".join(neutered_claim)
-        evidencen = " ".join(neutered_evidence)
-
-        return claimn,evidencen
 
 #whenever you see a preposition in this sentence, replace the NER tags of this sentence with PREP. This is
 #being done so that when we do neutering, the PREP also gets added in along with the NER tags. Just another
@@ -625,23 +607,28 @@ if __name__ == '__main__':
     all_claims_neutered=[]
     all_evidences_neutered = []
 
+    assert os.path.exists(args.outputFolder) is True
+    smart_ner_output_file_name = os.path.join(args.outputFolder, args.smart_ner_output_file_name)
+
+    with open(smart_ner_output_file_name, 'w') as outfile:
+        outfile.write('')
+    assert os.path.exists(smart_ner_output_file_name) is True
+
     if (args.create_smart_NERs == True):
-        for claim,evidence in zip(all_claims, all_evidences):
+        for claim,evidence,label in tqdm(zip(all_claims, all_evidences,all_labels),total=len(all_claims),desc="create_smart_NERs"):
             claim_ann, ev_ann = annotate(claim, evidence, API)
             assert(claim_ann) is not None
             assert (ev_ann) is not None
-            claim_neutered, ev_neutered = collapseAndReplaceWithNerSmartly(claim_ann.words, claim_ann._entities, ev_ann.words,
+            claim_neutered, ev_neutered = collapseAndCreateSmartTagsSSNer(claim_ann.words, claim_ann._entities, ev_ann.words,
                                                                            ev_ann._entities)
             all_claims_neutered.append(claim_neutered)
             all_evidences_neutered.append(ev_neutered)
 
-    smart_ner_output_file_name = os.path.join(args.outputFolder, args.smart_ner_output_file_name)
-    # with open(smart_ner_output_file_name, 'w') as outfile:
-    #     outfile.write('')
-    with open(smart_ner_output_file_name, 'a+') as outfile:
-        write_json_to_disk(all_claims_neutered, all_evidences_neutered, outfile)
-        args.create_smart_NERs = False
-        args.merge_ner_ss = True
+            with open(smart_ner_output_file_name, 'a+') as outfile:
+                write_json_to_disk(claim_neutered, ev_neutered, label, outfile)
+                args.create_smart_NERs = False
+                args.merge_ner_ss = True
+        sys.exit(1)
 
 
     merge_sstag_nertag_output_file = os.path.join(args.outputFolder, args.smart_ner_sstags_output_file_name)

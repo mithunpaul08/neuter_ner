@@ -43,6 +43,7 @@ or
 
 ```docker start procserv``` (if you already created a docker container)
 
+If not using docker, run this command below (it should start the pyprocessors as a java server as mentioned [here](https://py-processors.readthedocs.io/en/latest/example.html) under `Option 1`):
 `
 python main.py --pyproc_port 8886 --use_docker True --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
@@ -283,3 +284,4 @@ python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_
 
 ## extra info 
 - for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
+

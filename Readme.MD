@@ -47,6 +47,9 @@ or
 python main.py --pyproc_port 8886 --use_docker True --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
 
+Note: Also to verify that the pyprocessors server is running open a browser and type  `localhost:8886`. If you see an output
+which says "pyprocessors server" the server is running
+
 #### commands to run if you are using java server for pyprocessors:
 `
 python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl

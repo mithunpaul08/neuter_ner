@@ -1,40 +1,63 @@
-# This code base has two pre-processing codes. Mostly to do with POS tagging, NER, Super sense tagging etc
+# This code base is the first phase/data pre-processing step. Here we use multiple kinds of pre processing step as mentioned in the emnlp 2019 paper
 
-## smart ner convertor
+## overlap aware ner convertor
 
 This code takes a claim and evidence pairs, finds where all NER tags exist and replace them smartly. refer examples below. 
 This is being done to show the NN model that there is overlap between claim and evidence.
 
 ```
-conda create --name meanteacher python=3
-source activate meanteacher
+conda create --name delex python=3
+source activate delex
 pip install tqdm
 pip install clean-text
 pip install git+https://github.com/myedibleenso/py-processors.git
+mkdir outputs
+mkdir sstagged_files
+chmod 700 prereq.sh
+./prereq.sh
 ```
 
-**note: we are using an in house tool called [pyprocessors](https://py-processors.readthedocs.io/en/latest/) to do annotation/NER/POS tagging etc. 
-We are using the jar option mentioned in the file to run pyprocessors server. However if you are adventurous enough to go the docker route, below are the commands you must use.
-**
+**note**: we are using an in house tool 
+called [pyprocessors]((https://py-processors.readthedocs.io/en/latest/)) (which inturn uses taggers like Stanford's CoreNLP)
+to do annotation/NER/POS tagging etc. 
+There are two ways of running pyprocessors: using a jar file and a docker.
+We suggest you use a docker. Nevertheleses we are providing commands for 
+both below.
 
-commands to run:
 
-`source activate meanteacher`
+
+#### commands to run if you are using docker for pyprocessors:
+
+(install and start [docker](https://www.docker.com/) if you haven't)
+
+`source activate delex`
 
 `docker pull myedibleenso/processors-server:latest`
-` docker run myedibleenso/processors-server`
+
+`docker run myedibleenso/processors-server`
 
 `docker run -d -e _JAVA_OPTIONS="-Xmx3G" -p 127.0.0.1:8886:8888 --name procserv myedibleenso/processors-server`
+
 or
 
 
-```docker start procserv``` (if you are using docker)
+```docker start procserv``` (if you already created a docker container)
 
 If not using docker, run this command below (it should start the pyprocessors as a java server as mentioned [here](https://py-processors.readthedocs.io/en/latest/example.html) under `Option 1`):
 `
-python main.py --pyproc_port 8887 --use_docker False --convert_prepositions False --convert_NERs True --inputFile data/dev_fourlabels_new.jsonl
+python main.py --pyproc_port 8886 --use_docker True --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
-#### optional command line arguments"
+
+Note: Also to verify that the pyprocessors server is running open a browser and type  `localhost:8886`. If you see an output
+which says "pyprocessors server" the server is running
+
+#### commands to run if you are using java server for pyprocessors:
+`
+python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
+`
+
+
+#### Explanation of command line arguments
 
 `--pyproc_port 8886` By default pyprocessors , the java version runs off port 8888. If you intend to change it/want to run it over another port, you can pass it as
 a command line argument like this.
@@ -42,6 +65,9 @@ a command line argument like this.
 `--use_docker true` if you are using docker for pyprocessors (usually in laptops its easier to use a docker, where as in machines where you don't have
 root/sudo access use java processors server)
 
+`--create_smart_NERs` Set this to `True` if you want simple smartner (also mentioned as overlap aware NER in the paper)
+
+`--convert_prepositions` By default prepositoins are ignored and not converted in the overlap aware NER. However set this instead to `True` if you want to.
 
 #### Some sample conversions
 
@@ -60,6 +86,7 @@ premise_ann: BREAKING : ORGANIZATION-e1 , in video , beheads MISC-e1 journalist 
 
 # Super Sense Tagger
 
+step 2 given [here](#Step_2:_running_sstagger)
 Super sense tagging is when you can take a sentence and assign the abstract super sense to it. like NER but more abstract.
 Eg:
 
@@ -98,7 +125,7 @@ This code base of mine, which you are looking at, I am using to generate these t
 
 
 Notes to self
-- on laptop and clara use conda environment `meanteacher` 
+- on laptop and clara use conda environment `delex` 
 steps
     - check list before running pos tagging on server
         - go to a new folder 
@@ -106,7 +133,7 @@ steps
          -create outputs folder 
         - git pull 
         - verify the log -1
-        - start meanteacher conda env
+        - start delex conda env
         - change port
         - change input file
         - change docker false
@@ -122,54 +149,93 @@ Notes
     - `docker start procserv`
     - open `localhost:8886` and confirm that the `pyprocessor` server is running
 
-#### Step 2: running sstagger
+#Step_2:_running_sstagger
+#### Step_2: running_sstagger
 
-the above came these are the commands i used to combine multiple claim files to one
 
-steps 
-- move the output of pos tagging to input folder of ss tagging.
-    - note: dont do plain `mv * ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/`. Linux will tell you argument list too long. Instead create a shell script like this:
-    ```for each in ./*;
-    do
-    mv $eachfile ../amalgram/pysupersensetagger-2.0/input_to_sstagger_output_from_pos_tagger/
-    done
-    ```
 - commands for create a conda run environment for running the actual sstagger    
 ```
- conda create -name py2_decompattn_nonallennlp python=2.7
- source activate py2_decompattn_nonallennlp
+ conda create -name py2 python=2.7
+ source activate py2
  pip install cython
  pip install nltk
  python
  nltk.download('wordnet')
  exit
 ```
-- remember to create a folder inside outputs dir if using xargs, and the output (the sstagged files)
- will be written there.
  
- Example:
  
- ``mkdir outputs_sstagged/input_to_sstagger_output_from_pos_tagger``
-
-- Check two things. *.tags doesn't exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
-- open up predict.ssh and make sure the values of` --input_folder` points to where you generated the POS tagged
+- Check list:
+    - source activate py2
+    - make sure *.tags doesn't exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
+    - open up predict.ssh and make sure the values of` --input_folder` points to where you generated the POS tagged
    files from step1. and `--output_folder` exists. 
-- now run the below command from the place where the file `sst.sh` exists.
+    - input_folder is where  your pos tagged files are
+    - open up src/discriminativeTagger.pyx , and make `run_with_parallelization=False` in the main() function.
+    - now run the below command from the place where the file `sst.sh` exists.
 
 `./sst.sh example`
 - example is a dummy input file left over for vestigial reasons,which will never be used
 - the logs and print statements will be written inside example.log.
+- once you start the command and if you see SS tags being printed on screen, you should be fine. nevertheless: got to folder fnc_test_outputs_sstagged and keep an eye on the number of files created. also open up some of the output files created and make sure no surprise sentences are added.
+  
+```
+    ls /work/mithunpaul/neuter_ner_fnc_test/amalgram/pysupersensetagger-2.0/fnc_test_outputs_sstagged/pos_tagged_files_fnc_test
+```
+###### xargs
+also here is a version of the same command that will run the above as multiple processses. 
+i suggest avoiding it if you have enough time to run it serially.
 
-also here is a version of the same command that will run the above as multiple processses. i suggest avoiding it though.
-
-`find ./input_to_sstagger_output_from_pos_tagger/ -print0 | xargs -0 -n 1 -I{} -t -p ./sst.sh {}`
  
+- CheckList/steps:
+    - create conda environment as above
+    - create a new folder (pos_tagged_files_fnc_test) at the same location as sst.sh
+    - copy all the pos tags generated in step2 to this input folder
+    - do an `ls -al` in this input folder and make sure this is 
+    double the number you get when you do an `wc -l` on the lexicalized data file
+    eg:
+    ```
+    ls /work/mithunpaul/neuter_ner_fnc_test/amalgram/pysupersensetagger-2.0/pos_tagged_files_fnc_test | wc -l
+    50826
+    wc -l /work/mithunpaul/neuter_ner_fnc_test/data/fn_test_split_fourlabels.jsonl`
+    25413
+    ```
+    - open up predict.ssh remove the value of` --input_folder`. This is because the find command
+    above takes care of it. 
+    - create an output folder (eg: `mkdir fnc_test_outputs_sstagged`)
+    - inside the output folder create another folder which has exactly the same name as the input folder
+    (Eg:`mkdir fnc_test_outputs_sstagged/pos_tagged_files_fnc_test`). This has to be done because xargs passes the entire path of the input file , including the folder name. so then the code tries to create an output file with the same name, which includes the path.
+    
+    - open up predict.ssh and make sure `--output_folder` exists and points to the path above- only the outer folder. 
+    - open predict.ssh and add `--use_xargs` at the end of python command
+    - make sure no file with name `*.tags` exist in input folder or output folder. Might be vestigial/left over from older runs, but yeah, that will be detrimental if a *.tags is provided as input. THe code will crash
+    - open up src/discriminativeTagger.pyx , and make `run_with_parallelization=True` in the main() function. 
+    - source activate py2
+    - open up sst.sh and make sure the input file is not written from linux shell scripot also
+    i.e it should look like this:
+    ```
+    ./predict_sst.sh $input 
+    ```
+ 
+    and not
+    ```
+    ./predict_sst.sh $input > $input.pred.tags
+    ```
+    - before you start the run with xargs, try running bare minimum command tomake sure there are no compile timer errors
+    Eg: `./sst.sh dummy_input_file`
+    - now run the below command from the folder where the file `sst.sh` exists.    
+    
+    
+`find pos_tagged_files_fnc_test_5k/ -print0 | xargs -0 -n 1 -I{} -t -P 72 ./sst.sh {}`
+
+
+   
 Notes:
-- the xargs command will run the sst.sh on each input file from the folder: input_to_sstagger_output_from_pos_tagger
-- i have modified the python code to create output file with $inputfilename.pred.tags in the output folder mentioned above
-- P is the number of cores you can spare in your machine. 
-- this command will create the output (*.pred.tags) at exactly the same location as the input file. Which means, you must do `rm *.tags` before every run else it will
-start creating files like `*.pred.tags.pred.tags`
+- the xargs command will run the sst.sh on each input file from the folder you provide, which in this case is `pos_tagged_files_fnc_test`. Change accordingly
+- P is the number of cores you can spare in your machine. Change accordingly. Don't change anything else.
+- some files will take really long time to get SSTagged. This is because it most probably contains way too many sentences. Be patient. That is why we are running it over xargs because
+even if one process is stuck the rest 71 will keep moving forward.
+- the code should stop by itself when the total number of output files are the same as input files (in this case 50826 )- 50k files should take around 500 minutes=8 hours
 
 #### Step 3: merging NER tags and ss tags
 
@@ -193,68 +259,29 @@ combined:	'He 	stativee1 	a 	seven-time 	MISCc1 	Numberc2  	MISCc1 			and 	is 	w
 
 This can be run using
 
-`source activate meanteacher`
+`source activate delex`
 
 `python main.py --use_docker true  --inputFile data/fever_train_split_fourlabels.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging sstagged_files/ --outputFolder sstag_ner_merged_files --remove_punctuations False --log_level ERROR`                
+ 
  on server:
-`python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_partition.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files_fever_test --remove_punctuations False --log_level ERROR --pyproc_port 8886`
+```
+python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_partition.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files_fever_test --remove_punctuations False --log_level ERROR --pyproc_port 8886 --back_off_to_ner True
+```
+
+## checklist to check before starting merging 
+        
+- git pull
+- source activate delex
+- make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
+- make sure input folder name is correct (eg:`--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//`)..
+- make sure there are no .pred.tags.pred.tags file in the input_folder()
+- make sure you are providing the same data/inputfile i.e plain text file (Eg:-inputFile data/fever_dev_split_fourlabels.jsonl)
+- create output folder if that doesn't exist : `mkdir sstag_ner_merged_files`
+- give a new pyproc port for every run
+- you can check the total number of data points written by doing `wc -l sstag_ner_merged_files/smartner_sstags_merged.jsonl `
+- you can keep an eye on the number of files converted/skipped by doing `tail -f merging_sstag_smartnertag.log `
+
 
 ## extra info 
 - for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
 
-
-# notes to self/delete later 
-  
-- when you want to learn something, check if there is a course in stanford or berkeley that covers that topic
-    or google: ```xargs site:*.edu```
-
-
- 
- 
-checklist for merging runs
-        
-    - git pull
-    - source activate meanteacher
-    - make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
-    - make sure input folder name is correct (eg:--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//)..
-    - make sure there are no .pred.tags.pred.tags file in the input_folder()
-    - make sure you are providing the same data/inputfile i.e plain text file (Eg:-inputFile data/fever_dev_split_fourlabels.jsonl)
-    - create output folder if that doesn't exist : `mkdir sstag_ner_merged_files`
-    - give a new pyproc port for every run
-    
-
-### for emnlp 2019-abstract submission on may 15th 2019 below corners were cut
-        - punctuations were left in.
-        - there was length mismatch between claim and evidence found while doing merging of super sense and ner tags. I 
-        told the code to skip those files and move on. Almost 1% of files were thus skipped in all 4 runs. Should ideally go back and figure out why there is a length mismatch
-        
- ### todo for this project (as of today:may 15th 2019- before the actual paper deadline):
- - generate pos tags for fnc-test
- - generate ss tags for fnc-test
- - merge ss and pos tags for fnc-test
- - generate pos tags for fever-test
- - generate ss tags for fever-test
- - merge ss and pos tags for fever-test
- - add tqdm
- - at some point, get back to removing punctuations.
- - comment this line or move it inside if punctuations:`if not (word.lower() in ["lrb","rrb","lcb","rcb","lsb","rsb"]):`
-        
-                
-            
-### Commonly encountered errors
-    - if you hit compile time error with text as
-    `ImportError: Building module discriminativeTagger failed: ["CompileError: command 'gcc' failed with exit status 1\n"]` it means you have a compilation error. Kill the command and scroll up to find the compilation error.
-    - if your code is not responding/hangs for more than a minute after you hit `./sst.sh logs` 
-    or hit a error which says cannot find compiled *.so files, do this:`rm ~/.pyxbld/lib.linux-x86_64-2.7/*.so`
-    - if it says package x not found, that means you haven't turned on conda. do `source activate py2`
-    - if nonoe of this works, i.e tmux window is not responding, get out of the tmux window and do `tmux kill-session -t 4`
-    - if you just want to check if a kind of file exists and if `ls *.tags` gives you error of `argument too long` you can try :` find amalgram/pysupersensetagger-2.0/outputs_sstagged/ -iname "one*"`
-    
-    
-### daily work log/diary
-- may 15th 2019:
-    - submitted abstract to emnlp2019
-    - still waiting on sandeep to do fnc-train-fever test using features from acl submission, plainlex, smartner etc
-    - have generated sstagged files also for all 4 partitions (fnc-fever-train-test). have uploaded them to gdrive [folder](https://drive.google.com/open?id=1QqbMDyGaao1fUIG3rbgS1xqlxwx8d-o4). sandeep still needs to run the same tests on them
-    - have started 2 runs for generating pos tags for fnc-test and fever-test. Details can be found [here](https://docs.google.com/spreadsheets/d/1nfewuq33Hxkwp9WaiLldN4LjRJo3vbVH2vxGHRHKKbI/edit?usp=sharing)
- 

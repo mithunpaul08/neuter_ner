@@ -30,7 +30,7 @@ both below.
 
 `docker run myedibleenso/processors-server`
 
-`docker run -d -e _JAVA_OPTIONS="-Xmx3G" -p 127.0.0.1:8886:8888 --name procserv myedibleenso/processors-server`
+`docker run -d -e _JAVA_OPTIONS="-Xmx5G" -p 127.0.0.1:8886:8888 --name procserv myedibleenso/processors-server`
 
 or
 
@@ -48,7 +48,7 @@ python main.py --pyproc_port 8886 --use_docker True --convert_prepositions False
 
 output file (neutered/delexicalized file) will be stored under outputs/
 
-#### commands to run if you are using java server for pyprocessors:
+#### command to run if you are using java server for pyprocessors:
 `
 python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `

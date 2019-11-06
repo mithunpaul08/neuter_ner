@@ -1,9 +1,13 @@
-# This code base is the first phase/data pre-processing step. Here we use multiple kinds of pre processing step as mentioned in the emnlp 2019 paper
 
-## overlap aware ner convertor
+#Overlap aware NER tagging 
 
-This code takes a claim and evidence pairs, finds where all NER tags exist and replace them smartly. refer examples below. 
+#### This code base is the first phase/data pre-processing step of our emnlp 2019 paper (citation coming soon). 
+Here we use multiple kinds of pre processing step as mentioned in the emnlp 2019 paper
+This code takes a list of claim and evidence pairs, finds where all NER tags exist and 
+replace them by being "aware of overlap". refer examples below. 
 This is being done to show the NN model that there is overlap between claim and evidence.
+
+These are the initial set up steps.
 
 ```
 conda create --name neuter_ner python=3
@@ -13,7 +17,7 @@ chmod 700 prereq.sh
 wget -O data/file_to_delex.jsonl wget https://storage.googleapis.com/fact_verification_mithun_files/mnli/mu_train.jsonl
 ```
 
-**note**: we are using an in house tool 
+Next step is to initialize the NER tagger tool. We are using an in house tool 
 called [pyprocessors]((https://py-processors.readthedocs.io/en/latest/)) (which inturn uses taggers like Stanford's CoreNLP)
 to do annotation/NER/POS tagging etc. 
 There are two ways of running pyprocessors: using a jar file and a docker.
@@ -39,20 +43,25 @@ or
 that `procserv` is in use)
 
 Verify that the pyprocessors server is running by opening a browser and typing  `localhost:8886`. If you see an output
-which says "pyprocessors server" the server is running
+which says "pyprocessors server" the server is running.
+
+Next run the python command as given below.
 
 
 `
 python main.py --pyproc_port 8886 --use_docker True --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
 
-output file (neutered/delexicalized file) will be stored under outputs/
 
 #### command to run if you are using java server for pyprocessors:
+If you decide to use java instead of docker, you don't have to do any of the docker related
+commands mentioned above. You can directly run the command below which will in turn
+start the java server.
 `
 python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
 
+**output file** (i.e the neutered/delexicalized file) will be stored under outputs/
 
 #### Explanation of command line arguments
 

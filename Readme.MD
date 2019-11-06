@@ -6,15 +6,11 @@ This code takes a claim and evidence pairs, finds where all NER tags exist and r
 This is being done to show the NN model that there is overlap between claim and evidence.
 
 ```
-conda create --name delex python=3
-source activate delex
-pip install tqdm
-pip install clean-text
-pip install git+https://github.com/myedibleenso/py-processors.git
-mkdir outputs
-mkdir sstagged_files
+conda create --name neuter_ner python=3
+conda activate neuter_ner
 chmod 700 prereq.sh
 ./prereq.sh
+wget -O data/file_to_delex.jsonl wget https://storage.googleapis.com/fact_verification_mithun_files/mnli/mu_train.jsonl
 ```
 
 **note**: we are using an in house tool 
@@ -30,28 +26,29 @@ both below.
 
 (install and start [docker](https://www.docker.com/) if you haven't)
 
-`source activate delex`
-
 `docker pull myedibleenso/processors-server:latest`
 
 `docker run myedibleenso/processors-server`
 
-`docker run -d -e _JAVA_OPTIONS="-Xmx3G" -p 127.0.0.1:8886:8888 --name procserv myedibleenso/processors-server`
+`docker run -d -e _JAVA_OPTIONS="-Xmx5G" -p 127.0.0.1:8886:8888 --name procserv myedibleenso/processors-server`
 
 or
 
 
-```docker start procserv``` (if you already created a docker container)
+```docker start procserv``` (if you already created a docker container: usually second time onwards. You will be shown an error
+that `procserv` is in use)
 
-If not using docker, run this command below (it should start the pyprocessors as a java server as mentioned [here](https://py-processors.readthedocs.io/en/latest/example.html) under `Option 1`):
+Verify that the pyprocessors server is running by opening a browser and typing  `localhost:8886`. If you see an output
+which says "pyprocessors server" the server is running
+
+
 `
 python main.py --pyproc_port 8886 --use_docker True --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
 
-Note: Also to verify that the pyprocessors server is running open a browser and type  `localhost:8886`. If you see an output
-which says "pyprocessors server" the server is running
+output file (neutered/delexicalized file) will be stored under outputs/
 
-#### commands to run if you are using java server for pyprocessors:
+#### command to run if you are using java server for pyprocessors:
 `
 python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `

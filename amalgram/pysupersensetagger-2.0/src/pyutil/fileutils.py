@@ -116,7 +116,7 @@ def merge_files(sources, target, sourceMode='rb', targetMode='wb', transformX=la
     >>> sF2 = open('/tmp/source2.txt', 'r')
     >>> merge_files(('/tmp/source1.txt', sF2, '/tmp/source3.txt'), '/tmp/target2.txt')
     >>> with open('/tmp/target2.txt', 'r') as tF2:
-    ...   t2 = tF2.read()
+    ...   lex_file_df = tF2.read()
     >>> t = """so much depends
     ... upon
     ... 
@@ -129,7 +129,7 @@ def merge_files(sources, target, sourceMode='rb', targetMode='wb', transformX=la
     ... !!!beside the white
     ... chickens.
     ... """
-    >>> t1==t2==t.replace('!!!','')
+    >>> t1==lex_file_df==t.replace('!!!','')
     True
     >>> tX = lambda f,s,i: '!!!'+s if i>0 else s
     >>> merge_files(('/tmp/source1.txt', '/tmp/source2.txt', '/tmp/source3.txt'), '/tmp/target3.txt', transformX=tX)

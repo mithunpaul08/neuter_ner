@@ -61,7 +61,7 @@ start the java server.
 python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
 
-**output file** (i.e the neutered/delexicalized file) will be stored under outputs/
+**output file** (i.e the neutered/delexicalized file) will be stored under outputs/smart_ner_output_file_name.jsonl
 
 #### Explanation of command line arguments
 

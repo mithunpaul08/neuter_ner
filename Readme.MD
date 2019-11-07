@@ -129,24 +129,7 @@ This code base of mine, which you are looking at, I am using to generate these t
 --write_pos_tags True --pyproc_port 8887 --use_docker True --inputFile data/fever_train_split_fourlabels.jsonl
 `
 
-
-Notes to self
-- on laptop and clara use conda environment `delex` 
-steps
-    - check list before running pos tagging on server
-        - go to a new folder 
-         -remove outputs if exists 
-         -create outputs folder 
-        - git pull 
-        - verify the log -1
-        - start delex conda env
-        - change port
-        - change input file
-        - change docker false
-        - verify atleast one claim file is written
-        - verify atleast one evidence file is written
-        - sort evidence files by size and pick the biggest one so far+ verify that a new line written after evidences    
-            
+       
 Notes
 - classic fever data has only 3 classes/labels,. viz.,SUPPORTS, REFUTES, NOT ENOUGH INFO. Here we have already converted into 4 classes after that of [fnc](http://www.fakenewschallenge.org/), viz., AGREE, DISAGREE, DISCUSS, UNRELATED 
 - this command will create a huge number of files, one per each claim-evidence pair.
@@ -274,20 +257,11 @@ This can be run using
 python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_partition.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files_fever_test --remove_punctuations False --log_level ERROR --pyproc_port 8886 --back_off_to_ner True
 ```
 
-## checklist to check before starting merging 
-        
-- git pull
-- source activate delex
-- make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
-- make sure input folder name is correct (eg:`--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//`)..
-- make sure there are no .pred.tags.pred.tags file in the input_folder()
-- make sure you are providing the same data/inputfile i.e plain text file (Eg:-inputFile data/fever_dev_split_fourlabels.jsonl)
-- create output folder if that doesn't exist : `mkdir sstag_ner_merged_files`
-- give a new pyproc port for every run
-- you can check the total number of data points written by doing `wc -l sstag_ner_merged_files/smartner_sstags_merged.jsonl `
-- you can keep an eye on the number of files converted/skipped by doing `tail -f merging_sstag_smartnertag.log `
-
 
 ## extra info 
 - for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
 
+
+### todo:
+- [x] add a small python script which converts our claim-ev format of mnli data into their mnli format. raised: nov 6th 2019. completed nov 6th 2019
+- [ ] inside neuter-ner, write code to read from mnli original data and then do neutering using pyprocessors. raised:Nov 6th 2019: 

@@ -1,9 +1,13 @@
-# This code base is the first phase/data pre-processing step. Here we use multiple kinds of pre processing step as mentioned in the emnlp 2019 paper
 
-## overlap aware ner convertor
+#Overlap aware NER tagging 
 
-This code takes a claim and evidence pairs, finds where all NER tags exist and replace them smartly. refer examples below. 
+#### This code base is the first phase/data pre-processing step of our emnlp 2019 paper (citation coming soon). 
+Here we use multiple kinds of pre processing step as mentioned in the emnlp 2019 paper
+This code takes a list of claim and evidence pairs, finds where all NER tags exist and 
+replace them by being "aware of overlap". refer examples below. 
 This is being done to show the NN model that there is overlap between claim and evidence.
+
+These are the initial set up steps.
 
 ```
 conda create --name neuter_ner python=3
@@ -13,7 +17,7 @@ chmod 700 prereq.sh
 wget -O data/file_to_delex.jsonl wget https://storage.googleapis.com/fact_verification_mithun_files/mnli/mu_train.jsonl
 ```
 
-**note**: we are using an in house tool 
+Next step is to initialize the NER tagger tool. We are using an in house tool 
 called [pyprocessors]((https://py-processors.readthedocs.io/en/latest/)) (which inturn uses taggers like Stanford's CoreNLP)
 to do annotation/NER/POS tagging etc. 
 There are two ways of running pyprocessors: using a jar file and a docker.
@@ -39,20 +43,25 @@ or
 that `procserv` is in use)
 
 Verify that the pyprocessors server is running by opening a browser and typing  `localhost:8886`. If you see an output
-which says "pyprocessors server" the server is running
+which says "pyprocessors server" the server is running.
+
+Next run the python command as given below.
 
 
 `
 python main.py --pyproc_port 8886 --use_docker True --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
 
-output file (neutered/delexicalized file) will be stored under outputs/
 
 #### command to run if you are using java server for pyprocessors:
+If you decide to use java instead of docker, you don't have to do any of the docker related
+commands mentioned above. You can directly run the command below which will in turn
+start the java server.
 `
 python main.py --pyproc_port 8886 --use_docker False --convert_prepositions False --create_smart_NERs True --inputFile data/file_to_delex.jsonl
 `
 
+**output file** (i.e the neutered/delexicalized file) will be stored under outputs/smart_ner_output_file_name.jsonl
 
 #### Explanation of command line arguments
 
@@ -120,24 +129,7 @@ This code base of mine, which you are looking at, I am using to generate these t
 --write_pos_tags True --pyproc_port 8887 --use_docker True --inputFile data/fever_train_split_fourlabels.jsonl
 `
 
-
-Notes to self
-- on laptop and clara use conda environment `delex` 
-steps
-    - check list before running pos tagging on server
-        - go to a new folder 
-         -remove outputs if exists 
-         -create outputs folder 
-        - git pull 
-        - verify the log -1
-        - start delex conda env
-        - change port
-        - change input file
-        - change docker false
-        - verify atleast one claim file is written
-        - verify atleast one evidence file is written
-        - sort evidence files by size and pick the biggest one so far+ verify that a new line written after evidences    
-            
+       
 Notes
 - classic fever data has only 3 classes/labels,. viz.,SUPPORTS, REFUTES, NOT ENOUGH INFO. Here we have already converted into 4 classes after that of [fnc](http://www.fakenewschallenge.org/), viz., AGREE, DISAGREE, DISCUSS, UNRELATED 
 - this command will create a huge number of files, one per each claim-evidence pair.
@@ -265,20 +257,11 @@ This can be run using
 python main.py --use_docker false  --inputFile data/fever_original_dev_our_test_partition.jsonl --convert_prepositions False --create_smart_NERs False --merge_ner_ss True --input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged/ --outputFolder sstag_ner_merged_files_fever_test --remove_punctuations False --log_level ERROR --pyproc_port 8886 --back_off_to_ner True
 ```
 
-## checklist to check before starting merging 
-        
-- git pull
-- source activate delex
-- make sure you are in the folder that you match the sstagged files with eg: neuter_ner_fever_training
-- make sure input folder name is correct (eg:`--input_folder_for_smartnersstagging_merging amalgram/pysupersensetagger-2.0/outputs_sstagged//`)..
-- make sure there are no .pred.tags.pred.tags file in the input_folder()
-- make sure you are providing the same data/inputfile i.e plain text file (Eg:-inputFile data/fever_dev_split_fourlabels.jsonl)
-- create output folder if that doesn't exist : `mkdir sstag_ner_merged_files`
-- give a new pyproc port for every run
-- you can check the total number of data points written by doing `wc -l sstag_ner_merged_files/smartner_sstags_merged.jsonl `
-- you can keep an eye on the number of files converted/skipped by doing `tail -f merging_sstag_smartnertag.log `
-
 
 ## extra info 
 - for cleaning/removing punctuations i use [this](https://github.com/jfilter/clean-text)
 
+
+### todo:
+- [x] add a small python script which converts our claim-ev format of mnli data into their mnli format. raised: nov 6th 2019. completed nov 6th 2019
+- [ ] inside neuter-ner, write code to read from mnli original data and then do neutering using pyprocessors. raised:Nov 6th 2019: 
